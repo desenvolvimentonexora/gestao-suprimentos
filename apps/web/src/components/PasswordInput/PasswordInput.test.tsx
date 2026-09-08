@@ -1,3 +1,4 @@
+import { createRef } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
@@ -17,5 +18,11 @@ describe('PasswordInput', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Ocultar senha' }))
     expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'password')
+  })
+
+  it('encaminha a ref para o elemento input (necessário para react-hook-form)', () => {
+    const ref = createRef<HTMLInputElement>()
+    render(<PasswordInput label="Senha" ref={ref} />)
+    expect(ref.current).toBeInstanceOf(HTMLInputElement)
   })
 })

@@ -1,3 +1,4 @@
+import { createRef } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
@@ -26,5 +27,11 @@ describe('Input', () => {
   it('marca o campo como inválido para leitores de tela quando há erro', () => {
     render(<Input label="E-mail" error="E-mail obrigatório." />)
     expect(screen.getByLabelText('E-mail')).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('encaminha a ref para o elemento input (necessário para react-hook-form)', () => {
+    const ref = createRef<HTMLInputElement>()
+    render(<Input label="E-mail" ref={ref} />)
+    expect(ref.current).toBeInstanceOf(HTMLInputElement)
   })
 })
