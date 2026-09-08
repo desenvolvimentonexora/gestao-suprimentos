@@ -1,8 +1,13 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { AppRoot } from './app/AppRoot'
+
+const queryClient = new QueryClient()
+
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-ink-muted">Gestão de Suprimentos — em construção.</p>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <AppRoot />
+    </QueryClientProvider>
   )
 }
 
