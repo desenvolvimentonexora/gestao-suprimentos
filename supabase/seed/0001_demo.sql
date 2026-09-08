@@ -10,7 +10,7 @@ values (
   'construtora-beta',
   'https://hvtcmpzfqcvbyiehkgbk.supabase.co',
   'sb_publishable_j7_rMeHIv5eS1PREVxXdkA_jADKF6FP',
-  array['units', 'suppliers', 'requests']
+  array['requests', 'quotations', 'approvals', 'units', 'suppliers']
 )
 on conflict (id) do nothing;
 
