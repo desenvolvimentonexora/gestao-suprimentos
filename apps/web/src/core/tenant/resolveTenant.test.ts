@@ -4,6 +4,7 @@ import type { TenantRow } from './types'
 
 const tenantRow: TenantRow = {
   id: 'tenant-1',
+  name: 'Construtora ABC',
   subdomain: 'construtora-abc',
   supabaseUrl: 'https://hvtcmpzfqcvbyiehkgbk.supabase.co',
   supabaseAnonKey: 'anon-key',
@@ -16,6 +17,7 @@ describe('resolveTenant', () => {
 
     expect(config).toEqual({
       tenantId: 'tenant-1',
+      name: 'Construtora ABC',
       supabaseUrl: 'https://hvtcmpzfqcvbyiehkgbk.supabase.co',
       supabaseAnonKey: 'anon-key',
       modules: ['requests', 'suppliers'],

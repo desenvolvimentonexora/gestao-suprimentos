@@ -20,6 +20,7 @@ export async function resolveTenant(
 
   return {
     tenantId: row.id,
+    name: row.name,
     supabaseUrl: row.supabaseUrl,
     supabaseAnonKey: row.supabaseAnonKey,
     modules: row.licensedModules,

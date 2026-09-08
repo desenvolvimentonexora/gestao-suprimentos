@@ -6,7 +6,7 @@ export async function fetchTenantRow(subdomain: string | null): Promise<TenantRo
 
   const { data, error } = await supabase
     .from('tenants')
-    .select('id, subdomain, supabase_url, supabase_anon_key, licensed_modules')
+    .select('id, name, subdomain, supabase_url, supabase_anon_key, licensed_modules')
     .eq('subdomain', subdomain)
     .is('deleted_at', null)
     .maybeSingle()
@@ -16,6 +16,7 @@ export async function fetchTenantRow(subdomain: string | null): Promise<TenantRo
 
   return {
     id: data.id,
+    name: data.name,
     subdomain: data.subdomain,
     supabaseUrl: data.supabase_url,
     supabaseAnonKey: data.supabase_anon_key,

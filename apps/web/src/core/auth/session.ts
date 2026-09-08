@@ -16,6 +16,11 @@ export async function signOut(): Promise<void> {
   await supabase.auth.signOut()
 }
 
+export async function resetPasswordForEmail(email: string): Promise<{ errorMessage: string | null }> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email)
+  return { errorMessage: mapAuthErrorMessage(error) }
+}
+
 export async function getSession(): Promise<Session | null> {
   const { data } = await supabase.auth.getSession()
   return data.session

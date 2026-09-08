@@ -6,7 +6,9 @@ import type { TenantConfig } from './types'
 let cachedTenant: Promise<TenantConfig> | null = null
 
 export function getTenant(): Promise<TenantConfig> {
-  cachedTenant ??= resolveTenant(extractSubdomain(window.location.hostname), fetchTenantRow)
+  const subdomain =
+    extractSubdomain(window.location.hostname) ?? import.meta.env.VITE_DEV_TENANT_SUBDOMAIN ?? null
+  cachedTenant ??= resolveTenant(subdomain, fetchTenantRow)
   return cachedTenant
 }
 
