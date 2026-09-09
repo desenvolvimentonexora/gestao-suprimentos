@@ -122,38 +122,39 @@ Fases posteriores (entregas, notas fiscais, concorrência, dashboard, RH, logís
 
 ## 7. Direção visual (Fase 1)
 
-O cliente enviou como referência uma home com doze cards idênticos em grade, ícone à esquerda, selo "BETA/DISPONÍVEL" no canto e fundo com gradiente roxo. Não reproduzir esse layout. É o padrão genérico de painel e não distingue o produto. A direção abaixo é a decisão de design; seguir exatamente.
+**Histórico:** a versão original desta seção pedia uma home discreta ("mesa de trabalho calma", sem gradiente, sem selo colorido), rejeitando de propósito uma referência do cliente com cards em grade e gradiente. Essa decisão foi revista: o cliente quer fidelidade ao layout do sistema anterior dele (grade de cards, saudação centralizada, degradê, badges de status), trocando só a paleta (era vermelho/bordô, agora preto + verde Nexora). Isso vale **para as telas de navegação** — Login, Home, hubs de setor como Suprimentos. Para telas de trabalho de fato (listagens, formulários, comparação de cotações — a partir da Fase 3), a lógica "mesa de trabalho calma" continua valendo: sem degradê, bordas finas em vez de cor, sem selo decorativo fora do que já é catálogo de produto (`StatusBadge`).
 
-**Sensação buscada:** ferramenta de trabalho séria e calma, que um comprador usa oito horas por dia. Menos "vitrine de módulos", mais "mesa de trabalho". Referência de tom: sistemas financeiros bem feitos, não dashboards de marketing.
-
-**Tema (valores padrão, sobrescritos pela configuração do cliente):**
-- `--color-bg`: #F7F6F2 (fundo quente e neutro, não branco puro)
+**Tema (valores padrão, sobrescritos por `settings.theme` e `settings.brand` do tenant):**
+- `--color-bg`: #F4F5F4
 - `--color-surface`: #FFFFFF
-- `--color-ink`: #1C1F26 (texto principal)
-- `--color-ink-muted`: #5D6470
-- `--color-primary`: #1F3A5F (vem da config do cliente)
-- `--color-accent`: #B8860B (um só acento, usado com parcimônia: foco, estado ativo, alertas de prazo)
-- `--color-line`: #E3E1DA
-- Sem gradientes decorativos. Sem sombras suaves idênticas em tudo. Bordas de 1px em `--color-line` para separar; sombra apenas em elementos flutuantes (menus, modais).
+- `--color-ink`: #141414 · `--color-ink-muted`: #5C645F
+- `--color-primary`: #3A7769 (verde Nexora, vem da config)
+- `--color-primary-dark`: #0E0E0E (ponta escura dos degradês)
+- `--color-on-primary`: #FFFFFF (texto sobre fundo `primary`/degradê)
+- `--color-accent`: #B45309 · `--color-line`: #E2E5E3
+- `--color-badge-available` / `--color-badge-beta` / `--color-badge-soon`: #3A7769 / #B45309 / #8A8F8C
+- `settings.brand`: `{ name, tagline, logoUrl }` — nome e frase da tela de login, logo (hoje um SVG placeholder em `apps/web/public/assets/`).
+- Cards e formulários: bordas de 1px em `--color-line`, sombra só no hover de card (não em repouso). Degradê é aceito nas telas de navegação, não nas telas de trabalho.
+- Nenhum componente usa hex direto — sempre `var(--color-*)`, alimentado pelo tema da config.
 
-**Tipografia:** uma família só, sans humanista com boa legibilidade em tabelas (Inter ou IBM Plex Sans, carregada localmente). Escala: 13/14 corpo, 16 subtítulo, 22 título de página, 32 saudação. Peso 400 corpo, 500 rótulos, 600 títulos. Sem caixa alta em rótulos. Sem eyebrow labels.
+**Tipografia:** mesma família (Inter), mesma escala. Rótulos do formulário de login em caixa alta pequena via classe (`labelClassName` do `Input`/`PasswordInput`) — nunca texto literalmente maiúsculo, para não quebrar leitor de tela que soletra letra por letra.
 
 **Login:**
-- Tela dividida: à esquerda um painel na cor primária do cliente com o logo e uma frase curta em sentença ("Requisições, cotações e aprovações em um só lugar."); à direita o formulário, alinhado à esquerda, máximo 400px de largura.
-- Campos com rótulo acima, não placeholder como rótulo. Botão principal "Entrar". Link "Esqueci minha senha" abaixo do botão, discreto.
-- Erro de autenticação aparece acima do botão, em texto, sem modal.
-- Em telas estreitas, o painel esquerdo vira uma faixa superior com o logo.
+- Painel esquerdo: degradê de `--color-primary-dark` a `--color-primary` (baixo para cima), logo (`brand.logoUrl`) no topo, `brand.tagline` no meio, ilustração de skyline (placeholder) na base. Vira faixa superior compacta abaixo de ~720px.
+- Painel direito, fundo `--color-bg`, formulário até 380px: "Bem-vindo 👋", "Faça login para continuar", campos com rótulo pequeno em caixa alta, botão "ENTRAR" em caixa alta e largura total. Erro de autenticação em texto acima do botão, sem modal. "Esqueci minha senha" discreto abaixo.
 
-**Home:**
-- Barra superior fina: logo do cliente à esquerda, busca rápida no centro (atalho `/`), área/setor atual e menu do usuário à direita.
-- Saudação em uma linha, sem emoji: "Bom dia, Marcelo." Abaixo, uma linha em `--color-ink-muted` com a data por extenso.
-- Os módulos são apresentados como **uma lista em duas colunas agrupada por área de trabalho** (Compras, Cadastros, Administração), não como grade de cards iguais. Cada item: ícone pequeno à esquerda, nome em 500, descrição de uma linha em muted. Hover: fundo `--color-bg`, sem elevação. Item indisponível por licença aparece desabilitado com texto "não contratado".
-- "Beta" é um texto pequeno ao lado do nome, não um selo colorido.
-- Acima da lista, uma faixa de trabalho pendente quando houver dados: "3 requisições vencem hoje · 2 aprovações aguardando você". Cada frase é um link. Na Fase 1 esta faixa fica oculta se não houver dados.
-- Sem "Sair da conta" no centro da página; sair fica no menu do usuário.
-- Motion: nenhum efeito de entrada. Transição de 120ms apenas em hover e abertura de menus. Respeitar `prefers-reduced-motion`.
+**Home (setores):**
+- Fundo em degradê de `--color-primary-dark` (topo) a `--color-primary` (base), tela cheia.
+- Saudação centralizada "Bom dia/Boa tarde/Boa noite, {nome} 👋" em `--color-on-primary`.
+- Grade de `components/ModuleCard.tsx` via `components/ModuleGrid.tsx` — 4 colunas largas, 2 tablet, 1 mobile. Conteúdo dos cards (setores: Suprimentos, Engenharia, RH...) é dado de produto em `modules/registry.ts` (`sectorRegistry`), não vocabulário por cliente.
+- `components/StatusBadge.tsx` no canto de cada card: DISPONÍVEL / BETA / EM BREVE. "Em breve" = opacidade reduzida, não clicável (`aria-disabled`). Os demais são clicáveis; só o módulo com `route` definido no registro navega de verdade — os outros mostram "Módulo ainda não disponível" ao clicar.
+- "↩ Sair da conta" centralizado abaixo da grade.
 
-Antes de codar a Fase 1, produzir um wireframe em texto (ASCII) do login e da home no PR e validar contra esta seção.
+**Suprimentos (`/suprimentos`, primeiro hub de setor construído):**
+- Mesmo fundo em degradê. Barra com busca (visual por enquanto, sem lógica) à esquerda, saudação centralizada, "← Setores" à direita (volta para `/`).
+- Mesma grade de `ModuleCard`, conteúdo em `modules/registry.ts` (`suprimentosRegistry`). Só "Agenda de Fornecedores" navega (para um placeholder "em construção" até a Fase 2 implementar de verdade); os demais mostram a mesma mensagem de indisponibilidade.
+
+Ao adicionar um novo setor ou ferramenta, editar `modules/registry.ts` — nunca hardcodar card fora dali. Esse conteúdo (nomes, descrições, ordem) é do produto Nexora, igual entre tenants; o que muda por configuração é só tema e marca (`settings.theme`, `settings.brand`).
 
 ## 8. Convenções de código
 
