@@ -4,5 +4,5 @@ export function getGreeting(fullName: string, now: Date = new Date()): string {
 
   const period = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 
-  return `${period}, ${firstName}.`
+  return `${period}, ${firstName} 👋`
 }

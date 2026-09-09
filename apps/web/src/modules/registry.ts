@@ -1,68 +1,195 @@
-import { CheckSquare, FileText, Handshake, MessageSquare, Settings, Warehouse } from 'lucide-react'
-import type { ModuleDefinition } from './types'
+import {
+  Banknote,
+  BarChart3,
+  BookUser,
+  Building,
+  Building2,
+  CalendarClock,
+  Coins,
+  FileText,
+  Handshake,
+  Home as HomeIcon,
+  Landmark,
+  LineChart,
+  Megaphone,
+  Monitor,
+  Package,
+  Search,
+  Send,
+  Target,
+  Truck,
+  Users,
+  Wrench,
+  type LucideIcon,
+} from 'lucide-react'
+import type { ModuleStatus } from '../components'
 
-export const moduleRegistry: ModuleDefinition[] = [
+export interface ModuleCardData {
+  id: string
+  label: string
+  description: string
+  icon: LucideIcon
+  status: ModuleStatus
+  /** Presente só nos módulos que já navegam de verdade nesta fase. */
+  route?: string
+}
+
+// Setores exibidos na Home. Conteúdo do produto (não vocabulário por
+// cliente): nomes, descrições e ordem vêm do sistema de referência do
+// cliente, fiéis ao pedido — só "Suprimentos" navega nesta fase.
+export const sectorRegistry: ModuleCardData[] = [
   {
-    id: 'requests',
-    label: 'Requisições',
-    description: 'Criar e acompanhar pedidos de compra',
-    icon: FileText,
-    route: '/requests',
-    workspace: 'Compras',
-    permissions: [],
+    id: 'suprimentos',
+    label: 'Suprimentos',
+    description: 'Requisições, cotações, comparação de orçamentos e fornecedores',
+    icon: Package,
+    status: 'disponivel',
+    route: '/suprimentos',
+  },
+  {
+    id: 'engenharia',
+    label: 'Engenharia',
+    description: 'Cotações, compras, logística e gestão de obras',
+    icon: HomeIcon,
+    status: 'disponivel',
+  },
+  {
+    id: 'recursos-humanos',
+    label: 'Recursos Humanos',
+    description: 'Requisição de pessoal, movimentação e comunicado de férias',
+    icon: Users,
     status: 'beta',
   },
   {
-    id: 'quotations',
-    label: 'Cotações',
-    description: 'Comparar propostas de fornecedores',
-    icon: MessageSquare,
-    route: '/quotations',
-    workspace: 'Compras',
-    permissions: [],
+    id: 'arquitetura',
+    label: 'Arquitetura',
+    description: 'Solicitações de cotação de Decoração e Área Comum',
+    icon: Landmark,
     status: 'beta',
   },
   {
-    id: 'approvals',
-    label: 'Aprovações',
-    description: 'Fila de aprovações pendentes',
-    icon: CheckSquare,
-    route: '/approvals',
-    workspace: 'Compras',
-    permissions: [],
+    id: 'serralheria',
+    label: 'Serralheria',
+    description: 'EPI, ferramentas e controle de estoque da serralheria',
+    icon: Wrench,
     status: 'beta',
   },
   {
-    id: 'units',
-    label: 'Unidades',
-    description: 'Obras, lojas ou fábricas',
-    icon: Warehouse,
-    route: '/units',
-    workspace: 'Cadastros',
-    permissions: [],
-    status: 'beta',
+    id: 'financeiro',
+    label: 'Financeiro',
+    description: 'Gestão financeira e controle de pagamentos',
+    icon: Banknote,
+    status: 'em-breve',
   },
   {
-    id: 'suppliers',
-    label: 'Fornecedores',
-    description: 'Categorias, CNPJs e contatos',
-    icon: Handshake,
-    route: '/suppliers',
-    workspace: 'Cadastros',
-    permissions: [],
-    status: 'beta',
+    id: 'tecnologia-da-informacao',
+    label: 'Tecnologia da Informação',
+    description: 'Soluções e suporte de tecnologia da informação',
+    icon: Monitor,
+    status: 'em-breve',
   },
   {
-    id: 'admin',
-    label: 'Configurações',
-    description: 'Tema, papéis, campos e módulos',
-    icon: Settings,
-    route: '/admin',
-    workspace: 'Administração',
-    permissions: [],
-    status: 'beta',
+    id: 'comercial',
+    label: 'Comercial',
+    description: 'Gestão comercial e relacionamento com clientes',
+    icon: Building2,
+    status: 'em-breve',
+  },
+  {
+    id: 'marketing',
+    label: 'Marketing',
+    description: 'Campanhas e comunicação institucional',
+    icon: Megaphone,
+    status: 'em-breve',
   },
 ]
 
-export { getModuleListItems } from './getModuleListItems'
-export type { ModuleDefinition, ModuleListItem } from './types'
+// Ferramentas exibidas dentro do setor Suprimentos (/suprimentos).
+// Só "Agenda de Fornecedores" navega para uma página real nesta fase.
+export const suprimentosRegistry: ModuleCardData[] = [
+  {
+    id: 'agenda-fornecedores',
+    label: 'Agenda de Fornecedores',
+    description: 'Cadastre e gerencie fornecedores por insumo',
+    icon: BookUser,
+    status: 'disponivel',
+    route: '/suprimentos/agenda-fornecedores',
+  },
+  {
+    id: 'analise-solicitacoes',
+    label: 'Análise de Solicitações',
+    description: 'Avalie prazos e libere SOLs do dia pro Disparo',
+    icon: Search,
+    status: 'beta',
+  },
+  {
+    id: 'disparo-solicitacoes',
+    label: 'Disparo de Solicitações',
+    description: 'Importe o Excel diário e dispare e-mails de cotação',
+    icon: Send,
+    status: 'disponivel',
+  },
+  {
+    id: 'em-negociacao',
+    label: 'Em Negociação',
+    description: 'SOLs com 3 orçamentos prontas para negociar e equalizar',
+    icon: Handshake,
+    status: 'disponivel',
+  },
+  {
+    id: 'equalizacao-orcamentos',
+    label: 'Equalização de Orçamentos',
+    description: 'Compare cotações e gere pedidos de compra',
+    icon: BarChart3,
+    status: 'disponivel',
+  },
+  {
+    id: 'cobrador-entregas',
+    label: 'Cobrador de Entregas',
+    description: 'Calendário de pedidos de compra por obra',
+    icon: CalendarClock,
+    status: 'beta',
+  },
+  {
+    id: 'logistica-interna',
+    label: 'Logística Interna',
+    description: 'Solicitações de transporte e rotas',
+    icon: Truck,
+    status: 'disponivel',
+  },
+  {
+    id: 'dashboard-interativo',
+    label: 'Dashboard Interativo',
+    description: 'KPIs e métricas em tempo real',
+    icon: LineChart,
+    status: 'beta',
+  },
+  {
+    id: 'leitor-nota-fiscal',
+    label: 'Leitor de Nota Fiscal',
+    description: 'Leia a NF, identifique itens e prepare o pedido',
+    icon: FileText,
+    status: 'beta',
+  },
+  {
+    id: 'dados-cadastrais-obras',
+    label: 'Dados Cadastrais Obras',
+    description: 'Central com as informações e documentações de todas as obras',
+    icon: Building,
+    status: 'disponivel',
+  },
+  {
+    id: 'concorrencia-rfq-rfp',
+    label: 'Concorrência (RFQ/RFP)',
+    description: 'Cotação de listas de insumos com fornecedores',
+    icon: Coins,
+    status: 'beta',
+  },
+  {
+    id: 'projeto-okr',
+    label: 'Projeto OKR',
+    description: 'Objetivos e Resultados-Chave — quadro estratégico colaborativo',
+    icon: Target,
+    status: 'beta',
+  },
+]

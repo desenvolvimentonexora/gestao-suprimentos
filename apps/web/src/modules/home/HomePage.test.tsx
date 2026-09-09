@@ -1,87 +1,48 @@
-import { render, screen, within } from '@testing-library/react'
-import { FileText } from 'lucide-react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { HomePage } from './HomePage'
-import type { ModuleDefinition } from '../types'
 
-function buildModule(overrides: Partial<ModuleDefinition>): ModuleDefinition {
-  return {
-    id: 'requests',
-    label: 'Requisições',
-    description: 'Criar e acompanhar pedidos de compra',
-    icon: FileText,
-    route: '/requests',
-    workspace: 'Compras',
-    permissions: [],
-    status: 'beta',
-    ...overrides,
-  }
-}
-
-const modules: ModuleDefinition[] = [
-  buildModule({ id: 'requests', workspace: 'Compras', label: 'Requisições' }),
-  buildModule({ id: 'units', workspace: 'Cadastros', label: 'Unidades' }),
-  buildModule({ id: 'admin', workspace: 'Administração', label: 'Configurações' }),
-]
-
-function renderHome(props: React.ComponentProps<typeof HomePage>) {
+function renderHome(now = new Date('2026-09-08T09:00:00')) {
   return render(
     <MemoryRouter>
-      <HomePage {...props} />
+      <HomePage fullName="Marcelo Souza" onSignOut={vi.fn()} now={now} />
     </MemoryRouter>,
   )
 }
 
 describe('HomePage', () => {
-  it('exibe a saudação com o nome do usuário e a data por extenso', () => {
-    renderHome({
-      fullName: 'Marcelo Souza',
-      now: new Date('2026-09-08T09:00:00'),
-      modules,
-      licensedModules: ['requests', 'units'],
-      grantedPermissions: [],
-    })
-
-    expect(screen.getByText('Bom dia, Marcelo.')).toBeInTheDocument()
-    expect(screen.getByText(/de setembro de 2026/)).toBeInTheDocument()
+  it('exibe a saudação com o nome do usuário', () => {
+    renderHome()
+    expect(screen.getByText('Bom dia, Marcelo 👋')).toBeInTheDocument()
   })
 
-  it('agrupa os módulos por área de trabalho', () => {
-    renderHome({
-      fullName: 'Marcelo Souza',
-      now: new Date('2026-09-08T09:00:00'),
-      modules,
-      licensedModules: ['requests', 'units'],
-      grantedPermissions: [],
-    })
-
-    const compras = screen.getByRole('heading', { name: 'Compras' }).closest('section')
-    expect(compras).not.toBeNull()
-    expect(within(compras as HTMLElement).getByText('Requisições')).toBeInTheDocument()
+  it('lista todos os setores do registro', () => {
+    renderHome()
+    expect(screen.getByText('Suprimentos')).toBeInTheDocument()
+    expect(screen.getByText('Engenharia')).toBeInTheDocument()
+    expect(screen.getByText('Marketing')).toBeInTheDocument()
   })
 
-  it('marca módulo não licenciado como indisponível', () => {
-    renderHome({
-      fullName: 'Marcelo Souza',
-      now: new Date('2026-09-08T09:00:00'),
-      modules,
-      licensedModules: ['requests', 'units'],
-      grantedPermissions: [],
-    })
-
-    expect(screen.getByText('não contratado')).toBeInTheDocument()
+  it('o card Suprimentos navega para /suprimentos', () => {
+    renderHome()
+    expect(screen.getByRole('link', { name: /Suprimentos/ })).toHaveAttribute(
+      'href',
+      '/suprimentos',
+    )
   })
 
-  it('mostra "Beta" ao lado de módulos em beta', () => {
-    renderHome({
-      fullName: 'Marcelo Souza',
-      now: new Date('2026-09-08T09:00:00'),
-      modules,
-      licensedModules: ['requests', 'units'],
-      grantedPermissions: [],
-    })
+  it('chama onSignOut ao clicar em sair da conta', async () => {
+    const onSignOut = vi.fn()
+    render(
+      <MemoryRouter>
+        <HomePage fullName="Marcelo Souza" onSignOut={onSignOut} />
+      </MemoryRouter>,
+    )
 
-    expect(screen.getAllByText('Beta').length).toBeGreaterThan(0)
+    await userEvent.click(screen.getByRole('button', { name: /Sair da conta/ }))
+
+    expect(onSignOut).toHaveBeenCalledTimes(1)
   })
 })
