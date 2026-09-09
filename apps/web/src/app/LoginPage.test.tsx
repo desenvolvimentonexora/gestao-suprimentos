@@ -9,22 +9,27 @@ vi.mock('../core/auth', () => ({
   resetPasswordForEmail: vi.fn(),
 }))
 
+const brand = {
+  name: 'Nexora',
+  tagline: 'Sistema de Gestão Integrado',
+  logoUrl: '/assets/logo-nexora.svg',
+}
+
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.mocked(auth.signInWithPassword).mockReset()
     vi.mocked(auth.resetPasswordForEmail).mockReset()
   })
 
-  it('mostra o nome do tenant e a frase de apresentação', () => {
-    render(<LoginPage tenantName="Construtora Beta" onLoginSuccess={vi.fn()} />)
-    expect(screen.getByText('Construtora Beta')).toBeInTheDocument()
-    expect(
-      screen.getByText('Requisições, cotações e aprovações em um só lugar.'),
-    ).toBeInTheDocument()
+  it('mostra a tagline da marca e as boas-vindas', () => {
+    render(<LoginPage brand={brand} onLoginSuccess={vi.fn()} />)
+    expect(screen.getByText('Sistema de Gestão Integrado')).toBeInTheDocument()
+    expect(screen.getByText('Bem-vindo 👋')).toBeInTheDocument()
+    expect(screen.getByText('Faça login para continuar')).toBeInTheDocument()
   })
 
   it('exibe erros de validação ao enviar o formulário vazio', async () => {
-    render(<LoginPage tenantName="Construtora Beta" onLoginSuccess={vi.fn()} />)
+    render(<LoginPage brand={brand} onLoginSuccess={vi.fn()} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Entrar' }))
 
@@ -39,7 +44,7 @@ describe('LoginPage', () => {
       errorMessage: null,
     })
     const onLoginSuccess = vi.fn()
-    render(<LoginPage tenantName="Construtora Beta" onLoginSuccess={onLoginSuccess} />)
+    render(<LoginPage brand={brand} onLoginSuccess={onLoginSuccess} />)
 
     await userEvent.type(screen.getByLabelText('E-mail'), 'admin@nexora.com')
     await userEvent.type(screen.getByLabelText('Senha'), 'segredo123')
@@ -54,7 +59,7 @@ describe('LoginPage', () => {
       session: null,
       errorMessage: 'E-mail ou senha incorretos.',
     })
-    render(<LoginPage tenantName="Construtora Beta" onLoginSuccess={vi.fn()} />)
+    render(<LoginPage brand={brand} onLoginSuccess={vi.fn()} />)
 
     await userEvent.type(screen.getByLabelText('E-mail'), 'admin@nexora.com')
     await userEvent.type(screen.getByLabelText('Senha'), 'errada')
@@ -65,15 +70,13 @@ describe('LoginPage', () => {
 
   it('alterna para o formulário de redefinição de senha e envia o e-mail', async () => {
     vi.mocked(auth.resetPasswordForEmail).mockResolvedValue({ errorMessage: null })
-    render(<LoginPage tenantName="Construtora Beta" onLoginSuccess={vi.fn()} />)
+    render(<LoginPage brand={brand} onLoginSuccess={vi.fn()} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Esqueci minha senha' }))
     await userEvent.type(screen.getByLabelText('E-mail'), 'admin@nexora.com')
     await userEvent.click(screen.getByRole('button', { name: 'Enviar link de redefinição' }))
 
     expect(auth.resetPasswordForEmail).toHaveBeenCalledWith('admin@nexora.com')
-    expect(
-      await screen.findByText(/enviamos um link de redefinição/i),
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/enviamos um link de redefinição/i)).toBeInTheDocument()
   })
 })

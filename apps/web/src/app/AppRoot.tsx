@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { Spinner } from '../components'
 import { fetchCurrentUserProfile, getSession, onAuthStateChange, signOut } from '../core/auth'
-import { loadSettings } from '../core/config'
+import { loadSettings, type Brand } from '../core/config'
 import { applyTheme } from '../core/theme'
 import { getTenant } from '../core/tenant'
 import { HomePage } from '../modules/home/HomePage'
-import { moduleRegistry } from '../modules/registry'
+import { SuprimentosPage } from '../modules/suprimentos/SuprimentosPage'
 import { AppShell } from './AppShell'
 import { LoginPage } from './LoginPage'
 import { ModulePlaceholderPage } from './ModulePlaceholderPage'
@@ -24,20 +24,36 @@ function useSession() {
   return session
 }
 
-function LoginRoute({ tenantName }: { tenantName: string }) {
+function useSignOutHandler() {
   const navigate = useNavigate()
-  return (
-    <LoginPage tenantName={tenantName} onLoginSuccess={() => navigate('/', { replace: true })} />
-  )
-}
-
-function ProtectedLayout({ tenantName, userName }: { tenantName: string; userName: string }) {
-  const navigate = useNavigate()
-
-  async function handleSignOut() {
+  return async () => {
     await signOut()
     navigate('/login', { replace: true })
   }
+}
+
+function RequireSession({ session, children }: { session: Session | null; children: ReactNode }) {
+  if (!session) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
+
+function LoginRoute({ brand }: { brand: Brand }) {
+  const navigate = useNavigate()
+  return <LoginPage brand={brand} onLoginSuccess={() => navigate('/', { replace: true })} />
+}
+
+function HomeRoute({ fullName }: { fullName: string }) {
+  const handleSignOut = useSignOutHandler()
+  return <HomePage fullName={fullName} onSignOut={handleSignOut} />
+}
+
+function SuprimentosRoute({ fullName }: { fullName: string }) {
+  const handleSignOut = useSignOutHandler()
+  return <SuprimentosPage fullName={fullName} onSignOut={handleSignOut} />
+}
+
+function ProtectedLayout({ tenantName, userName }: { tenantName: string; userName: string }) {
+  const handleSignOut = useSignOutHandler()
 
   return (
     <AppShell tenantName={tenantName} userName={userName} onSignOut={handleSignOut}>
@@ -76,7 +92,11 @@ export function AppRoot() {
     enabled: Boolean(session),
   })
 
-  if (tenantQuery.isPending || (tenant && settingsQuery.isPending) || session === undefined) {
+  if (
+    tenantQuery.isPending ||
+    (tenant && settingsQuery.isPending) ||
+    session === undefined
+  ) {
     return <FullScreenSpinner />
   }
 
@@ -90,43 +110,48 @@ export function AppRoot() {
   }
 
   const userName = profileQuery.data?.fullName ?? ''
+  const brand = settingsQuery.data?.brand ?? {}
 
   return (
     <BrowserRouter>
       <Routes>
         <Route
           path="/login"
+          element={session ? <Navigate to="/" replace /> : <LoginRoute brand={brand} />}
+        />
+        <Route
+          path="/"
           element={
-            session ? <Navigate to="/" replace /> : <LoginRoute tenantName={tenant.name} />
+            <RequireSession session={session ?? null}>
+              <HomeRoute fullName={userName} />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/suprimentos"
+          element={
+            <RequireSession session={session ?? null}>
+              <SuprimentosRoute fullName={userName} />
+            </RequireSession>
           }
         />
         <Route
           element={
-            session ? (
+            <RequireSession session={session ?? null}>
               <ProtectedLayout tenantName={tenant.name} userName={userName} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </RequireSession>
           }
         >
           <Route
-            path="/"
+            path="/suprimentos/agenda-fornecedores"
             element={
-              <HomePage
-                fullName={userName}
-                modules={moduleRegistry}
-                licensedModules={tenant.modules}
-                grantedPermissions={[]}
+              <ModulePlaceholderPage
+                label="Agenda de Fornecedores"
+                backTo="/suprimentos"
+                backLabel="Suprimentos"
               />
             }
           />
-          {moduleRegistry.map((module) => (
-            <Route
-              key={module.id}
-              path={module.route}
-              element={<ModulePlaceholderPage label={module.label} />}
-            />
-          ))}
         </Route>
       </Routes>
     </BrowserRouter>
