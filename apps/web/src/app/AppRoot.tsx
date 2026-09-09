@@ -9,9 +9,9 @@ import { applyTheme } from '../core/theme'
 import { getTenant } from '../core/tenant'
 import { HomePage } from '../modules/home/HomePage'
 import { SuprimentosPage } from '../modules/suprimentos/SuprimentosPage'
+import { AgendaFornecedoresPage } from '../modules/suppliers/AgendaFornecedoresPage'
 import { AppShell } from './AppShell'
 import { LoginPage } from './LoginPage'
-import { ModulePlaceholderPage } from './ModulePlaceholderPage'
 
 function useSession() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
@@ -50,6 +50,10 @@ function HomeRoute({ fullName }: { fullName: string }) {
 function SuprimentosRoute({ fullName }: { fullName: string }) {
   const handleSignOut = useSignOutHandler()
   return <SuprimentosPage fullName={fullName} onSignOut={handleSignOut} />
+}
+
+function AgendaFornecedoresRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
+  return <AgendaFornecedoresPage tenantId={tenantId} userId={userId} />
 }
 
 function ProtectedLayout({ tenantName, userName }: { tenantName: string; userName: string }) {
@@ -145,11 +149,7 @@ export function AppRoot() {
           <Route
             path="/suprimentos/agenda-fornecedores"
             element={
-              <ModulePlaceholderPage
-                label="Agenda de Fornecedores"
-                backTo="/suprimentos"
-                backLabel="Suprimentos"
-              />
+              <AgendaFornecedoresRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />
             }
           />
         </Route>
