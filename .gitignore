@@ -8,6 +8,10 @@ dist-ssr
 # Variáveis de ambiente
 *.local
 
+# Planilhas com dados reais de clientes (nunca commitar)
+*.xlsx
+*.xls
+
 # Supabase CLI
 supabase/.temp
 supabase/.branches
