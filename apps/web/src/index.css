@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #f4f5f4;
+    --color-surface: #ffffff;
+    --color-ink: #141414;
+    --color-ink-muted: #5c645f;
+    --color-primary: #3a7769;
+    --color-primary-dark: #0e0e0e;
+    --color-on-primary: #ffffff;
+    --color-accent: #b45309;
+    --color-line: #e2e5e3;
+    --color-badge-available: #3a7769;
+    --color-badge-beta: #b45309;
+    --color-badge-soon: #8a8f8c;
+  }
+
+  html {
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

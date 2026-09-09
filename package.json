@@ -1,0 +1,18 @@
+{
+  "name": "gestao-suprimentos",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": ["apps/web"],
+  "scripts": {
+    "dev": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspace apps/web",
+    "lint": "npm run lint --workspace apps/web",
+    "typecheck": "npm run typecheck --workspace apps/web",
+    "test": "npm run test --workspace apps/web",
+    "db:migrate": "supabase db push",
+    "db:types": "supabase gen types typescript --linked > apps/web/src/types/database.ts"
+  },
+  "devDependencies": {
+    "supabase": "^2.117.0"
+  }
+}
