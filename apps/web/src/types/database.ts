@@ -215,6 +215,7 @@ export type Database = {
       }
       settings: {
         Row: {
+          brand: Json
           created_at: string
           created_by: string | null
           currency: string
@@ -226,6 +227,7 @@ export type Database = {
           vocabulary: Json
         }
         Insert: {
+          brand?: Json
           created_at?: string
           created_by?: string | null
           currency?: string
@@ -237,6 +239,7 @@ export type Database = {
           vocabulary?: Json
         }
         Update: {
+          brand?: Json
           created_at?: string
           created_by?: string | null
           currency?: string
