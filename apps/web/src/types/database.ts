@@ -89,6 +89,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          icon: string
           id: string
           name: string
           tenant_id: string
@@ -99,6 +100,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          icon?: string
           id?: string
           name: string
           tenant_id: string
@@ -109,6 +111,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          icon?: string
           id?: string
           name?: string
           tenant_id?: string
@@ -647,6 +650,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          icon: string
           id: string
           name: string
           slug: string
@@ -657,6 +661,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          icon?: string
           id?: string
           name: string
           slug: string
@@ -667,6 +672,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          icon?: string
           id?: string
           name?: string
           slug?: string
