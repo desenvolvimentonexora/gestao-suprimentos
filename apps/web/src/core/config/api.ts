@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase'
 export async function fetchSettingsRow(tenantId: string): Promise<unknown | null> {
   const { data, error } = await supabase
     .from('settings')
-    .select('theme, vocabulary, currency')
+    .select('theme, brand, vocabulary, currency')
     .eq('tenant_id', tenantId)
     .is('deleted_at', null)
     .maybeSingle()

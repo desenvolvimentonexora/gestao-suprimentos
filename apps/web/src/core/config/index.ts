@@ -11,4 +11,4 @@ export async function loadSettings(tenantId: string): Promise<Settings> {
 }
 
 export { InvalidSettingsError, parseSettings } from './parseSettings'
-export type { Settings, Theme, Vocabulary } from './settingsSchema'
+export type { Brand, Settings, Theme, Vocabulary } from './settingsSchema'
