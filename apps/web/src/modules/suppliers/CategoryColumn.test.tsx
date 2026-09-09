@@ -5,8 +5,8 @@ import { CategoryColumn } from './CategoryColumn'
 import type { CategoryRow } from './types'
 
 const categories: CategoryRow[] = [
-  { id: 'c1', name: 'Elétrica', slug: 'eletrica' },
-  { id: 'c2', name: 'Hidráulica', slug: 'hidraulica' },
+  { id: 'c1', name: 'Elétrica', slug: 'eletrica', icon: 'zap' },
+  { id: 'c2', name: 'Hidráulica', slug: 'hidraulica', icon: 'droplet' },
 ]
 
 describe('CategoryColumn', () => {
@@ -41,5 +41,13 @@ describe('CategoryColumn', () => {
       'aria-current',
       'true',
     )
+  })
+
+  it('mostra um ícone antes do nome de cada categoria, inclusive "Todos"', () => {
+    render(<CategoryColumn categories={categories} selectedCategoryId={null} onSelect={vi.fn()} />)
+    expect(screen.getByRole('button', { name: 'Todos' }).querySelector('svg')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Elétrica' }).querySelector('svg'),
+    ).toBeInTheDocument()
   })
 })

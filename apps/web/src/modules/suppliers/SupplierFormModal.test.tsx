@@ -5,8 +5,8 @@ import { SupplierFormModal } from './SupplierFormModal'
 import type { MaterialRow } from './types'
 
 const allMaterials: MaterialRow[] = [
-  { id: 'm1', name: 'Cimento', categoryId: 'c1', supplierCount: 3 },
-  { id: 'm2', name: 'Areia', categoryId: 'c1', supplierCount: 1 },
+  { id: 'm1', name: 'Cimento', categoryId: 'c1', supplierCount: 3, icon: 'layers' },
+  { id: 'm2', name: 'Areia', categoryId: 'c1', supplierCount: 1, icon: 'layers' },
 ]
 
 function baseProps() {

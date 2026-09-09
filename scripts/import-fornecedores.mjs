@@ -57,6 +57,31 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
 
 const DEFAULT_CATEGORY = "Geral";
 
+// Mesma lógica de apps/web/src/modules/suppliers/guessMaterialIcon.ts —
+// mantida em sincronia manual (script Node puro, sem build TS).
+const ICON_RULES = [
+  { keywords: ["cabo", "eletric", "fio", "energia", "barramento"], icon: "zap" },
+  { keywords: ["epi", "capacete", "luva", "bota", "protecao"], icon: "shield" },
+  { keywords: ["ferramenta", "chave", "furadeira", "parafus"], icon: "wrench" },
+  { keywords: ["cadeira", "mesa", "movel", "armario"], icon: "armchair" },
+  { keywords: ["churrasqueira", "grelha"], icon: "flame" },
+  { keywords: ["tinta", "gesso", "pintura", "textura"], icon: "paintbrush" },
+  { keywords: ["vidro", "esquadria", "porta", "janela"], icon: "door-open" },
+  { keywords: ["concreto", "cimento", "areia", "brita"], icon: "layers" },
+  { keywords: ["tubo", "hidraulica", "cano", "registro"], icon: "droplet" },
+];
+
+function guessMaterialIcon(name) {
+  const normalized = name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+  for (const rule of ICON_RULES) {
+    if (rule.keywords.some((keyword) => normalized.includes(keyword))) return rule.icon;
+  }
+  return "package";
+}
+
 function splitList(value, sep = ",") {
   if (!value) return [];
   return String(value)
@@ -138,7 +163,12 @@ async function main() {
     }
     const { data: created, error } = await supabase
       .from("materials")
-      .insert({ tenant_id: TENANT_ID, name: materialName, category_id: categoryId })
+      .insert({
+        tenant_id: TENANT_ID,
+        name: materialName,
+        category_id: categoryId,
+        icon: guessMaterialIcon(materialName),
+      })
       .select("id")
       .single();
     if (error) throw error;

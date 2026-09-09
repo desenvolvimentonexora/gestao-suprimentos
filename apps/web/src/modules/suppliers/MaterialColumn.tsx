@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { Button, Input } from '../../components'
 import { filterMaterials } from './filterMaterials'
+import { guessMaterialIcon } from './guessMaterialIcon'
+import { getIconComponent } from './iconMap'
+import { IconPicker } from './IconPicker'
 import type { CategoryRow, MaterialRow } from './types'
 
 export interface MaterialColumnProps {
@@ -10,35 +13,56 @@ export interface MaterialColumnProps {
   selectedCategoryId: string | null
   selectedMaterialId: string | null
   onSelectMaterial: (materialId: string) => void
-  onCreateMaterial: (name: string, categoryId: string) => void
+  onCreateMaterial: (name: string, categoryId: string, icon: string) => void
+  onUpdateMaterial: (materialId: string, name: string, categoryId: string, icon: string) => void
   onDeleteMaterial: (materialId: string) => void
   supplierSearch: string
   onSupplierSearchChange: (value: string) => void
   onOpenReport: () => void
 }
 
-function NewMaterialForm({
+interface MaterialFormValues {
+  name: string
+  categoryId: string
+  icon: string
+}
+
+function MaterialForm({
   categories,
-  onCreate,
+  initialValues,
+  submitLabel,
+  onSubmit,
   onCancel,
 }: {
   categories: CategoryRow[]
-  onCreate: (name: string, categoryId: string) => void
+  initialValues?: MaterialFormValues
+  submitLabel: string
+  onSubmit: (values: MaterialFormValues) => void
   onCancel: () => void
 }) {
-  const [name, setName] = useState('')
-  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? '')
+  const [name, setName] = useState(initialValues?.name ?? '')
+  const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? categories[0]?.id ?? '')
+  const [icon, setIcon] = useState(initialValues?.icon ?? guessMaterialIcon(''))
+  const [iconTouched, setIconTouched] = useState(Boolean(initialValues))
+
+  function handleNameChange(value: string) {
+    setName(value)
+    if (!iconTouched) setIcon(guessMaterialIcon(value))
+  }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!name.trim() || !categoryId) return
-    onCreate(name.trim(), categoryId)
-    setName('')
+    onSubmit({ name: name.trim(), categoryId, icon })
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded border border-line p-3">
-      <Input label="Nome do material" value={name} onChange={(e) => setName(e.target.value)} />
+      <Input
+        label="Nome do material"
+        value={name}
+        onChange={(e) => handleNameChange(e.target.value)}
+      />
       <div className="flex flex-col gap-1">
         <label htmlFor="material-category" className="text-sm font-medium text-ink">
           Categoria
@@ -56,8 +80,15 @@ function NewMaterialForm({
           ))}
         </select>
       </div>
+      <IconPicker
+        value={icon}
+        onChange={(value) => {
+          setIcon(value)
+          setIconTouched(true)
+        }}
+      />
       <div className="flex gap-2">
-        <Button type="submit">Criar material</Button>
+        <Button type="submit">{submitLabel}</Button>
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancelar
         </Button>
@@ -73,6 +104,7 @@ export function MaterialColumn({
   selectedMaterialId,
   onSelectMaterial,
   onCreateMaterial,
+  onUpdateMaterial,
   onDeleteMaterial,
   supplierSearch,
   onSupplierSearchChange,
@@ -80,6 +112,7 @@ export function MaterialColumn({
 }: MaterialColumnProps) {
   const [materialSearch, setMaterialSearch] = useState('')
   const [showNewForm, setShowNewForm] = useState(false)
+  const [editingMaterialId, setEditingMaterialId] = useState<string | null>(null)
 
   const visibleMaterials = filterMaterials(materials, {
     categoryId: selectedCategoryId,
@@ -97,10 +130,11 @@ export function MaterialColumn({
       />
 
       {showNewForm ? (
-        <NewMaterialForm
+        <MaterialForm
           categories={categories}
-          onCreate={(name, categoryId) => {
-            onCreateMaterial(name, categoryId)
+          submitLabel="Criar material"
+          onSubmit={({ name, categoryId, icon }) => {
+            onCreateMaterial(name, categoryId, icon)
             setShowNewForm(false)
           }}
           onCancel={() => setShowNewForm(false)}
@@ -124,31 +158,67 @@ export function MaterialColumn({
       </Button>
 
       <div className="flex flex-col divide-y divide-line">
-        {visibleMaterials.map((material) => (
-          <div
-            key={material.id}
-            className={`group flex items-center justify-between px-2 py-2 ${
-              selectedMaterialId === material.id ? 'bg-bg' : ''
-            }`}
-          >
-            <button
-              type="button"
-              onClick={() => onSelectMaterial(material.id)}
-              className="flex-1 text-left text-sm text-ink hover:text-primary"
+        {visibleMaterials.map((material) => {
+          if (editingMaterialId === material.id) {
+            return (
+              <div key={material.id} className="py-2">
+                <MaterialForm
+                  categories={categories}
+                  initialValues={{
+                    name: material.name,
+                    categoryId: material.categoryId,
+                    icon: material.icon,
+                  }}
+                  submitLabel="Salvar"
+                  onSubmit={({ name, categoryId, icon }) => {
+                    onUpdateMaterial(material.id, name, categoryId, icon)
+                    setEditingMaterialId(null)
+                  }}
+                  onCancel={() => setEditingMaterialId(null)}
+                />
+              </div>
+            )
+          }
+
+          const Icon = getIconComponent(material.icon)
+
+          return (
+            <div
+              key={material.id}
+              className={`group flex items-center justify-between px-2 py-2 ${
+                selectedMaterialId === material.id ? 'bg-bg' : ''
+              }`}
             >
-              {material.name}
-              <span className="ml-2 text-xs text-ink-muted">{material.supplierCount}</span>
-            </button>
-            <button
-              type="button"
-              aria-label={`Excluir ${material.name}`}
-              onClick={() => onDeleteMaterial(material.id)}
-              className="invisible text-ink-muted hover:text-accent group-hover:visible"
-            >
-              <Trash2 size={16} aria-hidden="true" />
-            </button>
-          </div>
-        ))}
+              <button
+                type="button"
+                onClick={() => onSelectMaterial(material.id)}
+                className="flex flex-1 items-center gap-2 text-left text-sm text-ink hover:text-primary"
+              >
+                <Icon size={16} className="shrink-0 text-ink-muted" aria-hidden="true" />
+                {material.name}
+                <span className="text-xs text-ink-muted">{material.supplierCount}</span>
+              </button>
+              <div className="invisible flex items-center gap-2 group-hover:visible">
+                <button
+                  type="button"
+                  aria-label={`Editar ${material.name}`}
+                  onClick={() => setEditingMaterialId(material.id)}
+                  className="text-ink-muted hover:text-primary"
+                >
+                  <Pencil size={16} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Excluir ${material.name}`}
+                  onClick={() => onDeleteMaterial(material.id)}
+                  className="text-ink-muted hover:text-accent"
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

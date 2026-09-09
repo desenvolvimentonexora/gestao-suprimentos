@@ -2,6 +2,7 @@ export interface CategoryRow {
   id: string
   name: string
   slug: string
+  icon: string
 }
 
 export interface MaterialRow {
@@ -9,6 +10,7 @@ export interface MaterialRow {
   name: string
   categoryId: string
   supplierCount: number
+  icon: string
 }
 
 export interface SupplierContactRow {

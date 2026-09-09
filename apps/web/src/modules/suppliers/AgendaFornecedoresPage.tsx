@@ -19,6 +19,7 @@ import {
   useSuppliersByMaterial,
   useToggleFavoriteSupplier,
   useUnits,
+  useUpdateMaterial,
 } from './queries'
 
 const PAGE_SIZE = 20
@@ -42,6 +43,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const categoriesQuery = useCategories()
   const materialsQuery = useMaterials()
   const createMaterial = useCreateMaterial(tenantId)
+  const updateMaterial = useUpdateMaterial()
   const deleteMaterial = useDeleteMaterial()
   const deleteSupplier = useDeleteSupplier()
   const toggleFavorite = useToggleFavoriteSupplier(tenantId, userId)
@@ -87,7 +89,12 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             selectedCategoryId={selectedCategoryId}
             selectedMaterialId={selectedMaterialId}
             onSelectMaterial={selectMaterial}
-            onCreateMaterial={(name, categoryId) => createMaterial.mutate({ name, categoryId })}
+            onCreateMaterial={(name, categoryId, icon) =>
+              createMaterial.mutate({ name, categoryId, icon })
+            }
+            onUpdateMaterial={(materialId, name, categoryId, icon) =>
+              updateMaterial.mutate({ materialId, values: { name, categoryId, icon } })
+            }
             onDeleteMaterial={(materialId) => deleteMaterial.mutate(materialId)}
             supplierSearch={supplierSearch}
             onSupplierSearchChange={(value) => {

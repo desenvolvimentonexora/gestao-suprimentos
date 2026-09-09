@@ -5,7 +5,7 @@ import type { CategoryRow, MaterialRow, SupplierReportRow, SupplierRow } from '.
 export async function fetchCategories(): Promise<CategoryRow[]> {
   const { data, error } = await supabase
     .from('supply_categories')
-    .select('id, name, slug')
+    .select('id, name, slug, icon')
     .is('deleted_at', null)
     .order('name')
 
@@ -16,7 +16,7 @@ export async function fetchCategories(): Promise<CategoryRow[]> {
 export async function fetchMaterials(): Promise<MaterialRow[]> {
   const { data, error } = await supabase
     .from('materials')
-    .select('id, name, category_id, supplier_materials(count)')
+    .select('id, name, category_id, icon, supplier_materials(count)')
     .is('deleted_at', null)
     .order('name')
 
@@ -26,8 +26,20 @@ export async function fetchMaterials(): Promise<MaterialRow[]> {
     id: row.id,
     name: row.name,
     categoryId: row.category_id,
+    icon: row.icon,
     supplierCount: row.supplier_materials[0]?.count ?? 0,
   }))
+}
+
+export async function updateMaterial(
+  materialId: string,
+  values: { name: string; categoryId: string; icon: string },
+): Promise<void> {
+  const { error } = await supabase
+    .from('materials')
+    .update({ name: values.name, category_id: values.categoryId, icon: values.icon })
+    .eq('id', materialId)
+  if (error) throw error
 }
 
 export interface SupplierFilter {
@@ -299,14 +311,21 @@ export async function createMaterial(
   tenantId: string,
   name: string,
   categoryId: string,
+  icon: string,
 ): Promise<MaterialRow> {
   const { data, error } = await supabase
     .from('materials')
-    .insert({ tenant_id: tenantId, name, category_id: categoryId })
-    .select('id, name, category_id')
+    .insert({ tenant_id: tenantId, name, category_id: categoryId, icon })
+    .select('id, name, category_id, icon')
     .single()
 
   if (error) throw error
 
-  return { id: data.id, name: data.name, categoryId: data.category_id, supplierCount: 0 }
+  return {
+    id: data.id,
+    name: data.name,
+    categoryId: data.category_id,
+    icon: data.icon,
+    supplierCount: 0,
+  }
 }

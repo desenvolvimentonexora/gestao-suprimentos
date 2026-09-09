@@ -13,6 +13,7 @@ import {
   fetchSuppliersByMaterial,
   fetchUnits,
   setFavoriteSupplier,
+  updateMaterial,
   updateSupplier,
 } from './api'
 import type { SupplierFormValues } from './SupplierFormModal'
@@ -90,8 +91,25 @@ export function useCreateMaterial(tenantId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ name, categoryId }: { name: string; categoryId: string }) =>
-      createMaterial(tenantId, name, categoryId),
+    mutationFn: ({ name, categoryId, icon }: { name: string; categoryId: string; icon: string }) =>
+      createMaterial(tenantId, name, categoryId, icon),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materials'] })
+    },
+  })
+}
+
+export function useUpdateMaterial() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      materialId,
+      values,
+    }: {
+      materialId: string
+      values: { name: string; categoryId: string; icon: string }
+    }) => updateMaterial(materialId, values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] })
     },
