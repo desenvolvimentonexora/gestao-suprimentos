@@ -3,6 +3,7 @@ import { CategoryColumn } from './CategoryColumn'
 import { MaterialColumn } from './MaterialColumn'
 import { SupplierColumn } from './SupplierColumn'
 import type { SupplierPopupKind } from './SupplierCard'
+import { SupplierPopups, type ActivePopup } from './popups/SupplierPopups'
 import {
   useCategories,
   useCreateMaterial,
@@ -28,6 +29,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [notice, setNotice] = useState<string | null>(null)
+  const [activePopup, setActivePopup] = useState<ActivePopup | null>(null)
 
   const categoriesQuery = useCategories()
   const materialsQuery = useMaterials()
@@ -119,12 +121,23 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             onToggleFavorite={(supplierId) =>
               toggleFavorite.mutate({ supplierId, favorite: !favoriteIds.data?.has(supplierId) })
             }
-            onOpenPopup={(kind: SupplierPopupKind) => showStubNotice(`Pop-up de ${kind}`)}
+            onOpenPopup={(kind: SupplierPopupKind, supplierId) =>
+              setActivePopup({ kind, supplierId })
+            }
             onEditSupplier={() => showStubNotice('Edição de fornecedor')}
             onDeleteSupplier={(supplierId) => deleteSupplier.mutate(supplierId)}
           />
         </div>
       </div>
+
+      <SupplierPopups
+        tenantId={tenantId}
+        activePopup={activePopup}
+        onClose={() => setActivePopup(null)}
+        selectedMaterialId={selectedMaterialId}
+        selectedMaterialName={selectedMaterial?.name ?? null}
+        allMaterials={materialsQuery.data ?? []}
+      />
     </div>
   )
 }
