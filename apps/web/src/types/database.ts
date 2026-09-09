@@ -308,6 +308,54 @@ export type Database = {
           },
         ]
       }
+      supplier_certificates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          file_name: string
+          file_path: string
+          id: string
+          supplier_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          supplier_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          supplier_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_certificates_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_certificates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_contacts: {
         Row: {
           created_at: string
@@ -407,21 +455,67 @@ export type Database = {
           },
         ]
       }
+      supplier_favorites: {
+        Row: {
+          created_at: string
+          supplier_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          supplier_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          supplier_id?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_favorites_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_favorites_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_materials: {
         Row: {
           created_at: string
+          lead_time_days: number | null
           material_id: string
           supplier_id: string
           tenant_id: string
         }
         Insert: {
           created_at?: string
+          lead_time_days?: number | null
           material_id: string
           supplier_id: string
           tenant_id: string
         }
         Update: {
           created_at?: string
+          lead_time_days?: number | null
           material_id?: string
           supplier_id?: string
           tenant_id?: string
@@ -450,6 +544,54 @@ export type Database = {
           },
         ]
       }
+      supplier_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          rating: number
+          supplier_id: string
+          tenant_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          rating: number
+          supplier_id: string
+          tenant_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          rating?: number
+          supplier_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_reviews_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_reviews_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           city: string | null
@@ -461,6 +603,7 @@ export type Database = {
           notes: string | null
           status: string
           tenant_id: string
+          type: string | null
           updated_at: string
         }
         Insert: {
@@ -473,6 +616,7 @@ export type Database = {
           notes?: string | null
           status?: string
           tenant_id: string
+          type?: string | null
           updated_at?: string
         }
         Update: {
@@ -485,6 +629,7 @@ export type Database = {
           notes?: string | null
           status?: string
           tenant_id?: string
+          type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -573,6 +718,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      units: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "units_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
