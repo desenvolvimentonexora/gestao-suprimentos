@@ -1,16 +1,20 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createMaterial,
+  createSupplier,
   deleteMaterial,
   deleteSupplier,
   fetchCategories,
   fetchFavoriteSupplierIds,
   fetchMaterials,
+  fetchSupplierDetail,
   fetchSupplierEmailsByMaterial,
   fetchSuppliersByMaterial,
   fetchUnits,
   setFavoriteSupplier,
+  updateSupplier,
 } from './api'
+import type { SupplierFormValues } from './SupplierFormModal'
 import type { SupplierFilter } from './api'
 
 export function useCategories() {
@@ -39,6 +43,37 @@ export function useSupplierEmailsByMaterial(materialId: string | null, enabled: 
     queryKey: ['supplier-emails', materialId],
     queryFn: () => fetchSupplierEmailsByMaterial(materialId!),
     enabled: enabled && Boolean(materialId),
+  })
+}
+
+export function useSupplierDetail(supplierId: string | null) {
+  return useQuery({
+    queryKey: ['supplier-detail', supplierId],
+    queryFn: () => fetchSupplierDetail(supplierId!),
+    enabled: Boolean(supplierId),
+  })
+}
+
+export function useCreateSupplier(tenantId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (values: SupplierFormValues) => createSupplier(tenantId, values),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers-by-material'] })
+      queryClient.invalidateQueries({ queryKey: ['materials'] })
+    },
+  })
+}
+
+export function useUpdateSupplier(tenantId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ supplierId, values }: { supplierId: string; values: SupplierFormValues }) =>
+      updateSupplier(tenantId, supplierId, values),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers-by-material'] })
+      queryClient.invalidateQueries({ queryKey: ['materials'] })
+    },
   })
 }
 

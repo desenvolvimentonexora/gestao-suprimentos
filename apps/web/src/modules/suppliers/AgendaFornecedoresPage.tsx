@@ -5,6 +5,7 @@ import { SupplierColumn } from './SupplierColumn'
 import type { SupplierPopupKind } from './SupplierCard'
 import { SupplierPopups, type ActivePopup } from './popups/SupplierPopups'
 import { QuoteRequestModal } from './popups/QuoteRequestModal'
+import { SupplierFormContainer, type SupplierFormState } from './SupplierFormContainer'
 import {
   useCategories,
   useCreateMaterial,
@@ -34,6 +35,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [notice, setNotice] = useState<string | null>(null)
   const [activePopup, setActivePopup] = useState<ActivePopup | null>(null)
   const [quoteRequestOpen, setQuoteRequestOpen] = useState(false)
+  const [formState, setFormState] = useState<SupplierFormState | null>(null)
 
   const categoriesQuery = useCategories()
   const materialsQuery = useMaterials()
@@ -123,7 +125,9 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             }}
             availableTypes={[]}
             onRequestQuote={() => setQuoteRequestOpen(true)}
-            onAddSupplier={() => showStubNotice('Cadastro de fornecedor')}
+            onAddSupplier={() =>
+              setFormState({ mode: 'create', defaultMaterialId: selectedMaterialId ?? undefined })
+            }
             favoriteIds={favoriteIds.data ?? new Set()}
             onToggleFavorite={(supplierId) =>
               toggleFavorite.mutate({ supplierId, favorite: !favoriteIds.data?.has(supplierId) })
@@ -131,7 +135,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             onOpenPopup={(kind: SupplierPopupKind, supplierId) =>
               setActivePopup({ kind, supplierId })
             }
-            onEditSupplier={() => showStubNotice('Edição de fornecedor')}
+            onEditSupplier={(supplierId) => setFormState({ mode: 'edit', supplierId })}
             onDeleteSupplier={(supplierId) => deleteSupplier.mutate(supplierId)}
           />
         </div>
@@ -152,6 +156,13 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         materialName={selectedMaterial?.name ?? ''}
         suppliersWithEmail={supplierEmailsQuery.data ?? []}
         units={unitsQuery.data ?? []}
+      />
+
+      <SupplierFormContainer
+        tenantId={tenantId}
+        state={formState}
+        onClose={() => setFormState(null)}
+        allMaterials={materialsQuery.data ?? []}
       />
     </div>
   )

@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import type { SupplierFormValues } from './SupplierFormModal'
 import type { CategoryRow, MaterialRow, SupplierRow } from './types'
 
 export async function fetchCategories(): Promise<CategoryRow[]> {
@@ -170,6 +171,108 @@ export async function fetchSupplierEmailsByMaterial(
   return data
     .map((row) => ({ id: row.id, name: row.name, email: row.supplier_contacts[0]?.email ?? null }))
     .filter((row): row is { id: string; name: string; email: string } => Boolean(row.email))
+}
+
+export async function fetchSupplierDetail(supplierId: string): Promise<SupplierFormValues> {
+  const { data, error } = await supabase
+    .from('suppliers')
+    .select(
+      'name, type, city, status, notes, supplier_contacts(name, phone, email), supplier_documents(cnpj), supplier_materials(material_id)',
+    )
+    .eq('id', supplierId)
+    .single()
+
+  if (error) throw error
+
+  return {
+    name: data.name,
+    type: data.type ?? '',
+    city: data.city ?? '',
+    status: data.status as SupplierFormValues['status'],
+    notes: data.notes ?? '',
+    cnpjs: data.supplier_documents.map((document) => document.cnpj),
+    contactName: data.supplier_contacts[0]?.name ?? '',
+    contactPhone: data.supplier_contacts[0]?.phone ?? '',
+    contactEmail: data.supplier_contacts[0]?.email ?? '',
+    materialIds: data.supplier_materials.map((link) => link.material_id),
+  }
+}
+
+export async function createSupplier(
+  tenantId: string,
+  values: SupplierFormValues,
+): Promise<string> {
+  const { data, error } = await supabase
+    .from('suppliers')
+    .insert({
+      tenant_id: tenantId,
+      name: values.name,
+      type: values.type || null,
+      city: values.city || null,
+      status: values.status,
+      notes: values.notes || null,
+    })
+    .select('id')
+    .single()
+  if (error) throw error
+
+  const supplierId = data.id
+  await writeSupplierRelations(tenantId, supplierId, values)
+  return supplierId
+}
+
+export async function updateSupplier(
+  tenantId: string,
+  supplierId: string,
+  values: SupplierFormValues,
+): Promise<void> {
+  const { error } = await supabase
+    .from('suppliers')
+    .update({
+      name: values.name,
+      type: values.type || null,
+      city: values.city || null,
+      status: values.status,
+      notes: values.notes || null,
+    })
+    .eq('id', supplierId)
+  if (error) throw error
+
+  await supabase.from('supplier_contacts').delete().eq('supplier_id', supplierId)
+  await supabase.from('supplier_documents').delete().eq('supplier_id', supplierId)
+  await supabase.from('supplier_materials').delete().eq('supplier_id', supplierId)
+  await writeSupplierRelations(tenantId, supplierId, values)
+}
+
+async function writeSupplierRelations(
+  tenantId: string,
+  supplierId: string,
+  values: SupplierFormValues,
+): Promise<void> {
+  if (values.contactName || values.contactPhone || values.contactEmail) {
+    const { error } = await supabase.from('supplier_contacts').insert({
+      tenant_id: tenantId,
+      supplier_id: supplierId,
+      name: values.contactName || 'Contato principal',
+      phone: values.contactPhone || null,
+      email: values.contactEmail || null,
+    })
+    if (error) throw error
+  }
+
+  for (const cnpj of values.cnpjs) {
+    const { error } = await supabase
+      .from('supplier_documents')
+      .insert({ tenant_id: tenantId, supplier_id: supplierId, cnpj })
+    if (error) throw error
+  }
+
+  for (const materialId of values.materialIds) {
+    const { error } = await supabase
+      .from('supplier_materials')
+      .insert({ tenant_id: tenantId, supplier_id: supplierId, material_id: materialId })
+    if (error) throw error
+  }
 }
 
 export async function createMaterial(
