@@ -26,3 +26,25 @@ export async function resolveTenant(
     modules: row.licensedModules,
   }
 }
+
+/**
+ * Como no protótipo o hostname público (localhost, domínio da Vercel)
+ * quase nunca é o subdomínio real de um cliente, tenta o subdomínio
+ * extraído da URL e, só se ele não bater com nenhum tenant, cai para
+ * VITE_DEV_TENANT_SUBDOMAIN — sem isso, `<algo>.vercel.app` é lido como
+ * se "algo" fosse um subdomínio de cliente e a busca falha.
+ */
+export async function resolveTenantWithFallback(
+  subdomain: string | null,
+  fallbackSubdomain: string | null | undefined,
+  fetchTenantRow: (subdomain: string | null) => Promise<TenantRow | null>,
+): Promise<TenantConfig> {
+  try {
+    return await resolveTenant(subdomain, fetchTenantRow)
+  } catch (error) {
+    if (error instanceof TenantNotFoundError && fallbackSubdomain && fallbackSubdomain !== subdomain) {
+      return resolveTenant(fallbackSubdomain, fetchTenantRow)
+    }
+    throw error
+  }
+}
