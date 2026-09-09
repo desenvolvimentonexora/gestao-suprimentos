@@ -25,4 +25,9 @@ describe('PasswordInput', () => {
     render(<PasswordInput label="Senha" ref={ref} />)
     expect(ref.current).toBeInstanceOf(HTMLInputElement)
   })
+
+  it('aceita uma classe extra para o rótulo sem alterar o texto exibido', () => {
+    render(<PasswordInput label="Senha" labelClassName="uppercase text-xs" />)
+    expect(screen.getByText('Senha')).toHaveClass('uppercase')
+  })
 })

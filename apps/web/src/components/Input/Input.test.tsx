@@ -34,4 +34,10 @@ describe('Input', () => {
     render(<Input label="E-mail" ref={ref} />)
     expect(ref.current).toBeInstanceOf(HTMLInputElement)
   })
+
+  it('aceita uma classe extra para o rótulo sem alterar o texto exibido', () => {
+    render(<Input label="E-mail" labelClassName="uppercase text-xs" />)
+    const label = screen.getByText('E-mail')
+    expect(label).toHaveClass('uppercase')
+  })
 })

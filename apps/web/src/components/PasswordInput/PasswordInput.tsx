@@ -5,10 +5,14 @@ export interface PasswordInputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label: string
   error?: string
+  labelClassName?: string
 }
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
-  function PasswordInput({ label, error, id, className = '', ...props }, ref) {
+  function PasswordInput(
+    { label, error, id, className = '', labelClassName = '', ...props },
+    ref,
+  ) {
     const [visible, setVisible] = useState(false)
     const generatedId = useId()
     const inputId = id ?? generatedId
@@ -16,7 +20,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
 
     return (
       <div className="flex flex-col gap-1">
-        <label htmlFor={inputId} className="text-sm font-medium text-ink">
+        <label htmlFor={inputId} className={`text-sm font-medium text-ink ${labelClassName}`}>
           {label}
         </label>
         <div className="relative">
