@@ -6,7 +6,9 @@ import {
   fetchCategories,
   fetchFavoriteSupplierIds,
   fetchMaterials,
+  fetchSupplierEmailsByMaterial,
   fetchSuppliersByMaterial,
+  fetchUnits,
   setFavoriteSupplier,
 } from './api'
 import type { SupplierFilter } from './api'
@@ -25,6 +27,18 @@ export function useSuppliersByMaterial(materialId: string | null, filter: Suppli
     queryFn: () => fetchSuppliersByMaterial(materialId!, filter),
     enabled: Boolean(materialId),
     placeholderData: keepPreviousData,
+  })
+}
+
+export function useUnits() {
+  return useQuery({ queryKey: ['units'], queryFn: fetchUnits })
+}
+
+export function useSupplierEmailsByMaterial(materialId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: ['supplier-emails', materialId],
+    queryFn: () => fetchSupplierEmailsByMaterial(materialId!),
+    enabled: enabled && Boolean(materialId),
   })
 }
 

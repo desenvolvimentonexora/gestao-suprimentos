@@ -145,6 +145,33 @@ export async function deleteSupplier(supplierId: string): Promise<void> {
   if (error) throw error
 }
 
+export async function fetchUnits(): Promise<{ id: string; name: string }[]> {
+  const { data, error } = await supabase
+    .from('units')
+    .select('id, name')
+    .is('deleted_at', null)
+    .order('name')
+  if (error) throw error
+  return data
+}
+
+export async function fetchSupplierEmailsByMaterial(
+  materialId: string,
+): Promise<{ id: string; name: string; email: string }[]> {
+  const { data, error } = await supabase
+    .from('suppliers')
+    .select('id, name, supplier_contacts(email), supplier_materials!inner(material_id)')
+    .eq('supplier_materials.material_id', materialId)
+    .is('deleted_at', null)
+    .order('name')
+
+  if (error) throw error
+
+  return data
+    .map((row) => ({ id: row.id, name: row.name, email: row.supplier_contacts[0]?.email ?? null }))
+    .filter((row): row is { id: string; name: string; email: string } => Boolean(row.email))
+}
+
 export async function createMaterial(
   tenantId: string,
   name: string,

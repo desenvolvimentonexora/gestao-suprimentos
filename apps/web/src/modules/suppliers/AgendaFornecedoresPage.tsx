@@ -4,6 +4,7 @@ import { MaterialColumn } from './MaterialColumn'
 import { SupplierColumn } from './SupplierColumn'
 import type { SupplierPopupKind } from './SupplierCard'
 import { SupplierPopups, type ActivePopup } from './popups/SupplierPopups'
+import { QuoteRequestModal } from './popups/QuoteRequestModal'
 import {
   useCategories,
   useCreateMaterial,
@@ -11,8 +12,10 @@ import {
   useDeleteSupplier,
   useFavoriteSupplierIds,
   useMaterials,
+  useSupplierEmailsByMaterial,
   useSuppliersByMaterial,
   useToggleFavoriteSupplier,
+  useUnits,
 } from './queries'
 
 const PAGE_SIZE = 20
@@ -30,6 +33,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [page, setPage] = useState(0)
   const [notice, setNotice] = useState<string | null>(null)
   const [activePopup, setActivePopup] = useState<ActivePopup | null>(null)
+  const [quoteRequestOpen, setQuoteRequestOpen] = useState(false)
 
   const categoriesQuery = useCategories()
   const materialsQuery = useMaterials()
@@ -49,6 +53,9 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
 
   const supplierRows = suppliersQuery.data?.rows ?? []
   const favoriteIds = useFavoriteSupplierIds(supplierRows.map((s) => s.id))
+
+  const unitsQuery = useUnits()
+  const supplierEmailsQuery = useSupplierEmailsByMaterial(selectedMaterialId, quoteRequestOpen)
 
   function selectMaterial(materialId: string) {
     setSelectedMaterialId(materialId)
@@ -115,7 +122,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
               setPage(0)
             }}
             availableTypes={[]}
-            onRequestQuote={() => showStubNotice('Pedir Orçamento')}
+            onRequestQuote={() => setQuoteRequestOpen(true)}
             onAddSupplier={() => showStubNotice('Cadastro de fornecedor')}
             favoriteIds={favoriteIds.data ?? new Set()}
             onToggleFavorite={(supplierId) =>
@@ -137,6 +144,14 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         selectedMaterialId={selectedMaterialId}
         selectedMaterialName={selectedMaterial?.name ?? null}
         allMaterials={materialsQuery.data ?? []}
+      />
+
+      <QuoteRequestModal
+        isOpen={quoteRequestOpen}
+        onClose={() => setQuoteRequestOpen(false)}
+        materialName={selectedMaterial?.name ?? ''}
+        suppliersWithEmail={supplierEmailsQuery.data ?? []}
+        units={unitsQuery.data ?? []}
       />
     </div>
   )
