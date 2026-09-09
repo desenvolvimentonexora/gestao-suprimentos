@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { CategoryColumn } from './CategoryColumn'
 import { MaterialColumn } from './MaterialColumn'
 import { SupplierColumn } from './SupplierColumn'
@@ -71,7 +72,10 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
-      <h1 className="text-2xl font-semibold text-ink">Agenda de Fornecedores</h1>
+      <Link to="/suprimentos" className="text-sm text-ink-muted hover:text-ink">
+        ← Suprimentos
+      </Link>
+      <h1 className="mt-4 text-2xl font-semibold text-ink">Agenda de Fornecedores</h1>
 
       <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:h-[calc(100vh-10rem)] lg:grid-cols-[200px_320px_1fr]">
         <div className="lg:h-full lg:overflow-y-auto">
