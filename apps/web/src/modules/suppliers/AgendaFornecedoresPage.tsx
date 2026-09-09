@@ -6,6 +6,7 @@ import type { SupplierPopupKind } from './SupplierCard'
 import { SupplierPopups, type ActivePopup } from './popups/SupplierPopups'
 import { QuoteRequestModal } from './popups/QuoteRequestModal'
 import { SupplierFormContainer, type SupplierFormState } from './SupplierFormContainer'
+import { ReportModal } from './ReportModal'
 import {
   useCategories,
   useCreateMaterial,
@@ -14,6 +15,7 @@ import {
   useFavoriteSupplierIds,
   useMaterials,
   useSupplierEmailsByMaterial,
+  useSupplierReport,
   useSuppliersByMaterial,
   useToggleFavoriteSupplier,
   useUnits,
@@ -32,10 +34,10 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [supplierSearch, setSupplierSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
   const [page, setPage] = useState(0)
-  const [notice, setNotice] = useState<string | null>(null)
   const [activePopup, setActivePopup] = useState<ActivePopup | null>(null)
   const [quoteRequestOpen, setQuoteRequestOpen] = useState(false)
   const [formState, setFormState] = useState<SupplierFormState | null>(null)
+  const [reportOpen, setReportOpen] = useState(false)
 
   const categoriesQuery = useCategories()
   const materialsQuery = useMaterials()
@@ -56,6 +58,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const supplierRows = suppliersQuery.data?.rows ?? []
   const favoriteIds = useFavoriteSupplierIds(supplierRows.map((s) => s.id))
 
+  const reportQuery = useSupplierReport(reportOpen)
   const unitsQuery = useUnits()
   const supplierEmailsQuery = useSupplierEmailsByMaterial(selectedMaterialId, quoteRequestOpen)
 
@@ -64,19 +67,9 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
     setPage(0)
   }
 
-  function showStubNotice(feature: string) {
-    setNotice(`${feature} — em construção, chega em uma próxima etapa.`)
-  }
-
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
       <h1 className="text-2xl font-semibold text-ink">Agenda de Fornecedores</h1>
-
-      {notice && (
-        <div className="mt-3 rounded border border-line bg-bg px-4 py-2 text-sm text-ink-muted">
-          {notice}
-        </div>
-      )}
 
       <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:h-[calc(100vh-10rem)] lg:grid-cols-[200px_320px_1fr]">
         <div className="lg:h-full lg:overflow-y-auto">
@@ -101,7 +94,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
               setSupplierSearch(value)
               setPage(0)
             }}
-            onOpenReport={() => showStubNotice('Relatório de Fornecedores')}
+            onOpenReport={() => setReportOpen(true)}
           />
         </div>
 
@@ -163,6 +156,12 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         state={formState}
         onClose={() => setFormState(null)}
         allMaterials={materialsQuery.data ?? []}
+      />
+
+      <ReportModal
+        isOpen={reportOpen}
+        onClose={() => setReportOpen(false)}
+        rows={reportQuery.data ?? []}
       />
     </div>
   )

@@ -17,6 +17,14 @@ export interface SupplierContactRow {
   email: string | null
 }
 
+export interface SupplierReportRow {
+  id: string
+  name: string
+  city: string | null
+  contactName: string | null
+  materials: string[]
+}
+
 export interface SupplierRow {
   id: string
   name: string

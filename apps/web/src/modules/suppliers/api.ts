@@ -1,6 +1,6 @@
 import { supabase } from '../../lib/supabase'
 import type { SupplierFormValues } from './SupplierFormModal'
-import type { CategoryRow, MaterialRow, SupplierRow } from './types'
+import type { CategoryRow, MaterialRow, SupplierReportRow, SupplierRow } from './types'
 
 export async function fetchCategories(): Promise<CategoryRow[]> {
   const { data, error } = await supabase
@@ -144,6 +144,26 @@ export async function deleteSupplier(supplierId: string): Promise<void> {
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', supplierId)
   if (error) throw error
+}
+
+export async function fetchSupplierReport(): Promise<SupplierReportRow[]> {
+  const { data, error } = await supabase
+    .from('suppliers')
+    .select('id, name, city, supplier_contacts(name), supplier_materials(materials(name))')
+    .is('deleted_at', null)
+    .order('name')
+
+  if (error) throw error
+
+  return data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    city: row.city,
+    contactName: row.supplier_contacts[0]?.name ?? null,
+    materials: row.supplier_materials
+      .map((link) => link.materials?.name)
+      .filter((name): name is string => Boolean(name)),
+  }))
 }
 
 export async function fetchUnits(): Promise<{ id: string; name: string }[]> {

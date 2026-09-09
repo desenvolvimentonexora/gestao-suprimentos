@@ -9,6 +9,7 @@ import {
   fetchMaterials,
   fetchSupplierDetail,
   fetchSupplierEmailsByMaterial,
+  fetchSupplierReport,
   fetchSuppliersByMaterial,
   fetchUnits,
   setFavoriteSupplier,
@@ -31,6 +32,14 @@ export function useSuppliersByMaterial(materialId: string | null, filter: Suppli
     queryFn: () => fetchSuppliersByMaterial(materialId!, filter),
     enabled: Boolean(materialId),
     placeholderData: keepPreviousData,
+  })
+}
+
+export function useSupplierReport(enabled: boolean) {
+  return useQuery({
+    queryKey: ['supplier-report'],
+    queryFn: fetchSupplierReport,
+    enabled,
   })
 }
 
