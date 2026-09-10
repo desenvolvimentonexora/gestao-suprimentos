@@ -1,0 +1,1 @@
+export { subscribeToTableChanges } from './subscribeToTable'

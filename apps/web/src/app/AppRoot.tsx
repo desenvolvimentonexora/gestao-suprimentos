@@ -8,9 +8,12 @@ import { loadSettings, type Brand } from '../core/config'
 import { applyTheme } from '../core/theme'
 import { getTenant } from '../core/tenant'
 import { HomePage } from '../modules/home/HomePage'
+import { usePendingWorkSummary } from '../modules/home/queries'
 import { SuprimentosPage } from '../modules/suprimentos/SuprimentosPage'
 import { AgendaFornecedoresPage } from '../modules/suppliers/AgendaFornecedoresPage'
 import { UnitsPage } from '../modules/units/UnitsPage'
+import { DisparoSolicitacoesPage } from '../modules/requests/DisparoSolicitacoesPage'
+import { EmNegociacaoPage } from '../modules/quotations/EmNegociacaoPage'
 import { AppShell } from './AppShell'
 import { LoginPage } from './LoginPage'
 
@@ -45,7 +48,8 @@ function LoginRoute({ brand }: { brand: Brand }) {
 
 function HomeRoute({ fullName }: { fullName: string }) {
   const handleSignOut = useSignOutHandler()
-  return <HomePage fullName={fullName} onSignOut={handleSignOut} />
+  const pendingWorkQuery = usePendingWorkSummary()
+  return <HomePage fullName={fullName} onSignOut={handleSignOut} pendingWork={pendingWorkQuery.data} />
 }
 
 function SuprimentosRoute({ fullName }: { fullName: string }) {
@@ -59,6 +63,14 @@ function AgendaFornecedoresRoute({ tenantId, userId }: { tenantId: string; userI
 
 function UnitsRoute({ tenantId }: { tenantId: string }) {
   return <UnitsPage tenantId={tenantId} />
+}
+
+function DisparoSolicitacoesRoute({ tenantId }: { tenantId: string }) {
+  return <DisparoSolicitacoesPage tenantId={tenantId} />
+}
+
+function EmNegociacaoRoute({ tenantId }: { tenantId: string }) {
+  return <EmNegociacaoPage tenantId={tenantId} />
 }
 
 function ProtectedLayout({ tenantName, userName }: { tenantName: string; userName: string }) {
@@ -158,6 +170,14 @@ export function AppRoot() {
             }
           />
           <Route path="/suprimentos/unidades" element={<UnitsRoute tenantId={tenant.tenantId} />} />
+          <Route
+            path="/suprimentos/disparo-solicitacoes"
+            element={<DisparoSolicitacoesRoute tenantId={tenant.tenantId} />}
+          />
+          <Route
+            path="/suprimentos/em-negociacao"
+            element={<EmNegociacaoRoute tenantId={tenant.tenantId} />}
+          />
         </Route>
       </Routes>
     </BrowserRouter>

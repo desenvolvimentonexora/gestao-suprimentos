@@ -33,6 +33,32 @@ describe('HomePage', () => {
     )
   })
 
+  it('não mostra a faixa de trabalho pendente quando não há dados', () => {
+    renderHome()
+    expect(screen.queryByText(/vence[m]? hoje/)).not.toBeInTheDocument()
+  })
+
+  it('mostra a faixa de trabalho pendente com links quando há dados', () => {
+    render(
+      <MemoryRouter>
+        <HomePage
+          fullName="Marcelo Souza"
+          onSignOut={vi.fn()}
+          now={new Date('2026-09-08T09:00:00')}
+          pendingWork={{ dueTodayCount: 3, awaitingQuoteCount: 2 }}
+        />
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('link', { name: '3 requisições vencem hoje' })).toHaveAttribute(
+      'href',
+      '/suprimentos/disparo-solicitacoes',
+    )
+    expect(screen.getByRole('link', { name: '2 aguardando cotação' })).toHaveAttribute(
+      'href',
+      '/suprimentos/em-negociacao',
+    )
+  })
+
   it('chama onSignOut ao clicar em sair da conta', async () => {
     const onSignOut = vi.fn()
     render(

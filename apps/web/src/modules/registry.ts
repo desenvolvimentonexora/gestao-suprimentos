@@ -128,6 +128,7 @@ export const suprimentosRegistry: ModuleCardData[] = [
     description: 'Importe o Excel diário e dispare e-mails de cotação',
     icon: Send,
     status: 'disponivel',
+    route: '/suprimentos/disparo-solicitacoes',
   },
   {
     id: 'em-negociacao',
@@ -135,6 +136,7 @@ export const suprimentosRegistry: ModuleCardData[] = [
     description: 'SOLs com 3 orçamentos prontas para negociar e equalizar',
     icon: Handshake,
     status: 'disponivel',
+    route: '/suprimentos/em-negociacao',
   },
   {
     id: 'equalizacao-orcamentos',

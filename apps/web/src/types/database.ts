@@ -83,6 +83,41 @@ export type Database = {
           },
         ]
       }
+      import_mappings: {
+        Row: {
+          column_mapping: Json
+          created_at: string
+          id: string
+          import_type: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          column_mapping: Json
+          created_at?: string
+          id?: string
+          import_type: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          column_mapping?: Json
+          created_at?: string
+          id?: string
+          import_type?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_mappings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materials: {
         Row: {
           category_id: string
@@ -195,6 +230,241 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quotation_items: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          lead_time_days: number | null
+          quotation_id: string
+          request_item_id: string
+          tenant_id: string
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          lead_time_days?: number | null
+          quotation_id: string
+          request_item_id: string
+          tenant_id: string
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          lead_time_days?: number | null
+          quotation_id?: string
+          request_item_id?: string
+          tenant_id?: string
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotation_items_request_item_id_fkey"
+            columns: ["request_item_id"]
+            isOneToOne: false
+            referencedRelation: "request_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotation_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          request_id: string
+          status: Database["public"]["Enums"]["quotation_status"]
+          submitted_at: string | null
+          supplier_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          request_id: string
+          status?: Database["public"]["Enums"]["quotation_status"]
+          submitted_at?: string | null
+          supplier_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          request_id?: string
+          status?: Database["public"]["Enums"]["quotation_status"]
+          submitted_at?: string | null
+          supplier_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotations_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotations_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_items: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          material_id: string
+          quantity: number
+          request_id: string
+          tenant_id: string
+          unit_of_measure: string | null
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          material_id: string
+          quantity: number
+          request_id: string
+          tenant_id: string
+          unit_of_measure?: string | null
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          material_id?: string
+          quantity?: number
+          request_id?: string
+          tenant_id?: string
+          unit_of_measure?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_items_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_items_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requests: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          external_ref: string | null
+          id: string
+          needed_by: string | null
+          requester_id: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          tenant_id: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          external_ref?: string | null
+          id?: string
+          needed_by?: string | null
+          requester_id?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          tenant_id: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          external_ref?: string | null
+          id?: string
+          needed_by?: string | null
+          requester_id?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          tenant_id?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requests_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       role_permissions: {
         Row: {
@@ -916,7 +1186,8 @@ export type Database = {
       current_tenant_id: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      quotation_status: "pending" | "received" | "discarded"
+      request_status: "draft" | "open" | "negotiating" | "quoted" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1046,6 +1317,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      quotation_status: ["pending", "received", "discarded"],
+      request_status: ["draft", "open", "negotiating", "quoted", "cancelled"],
+    },
   },
 } as const
