@@ -177,6 +177,7 @@ export const suprimentosRegistry: ModuleCardData[] = [
     description: 'Central com as informações e documentações de todas as obras',
     icon: Building,
     status: 'disponivel',
+    route: '/suprimentos/unidades',
   },
   {
     id: 'concorrencia-rfq-rfp',

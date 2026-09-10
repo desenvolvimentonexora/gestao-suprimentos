@@ -10,6 +10,7 @@ import { getTenant } from '../core/tenant'
 import { HomePage } from '../modules/home/HomePage'
 import { SuprimentosPage } from '../modules/suprimentos/SuprimentosPage'
 import { AgendaFornecedoresPage } from '../modules/suppliers/AgendaFornecedoresPage'
+import { UnitsPage } from '../modules/units/UnitsPage'
 import { AppShell } from './AppShell'
 import { LoginPage } from './LoginPage'
 
@@ -54,6 +55,10 @@ function SuprimentosRoute({ fullName }: { fullName: string }) {
 
 function AgendaFornecedoresRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
   return <AgendaFornecedoresPage tenantId={tenantId} userId={userId} />
+}
+
+function UnitsRoute({ tenantId }: { tenantId: string }) {
+  return <UnitsPage tenantId={tenantId} />
 }
 
 function ProtectedLayout({ tenantName, userName }: { tenantName: string; userName: string }) {
@@ -152,6 +157,7 @@ export function AppRoot() {
               <AgendaFornecedoresRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />
             }
           />
+          <Route path="/suprimentos/unidades" element={<UnitsRoute tenantId={tenant.tenantId} />} />
         </Route>
       </Routes>
     </BrowserRouter>

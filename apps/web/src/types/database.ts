@@ -727,31 +727,82 @@ export type Database = {
       }
       units: {
         Row: {
+          admin_email: string | null
+          admin_name: string | null
+          admin_phone: string | null
+          city: string | null
+          cnpj: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          end_date: string | null
+          engineer_email: string | null
+          engineer_name: string | null
+          engineer_phone: string | null
           id: string
           name: string
+          neighborhood: string | null
+          number: string | null
+          start_date: string | null
+          state: string | null
+          status: string
+          street: string | null
           tenant_id: string
+          type: string
           updated_at: string
+          zip_code: string | null
         }
         Insert: {
+          admin_email?: string | null
+          admin_name?: string | null
+          admin_phone?: string | null
+          city?: string | null
+          cnpj?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          end_date?: string | null
+          engineer_email?: string | null
+          engineer_name?: string | null
+          engineer_phone?: string | null
           id?: string
           name: string
+          neighborhood?: string | null
+          number?: string | null
+          start_date?: string | null
+          state?: string | null
+          status?: string
+          street?: string | null
           tenant_id: string
+          type?: string
           updated_at?: string
+          zip_code?: string | null
         }
         Update: {
+          admin_email?: string | null
+          admin_name?: string | null
+          admin_phone?: string | null
+          city?: string | null
+          cnpj?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          end_date?: string | null
+          engineer_email?: string | null
+          engineer_name?: string | null
+          engineer_phone?: string | null
           id?: string
           name?: string
+          neighborhood?: string | null
+          number?: string | null
+          start_date?: string | null
+          state?: string | null
+          status?: string
+          street?: string | null
           tenant_id?: string
+          type?: string
           updated_at?: string
+          zip_code?: string | null
         }
         Relationships: [
           {
