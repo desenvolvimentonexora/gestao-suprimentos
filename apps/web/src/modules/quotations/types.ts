@@ -33,9 +33,20 @@ export interface NegotiatingRequestItemRow {
 
 export interface NegotiatingRequestRow {
   id: string
+  unitId: string
   unitName: string
   neededBy: string | null
   externalRef: string | null
+  createdAt: string
+  notes: string | null
+  negotiatorId: string | null
+  negotiatorName: string | null
+  negotiatingStartedAt: string | null
   items: NegotiatingRequestItemRow[]
   quotations: QuotationRow[]
+}
+
+export interface NegotiatorOption {
+  id: string
+  name: string
 }

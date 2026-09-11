@@ -2,9 +2,12 @@ import { supabase } from '../../lib/supabase'
 import type {
   ComparableRequestRow,
   ComparisonStatus,
+  ComparisonWinner,
   ExtractedItemReview,
   ExtractedQuoteItem,
+  HistoryRow,
   PendingApprovalRow,
+  PendingReleaseRow,
   SupplierOption,
 } from './types'
 
@@ -12,7 +15,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, units(name), external_ref, request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, status, deleted_at, suppliers(name), quotation_items(request_item_id, unit_price, lead_time_days))',
+      'id, units(name), external_ref, request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, status, deleted_at, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
@@ -22,7 +25,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const requestIds = data.map((row) => row.id)
   const { data: comparisonsData, error: comparisonsError } = await supabase
     .from('comparisons')
-    .select('id, request_id, status, winning_quotation_id')
+    .select('id, request_id, status')
     .in('request_id', requestIds.length > 0 ? requestIds : [''])
     .is('deleted_at', null)
     .in('status', ['draft', 'pending_approval'])
@@ -32,13 +35,24 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const comparisonByRequestId = new Map(
     comparisonsData.map((comparison) => [
       comparison.request_id,
-      {
-        id: comparison.id,
-        status: comparison.status as ComparisonStatus,
-        winningQuotationId: comparison.winning_quotation_id,
-      },
+      { id: comparison.id, status: comparison.status as ComparisonStatus },
     ]),
   )
+
+  const comparisonIds = comparisonsData.map((comparison) => comparison.id)
+  const { data: winnersData, error: winnersError } = await supabase
+    .from('comparison_winners')
+    .select('comparison_id, request_item_id, quotation_item_id')
+    .in('comparison_id', comparisonIds.length > 0 ? comparisonIds : [''])
+
+  if (winnersError) throw winnersError
+
+  const winnersByComparisonId = new Map<string, ComparisonWinner[]>()
+  for (const winner of winnersData) {
+    const list = winnersByComparisonId.get(winner.comparison_id) ?? []
+    list.push({ requestItemId: winner.request_item_id, quotationItemId: winner.quotation_item_id })
+    winnersByComparisonId.set(winner.comparison_id, list)
+  }
 
   return data
     .map((row) => {
@@ -58,6 +72,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
           supplierName: quotation.suppliers?.name ?? '',
           prices: quotation.quotation_items.map((item) => ({
             requestItemId: item.request_item_id,
+            quotationItemId: item.id,
             unitPrice: item.unit_price === null ? null : Number(item.unit_price),
             leadTimeDays: item.lead_time_days,
           })),
@@ -71,7 +86,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
         externalRef: row.external_ref,
         comparisonId: comparison?.id ?? null,
         comparisonStatus: comparison?.status ?? null,
-        winningQuotationId: comparison?.winningQuotationId ?? null,
+        winners: comparison ? (winnersByComparisonId.get(comparison.id) ?? []) : [],
         requestItems,
         quotations,
       }
@@ -195,11 +210,21 @@ export async function confirmExtractedItems(
   if (quotationError) throw quotationError
 }
 
-export async function setWinningQuotation(comparisonId: string, quotationId: string): Promise<void> {
-  const { error } = await supabase
-    .from('comparisons')
-    .update({ winning_quotation_id: quotationId })
-    .eq('id', comparisonId)
+export async function setItemWinner(
+  tenantId: string,
+  comparisonId: string,
+  requestItemId: string,
+  quotationItemId: string,
+): Promise<void> {
+  const { error } = await supabase.from('comparison_winners').upsert(
+    {
+      tenant_id: tenantId,
+      comparison_id: comparisonId,
+      request_item_id: requestItemId,
+      quotation_item_id: quotationItemId,
+    },
+    { onConflict: 'comparison_id,request_item_id' },
+  )
   if (error) throw error
 }
 
@@ -237,4 +262,61 @@ export interface DecideComparisonInput {
 export async function decideComparison(input: DecideComparisonInput): Promise<void> {
   const { error } = await supabase.functions.invoke('decide-comparison', { body: input })
   if (error) throw error
+}
+
+export async function fetchPendingReleases(): Promise<PendingReleaseRow[]> {
+  const { data, error } = await supabase
+    .from('comparisons')
+    .select('id, requests(id, external_ref, units(name))')
+    .eq('status', 'approved')
+    .is('deleted_at', null)
+
+  if (error) throw error
+
+  return data.map((row) => ({
+    comparisonId: row.id,
+    requestId: row.requests?.id ?? '',
+    unitName: row.requests?.units?.name ?? '',
+    externalRef: row.requests?.external_ref ?? null,
+  }))
+}
+
+export interface ReleaseComparisonInput {
+  comparisonId: string
+  decision: 'released' | 'rejected'
+  paymentConditionNote?: string
+  rejectionReason?: string
+}
+
+export async function releaseComparison(input: ReleaseComparisonInput): Promise<void> {
+  const { error } = await supabase.functions.invoke('release-comparison', { body: input })
+  if (error) throw error
+}
+
+export async function setFinancialChargeRequested(comparisonId: string, value: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('comparisons')
+    .update({ financial_charge_requested: value })
+    .eq('id', comparisonId)
+  if (error) throw error
+}
+
+export async function fetchHistory(): Promise<HistoryRow[]> {
+  const { data, error } = await supabase
+    .from('comparisons')
+    .select('id, status, rejection_reason, released_at, requests(external_ref, units(name))')
+    .in('status', ['released', 'rejected'])
+    .is('deleted_at', null)
+    .order('updated_at', { ascending: false })
+
+  if (error) throw error
+
+  return data.map((row) => ({
+    comparisonId: row.id,
+    unitName: row.requests?.units?.name ?? '',
+    externalRef: row.requests?.external_ref ?? null,
+    status: row.status as ComparisonStatus,
+    rejectionReason: row.rejection_reason,
+    releasedAt: row.released_at,
+  }))
 }

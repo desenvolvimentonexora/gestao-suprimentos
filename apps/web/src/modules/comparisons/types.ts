@@ -1,4 +1,10 @@
-export type ComparisonStatus = 'draft' | 'pending_approval' | 'approved' | 'rejected'
+export type ComparisonStatus =
+  | 'draft'
+  | 'pending_approval'
+  | 'approved'
+  | 'pending_release'
+  | 'released'
+  | 'rejected'
 
 export interface ComparisonRequestItemRow {
   id: string
@@ -9,6 +15,7 @@ export interface ComparisonRequestItemRow {
 
 export interface ComparisonQuotationItemPrice {
   requestItemId: string
+  quotationItemId: string | null
   unitPrice: number | null
   leadTimeDays: number | null
 }
@@ -19,13 +26,18 @@ export interface ComparisonQuotationRow {
   prices: ComparisonQuotationItemPrice[]
 }
 
+export interface ComparisonWinner {
+  requestItemId: string
+  quotationItemId: string
+}
+
 export interface ComparableRequestRow {
   requestId: string
   unitName: string
   externalRef: string | null
   comparisonId: string | null
   comparisonStatus: ComparisonStatus | null
-  winningQuotationId: string | null
+  winners: ComparisonWinner[]
   requestItems: ComparisonRequestItemRow[]
   quotations: ComparisonQuotationRow[]
 }
@@ -52,4 +64,20 @@ export interface PendingApprovalRow {
   unitName: string
   externalRef: string | null
   requestId: string
+}
+
+export interface PendingReleaseRow {
+  comparisonId: string
+  unitName: string
+  externalRef: string | null
+  requestId: string
+}
+
+export interface HistoryRow {
+  comparisonId: string
+  unitName: string
+  externalRef: string | null
+  status: ComparisonStatus
+  rejectionReason: string | null
+  releasedAt: string | null
 }

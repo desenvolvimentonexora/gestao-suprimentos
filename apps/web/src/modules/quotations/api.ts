@@ -1,11 +1,17 @@
 import { supabase } from '../../lib/supabase'
-import type { NegotiatingRequestRow, QuotationFormValues, QuotationStatus, SupplierOption } from './types'
+import type {
+  NegotiatingRequestRow,
+  NegotiatorOption,
+  QuotationFormValues,
+  QuotationStatus,
+  SupplierOption,
+} from './types'
 
 export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, needed_by, external_ref, units(name), request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, supplier_id, status, submitted_at, deleted_at, suppliers(name))',
+      'id, unit_id, needed_by, external_ref, created_at, notes, negotiating_started_at, units(name), negotiator:users!negotiator_id(id, full_name), request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, supplier_id, status, submitted_at, deleted_at, suppliers(name))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
@@ -15,9 +21,15 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
 
   return data.map((row) => ({
     id: row.id,
+    unitId: row.unit_id,
     unitName: row.units?.name ?? '',
     neededBy: row.needed_by,
     externalRef: row.external_ref,
+    createdAt: row.created_at,
+    notes: row.notes,
+    negotiatorId: row.negotiator?.id ?? null,
+    negotiatorName: row.negotiator?.full_name ?? null,
+    negotiatingStartedAt: row.negotiating_started_at,
     items: row.request_items
       .filter((item) => !item.deleted_at)
       .map((item) => ({
@@ -36,6 +48,37 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
         submittedAt: quotation.submitted_at,
       })),
   }))
+}
+
+export async function fetchNegotiatorOptions(): Promise<NegotiatorOption[]> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, full_name')
+    .is('deleted_at', null)
+    .order('full_name')
+  if (error) throw error
+  return data.map((row) => ({ id: row.id, name: row.full_name }))
+}
+
+export async function updateNegotiator(requestId: string, negotiatorId: string | null): Promise<void> {
+  const { error } = await supabase
+    .from('requests')
+    .update({ negotiator_id: negotiatorId })
+    .eq('id', requestId)
+  if (error) throw error
+}
+
+export async function updateNegotiationNotes(requestId: string, notes: string): Promise<void> {
+  const { error } = await supabase
+    .from('requests')
+    .update({ notes: notes || null })
+    .eq('id', requestId)
+  if (error) throw error
+}
+
+export async function sendBackToDispatch(requestId: string): Promise<void> {
+  const { error } = await supabase.from('requests').update({ status: 'open' }).eq('id', requestId)
+  if (error) throw error
 }
 
 export async function fetchSupplierOptions(): Promise<SupplierOption[]> {

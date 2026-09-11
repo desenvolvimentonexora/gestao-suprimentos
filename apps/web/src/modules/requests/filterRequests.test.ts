@@ -10,6 +10,12 @@ function makeRequest(overrides: Partial<RequestRow>): RequestRow {
     status: 'open',
     neededBy: null,
     externalRef: null,
+    createdAt: '2026-09-01T00:00:00Z',
+    subjectCategory: null,
+    notes: null,
+    negotiatorId: null,
+    negotiatorName: null,
+    negotiatingStartedAt: null,
     items: [],
     ...overrides,
   }

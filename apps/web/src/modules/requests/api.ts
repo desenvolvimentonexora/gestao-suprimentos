@@ -2,6 +2,7 @@ import { supabase } from '../../lib/supabase'
 import type {
   ImportColumnMapping,
   MaterialOption,
+  MaterialWithSupplierCount,
   RequestFormValues,
   RequestRow,
   RequestStatus,
@@ -14,7 +15,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, status, needed_by, external_ref, units(id, name), request_items(id, material_id, quantity, unit_of_measure, deleted_at, materials(name))',
+      'id, status, needed_by, external_ref, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, deleted_at, materials(name))',
     )
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -28,6 +29,12 @@ export async function fetchRequests(): Promise<RequestRow[]> {
     status: row.status as RequestStatus,
     neededBy: row.needed_by,
     externalRef: row.external_ref,
+    createdAt: row.created_at,
+    subjectCategory: row.subject_category,
+    notes: row.notes,
+    negotiatorId: row.negotiator?.id ?? null,
+    negotiatorName: row.negotiator?.full_name ?? null,
+    negotiatingStartedAt: row.negotiating_started_at,
     items: row.request_items
       .filter((item) => !item.deleted_at)
       .map((item) => ({
@@ -38,6 +45,39 @@ export async function fetchRequests(): Promise<RequestRow[]> {
         unitOfMeasure: item.unit_of_measure,
       })),
   }))
+}
+
+export async function fetchMaterialsWithSupplierCount(): Promise<MaterialWithSupplierCount[]> {
+  const { data, error } = await supabase
+    .from('materials')
+    .select('id, name, supplier_materials(count)')
+    .is('deleted_at', null)
+    .order('name')
+  if (error) throw error
+  return data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    supplierCount: row.supplier_materials[0]?.count ?? 0,
+  }))
+}
+
+export interface DispatchDetailsValues {
+  unitId: string
+  subjectCategory: string
+  notes: string
+}
+
+export async function dispatchRequest(requestId: string, values: DispatchDetailsValues): Promise<void> {
+  const { error } = await supabase
+    .from('requests')
+    .update({
+      unit_id: values.unitId,
+      subject_category: values.subjectCategory || null,
+      notes: values.notes || null,
+      status: 'negotiating',
+    })
+    .eq('id', requestId)
+  if (error) throw error
 }
 
 export async function fetchUnitOptions(): Promise<UnitOption[]> {

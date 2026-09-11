@@ -15,7 +15,19 @@ export interface RequestRow {
   status: RequestStatus
   neededBy: string | null
   externalRef: string | null
+  createdAt: string
+  subjectCategory: string | null
+  notes: string | null
+  negotiatorId: string | null
+  negotiatorName: string | null
+  negotiatingStartedAt: string | null
   items: RequestItemRow[]
+}
+
+export interface MaterialWithSupplierCount {
+  id: string
+  name: string
+  supplierCount: number
 }
 
 export interface RequestItemFormValues {

@@ -4,14 +4,19 @@ import {
   createPdfQuotation,
   decideComparison,
   fetchComparableRequests,
+  fetchHistory,
   fetchPendingApprovals,
+  fetchPendingReleases,
   fetchSupplierOptions,
   getOrCreateDraftComparison,
+  releaseComparison,
   runExtraction,
   sendToApproval,
-  setWinningQuotation,
+  setFinancialChargeRequested,
+  setItemWinner,
   uploadQuotationAttachment,
   type DecideComparisonInput,
+  type ReleaseComparisonInput,
 } from './api'
 import type { ExtractedItemReview } from './types'
 
@@ -25,6 +30,14 @@ export function useSupplierOptions() {
 
 export function usePendingApprovals(enabled: boolean) {
   return useQuery({ queryKey: ['pending-approvals'], queryFn: fetchPendingApprovals, enabled })
+}
+
+export function usePendingReleases(enabled: boolean) {
+  return useQuery({ queryKey: ['pending-releases'], queryFn: fetchPendingReleases, enabled })
+}
+
+export function useHistory(enabled: boolean) {
+  return useQuery({ queryKey: ['comparisons-history'], queryFn: fetchHistory, enabled })
 }
 
 export function useGetOrCreateDraftComparison(tenantId: string) {
@@ -71,11 +84,18 @@ export function useConfirmExtractedItems(tenantId: string) {
   })
 }
 
-export function useSetWinningQuotation() {
+export function useSetItemWinner(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ comparisonId, quotationId }: { comparisonId: string; quotationId: string }) =>
-      setWinningQuotation(comparisonId, quotationId),
+    mutationFn: ({
+      comparisonId,
+      requestItemId,
+      quotationItemId,
+    }: {
+      comparisonId: string
+      requestItemId: string
+      quotationItemId: string
+    }) => setItemWinner(tenantId, comparisonId, requestItemId, quotationItemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
     },
@@ -99,8 +119,29 @@ export function useDecideComparison() {
     mutationFn: (input: DecideComparisonInput) => decideComparison(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-approvals'] })
+      queryClient.invalidateQueries({ queryKey: ['pending-releases'] })
       queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
       queryClient.invalidateQueries({ queryKey: ['negotiating-requests'] })
     },
+  })
+}
+
+export function useReleaseComparison() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: ReleaseComparisonInput) => releaseComparison(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-releases'] })
+      queryClient.invalidateQueries({ queryKey: ['comparisons-history'] })
+      queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['negotiating-requests'] })
+    },
+  })
+}
+
+export function useSetFinancialChargeRequested() {
+  return useMutation({
+    mutationFn: ({ comparisonId, value }: { comparisonId: string; value: boolean }) =>
+      setFinancialChargeRequested(comparisonId, value),
   })
 }

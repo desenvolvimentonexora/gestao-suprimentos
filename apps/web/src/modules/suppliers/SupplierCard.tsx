@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { Award, Clock, Package, Star } from 'lucide-react'
-import { Badge, Button } from '../../components'
+import { Badge, Button, ComingSoonButton } from '../../components'
 import type { SupplierRow } from './types'
 
 export type SupplierPopupKind = 'certificados' | 'prazo' | 'materiais' | 'avaliacoes'
@@ -20,18 +19,6 @@ const INDICATORS: { kind: SupplierPopupKind; label: string; icon: typeof Award }
   { kind: 'materiais', label: 'Materiais', icon: Package },
   { kind: 'avaliacoes', label: 'Avaliações', icon: Star },
 ]
-
-function ComingSoonButton({ label }: { label: string }) {
-  const [showNotice, setShowNotice] = useState(false)
-  return (
-    <div>
-      <Button variant="ghost" onClick={() => setShowNotice(true)}>
-        {label}
-      </Button>
-      {showNotice && <p className="text-xs text-ink-muted">Em breve</p>}
-    </div>
-  )
-}
 
 export function SupplierCard({
   supplier,

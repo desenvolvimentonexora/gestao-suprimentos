@@ -3,13 +3,16 @@ import {
   bulkCreateRequests,
   cancelRequest,
   createRequest,
+  dispatchRequest,
   fetchImportMapping,
   fetchMaterialOptions,
+  fetchMaterialsWithSupplierCount,
   fetchRequests,
   fetchUnitOptions,
   saveImportMapping,
   updateRequest,
   updateRequestStatus,
+  type DispatchDetailsValues,
 } from './api'
 import type { ImportColumnMapping, RequestFormValues, RequestStatus } from './types'
 
@@ -75,6 +78,21 @@ export function useBulkCreateRequests(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (requests: RequestFormValues[]) => bulkCreateRequests(tenantId, requests),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useMaterialsWithSupplierCount() {
+  return useQuery({ queryKey: ['materials-with-supplier-count'], queryFn: fetchMaterialsWithSupplierCount })
+}
+
+export function useDispatchRequest() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ requestId, values }: { requestId: string; values: DispatchDetailsValues }) =>
+      dispatchRequest(requestId, values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },

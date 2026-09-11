@@ -145,6 +145,62 @@ export type Database = {
           },
         ]
       }
+      comparison_winners: {
+        Row: {
+          comparison_id: string
+          created_at: string
+          id: string
+          quotation_item_id: string
+          request_item_id: string
+          tenant_id: string
+        }
+        Insert: {
+          comparison_id: string
+          created_at?: string
+          id?: string
+          quotation_item_id: string
+          request_item_id: string
+          tenant_id: string
+        }
+        Update: {
+          comparison_id?: string
+          created_at?: string
+          id?: string
+          quotation_item_id?: string
+          request_item_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comparison_winners_comparison_id_fkey"
+            columns: ["comparison_id"]
+            isOneToOne: false
+            referencedRelation: "comparisons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparison_winners_quotation_item_id_fkey"
+            columns: ["quotation_item_id"]
+            isOneToOne: false
+            referencedRelation: "quotation_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparison_winners_request_item_id_fkey"
+            columns: ["request_item_id"]
+            isOneToOne: false
+            referencedRelation: "request_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparison_winners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comparisons: {
         Row: {
           approved_at: string | null
@@ -152,8 +208,12 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          financial_charge_requested: boolean
           id: string
+          payment_condition_note: string | null
           rejection_reason: string | null
+          released_at: string | null
+          released_by: string | null
           request_id: string
           status: Database["public"]["Enums"]["comparison_status"]
           tenant_id: string
@@ -166,8 +226,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          financial_charge_requested?: boolean
           id?: string
+          payment_condition_note?: string | null
           rejection_reason?: string | null
+          released_at?: string | null
+          released_by?: string | null
           request_id: string
           status?: Database["public"]["Enums"]["comparison_status"]
           tenant_id: string
@@ -180,8 +244,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          financial_charge_requested?: boolean
           id?: string
+          payment_condition_note?: string | null
           rejection_reason?: string | null
+          released_at?: string | null
+          released_by?: string | null
           request_id?: string
           status?: Database["public"]["Enums"]["comparison_status"]
           tenant_id?: string
@@ -584,8 +652,12 @@ export type Database = {
           external_ref: string | null
           id: string
           needed_by: string | null
+          negotiating_started_at: string | null
+          negotiator_id: string | null
+          notes: string | null
           requester_id: string | null
           status: Database["public"]["Enums"]["request_status"]
+          subject_category: string | null
           tenant_id: string
           unit_id: string
           updated_at: string
@@ -597,8 +669,12 @@ export type Database = {
           external_ref?: string | null
           id?: string
           needed_by?: string | null
+          negotiating_started_at?: string | null
+          negotiator_id?: string | null
+          notes?: string | null
           requester_id?: string | null
           status?: Database["public"]["Enums"]["request_status"]
+          subject_category?: string | null
           tenant_id: string
           unit_id: string
           updated_at?: string
@@ -610,13 +686,24 @@ export type Database = {
           external_ref?: string | null
           id?: string
           needed_by?: string | null
+          negotiating_started_at?: string | null
+          negotiator_id?: string | null
+          notes?: string | null
           requester_id?: string | null
           status?: Database["public"]["Enums"]["request_status"]
+          subject_category?: string | null
           tenant_id?: string
           unit_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "requests_negotiator_id_fkey"
+            columns: ["negotiator_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "requests_requester_id_fkey"
             columns: ["requester_id"]
@@ -1364,13 +1451,28 @@ export type Database = {
           p_decided_by: string
           p_decision: Database["public"]["Enums"]["comparison_status"]
           p_rejection_reason?: string
-          p_winning_quotation_id?: string
+        }
+        Returns: undefined
+      }
+      fn_release_comparison: {
+        Args: {
+          p_comparison_id: string
+          p_decided_by: string
+          p_decision: Database["public"]["Enums"]["comparison_status"]
+          p_payment_condition_note?: string
+          p_rejection_reason?: string
         }
         Returns: undefined
       }
     }
     Enums: {
-      comparison_status: "draft" | "pending_approval" | "approved" | "rejected"
+      comparison_status:
+        | "draft"
+        | "pending_approval"
+        | "approved"
+        | "rejected"
+        | "pending_release"
+        | "released"
       quotation_status: "pending" | "received" | "discarded"
       request_status: "draft" | "open" | "negotiating" | "quoted" | "cancelled"
     }
@@ -1503,7 +1605,14 @@ export const Constants = {
   },
   public: {
     Enums: {
-      comparison_status: ["draft", "pending_approval", "approved", "rejected"],
+      comparison_status: [
+        "draft",
+        "pending_approval",
+        "approved",
+        "rejected",
+        "pending_release",
+        "released",
+      ],
       quotation_status: ["pending", "received", "discarded"],
       request_status: ["draft", "open", "negotiating", "quoted", "cancelled"],
     },

@@ -1,18 +1,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button } from '../../components'
+import { Button, ComingSoonButton } from '../../components'
+import { DisparoSolModal } from './DisparoSolModal'
 import { filterRequests } from './filterRequests'
 import { ImportRequestsModal } from './ImportRequestsModal'
+import { IndicatorCards } from './IndicatorCards'
+import { getRequestIndicators } from './requestIndicators'
 import { RequestFormModal } from './RequestFormModal'
 import { RequestsTable } from './RequestsTable'
 import {
   useCancelRequest,
   useCreateRequest,
+  useDispatchRequest,
   useMaterialOptions,
+  useMaterialsWithSupplierCount,
   useRequests,
   useUnitOptions,
   useUpdateRequest,
-  useUpdateRequestStatus,
 } from './queries'
 import type { RequestFormValues, RequestStatus } from './types'
 
@@ -28,21 +32,25 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
     { mode: 'create' } | { mode: 'edit'; requestId: string } | null
   >(null)
   const [importOpen, setImportOpen] = useState(false)
+  const [dispatchRequestId, setDispatchRequestId] = useState<string | null>(null)
 
   const requestsQuery = useRequests()
   const unitsQuery = useUnitOptions()
   const materialsQuery = useMaterialOptions()
+  const materialsWithSupplierCountQuery = useMaterialsWithSupplierCount()
   const createRequest = useCreateRequest(tenantId)
   const updateRequest = useUpdateRequest(tenantId)
-  const updateStatus = useUpdateRequestStatus()
+  const dispatchRequest = useDispatchRequest()
   const cancelRequest = useCancelRequest()
 
   const requests = requestsQuery.data ?? []
   const units = unitsQuery.data ?? []
   const materials = materialsQuery.data ?? []
+  const materialsWithSupplierCount = materialsWithSupplierCountQuery.data ?? []
   const filteredRequests = filterRequests(requests, { search, status: statusFilter, unitId: unitFilter })
   const editingRequest =
     formState?.mode === 'edit' ? requests.find((request) => request.id === formState.requestId) : undefined
+  const dispatchingRequest = requests.find((request) => request.id === dispatchRequestId)
 
   function handleSubmit(values: RequestFormValues) {
     if (formState?.mode === 'edit') {
@@ -60,17 +68,26 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
       <Link to="/suprimentos" className="text-sm text-ink-muted hover:text-ink">
         ← Suprimentos
       </Link>
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold text-ink">Disparo de Solicitações</h1>
-        <Button variant="secondary" onClick={() => setImportOpen(true)}>
-          Importar planilha
-        </Button>
+        <div className="flex gap-2">
+          <ComingSoonButton label="Limpar NF" variant="secondary" />
+          <Button variant="secondary" onClick={() => setImportOpen(true)}>
+            Importar Excel
+          </Button>
+          <ComingSoonButton label="Buscar SOL sumida" variant="primary" />
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <IndicatorCards indicators={getRequestIndicators(requests)} />
       </div>
 
       <div className="mt-6">
         <RequestsTable
           requests={filteredRequests}
           units={units}
+          today={new Date()}
           search={search}
           onSearchChange={setSearch}
           statusFilter={statusFilter}
@@ -79,9 +96,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
           onUnitFilterChange={setUnitFilter}
           onAddRequest={() => setFormState({ mode: 'create' })}
           onEditRequest={(requestId) => setFormState({ mode: 'edit', requestId })}
-          onSendToNegotiation={(requestId) =>
-            updateStatus.mutate({ requestId, status: 'negotiating' })
-          }
+          onDispatch={setDispatchRequestId}
           onCancelRequest={(requestId) => cancelRequest.mutate(requestId)}
         />
       </div>
@@ -110,6 +125,23 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
           }
           onSubmit={handleSubmit}
           isSubmitting={createRequest.isPending || updateRequest.isPending}
+        />
+      )}
+
+      {dispatchingRequest && (
+        <DisparoSolModal
+          isOpen
+          onClose={() => setDispatchRequestId(null)}
+          request={dispatchingRequest}
+          units={units}
+          materials={materialsWithSupplierCount}
+          onSubmit={(values) =>
+            dispatchRequest.mutate(
+              { requestId: dispatchingRequest.id, values },
+              { onSuccess: () => setDispatchRequestId(null) },
+            )
+          }
+          isSubmitting={dispatchRequest.isPending}
         />
       )}
 

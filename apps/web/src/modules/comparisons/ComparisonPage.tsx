@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Badge, Button } from '../../components'
+import { Badge, Button, Card, ComingSoonButton } from '../../components'
 import { useUserPermissions } from '../../core/permissions'
 import { ComparisonTable } from './ComparisonTable'
+import { HistoryList } from './HistoryList'
 import { ImportQuotationPdfModal } from './ImportQuotationPdfModal'
 import { PendingApprovalsSection } from './PendingApprovalsSection'
+import { PendingReleaseSection } from './PendingReleaseSection'
 import {
   useComparableRequests,
   useGetOrCreateDraftComparison,
+  useHistory,
   useSendToApproval,
-  useSetWinningQuotation,
+  useSetItemWinner,
 } from './queries'
+
+type QueueView = 'approvals' | 'releases' | 'history' | null
 
 export interface ComparisonPageProps {
   tenantId: string
@@ -21,13 +26,15 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [createdComparisonIds, setCreatedComparisonIds] = useState<Record<string, string>>({})
   const [importOpen, setImportOpen] = useState(false)
+  const [queueView, setQueueView] = useState<QueueView>(null)
 
   const requestsQuery = useComparableRequests()
   const getOrCreateDraftComparison = useGetOrCreateDraftComparison(tenantId)
-  const setWinningQuotation = useSetWinningQuotation()
+  const setItemWinner = useSetItemWinner(tenantId)
   const sendToApproval = useSendToApproval()
   const permissionsQuery = useUserPermissions(userId)
   const canApprove = (permissionsQuery.data ?? []).includes('comparisons.approve')
+  const historyQuery = useHistory(queueView === 'history')
 
   const requests = requestsQuery.data ?? []
   const selectedRequest = requests.find((request) => request.requestId === selectedRequestId) ?? null
@@ -46,14 +53,72 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- só deve rodar quando a requisição selecionada muda, não a cada render do mutation
   }, [selectedRequest?.requestId, selectedRequest?.comparisonId])
 
+  const allItemsHaveWinner =
+    Boolean(selectedRequest) &&
+    selectedRequest!.requestItems.every((item) =>
+      selectedRequest!.winners.some((winner) => winner.requestItemId === item.id),
+    )
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
       <Link to="/suprimentos" className="text-sm text-ink-muted hover:text-ink">
         ← Suprimentos
       </Link>
-      <h1 className="mt-4 text-2xl font-semibold text-ink">Equalização de Orçamentos</h1>
+      <h1 className="mt-4 text-2xl font-semibold text-ink">Nova Equalização</h1>
 
-      {canApprove && <PendingApprovalsSection />}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {canApprove && (
+          <Button
+            variant={queueView === 'approvals' ? 'primary' : 'secondary'}
+            onClick={() => setQueueView(queueView === 'approvals' ? null : 'approvals')}
+          >
+            Fila de Aprovações
+          </Button>
+        )}
+        {canApprove && (
+          <Button
+            variant={queueView === 'releases' ? 'primary' : 'secondary'}
+            onClick={() => setQueueView(queueView === 'releases' ? null : 'releases')}
+          >
+            Fila de Alterações
+          </Button>
+        )}
+        <ComingSoonButton label="Fila de Pedidos (0)" variant="secondary" />
+        <Button
+          variant={queueView === 'history' ? 'primary' : 'secondary'}
+          onClick={() => setQueueView(queueView === 'history' ? null : 'history')}
+        >
+          Histórico
+        </Button>
+      </div>
+
+      {queueView === 'approvals' && canApprove && <PendingApprovalsSection />}
+      {queueView === 'releases' && canApprove && <PendingReleaseSection />}
+      {queueView === 'history' && (
+        <div className="mt-4">
+          <HistoryList rows={historyQuery.data ?? []} />
+        </div>
+      )}
+
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Card className="border-primary">
+          <p className="text-sm font-medium text-ink">Equalização Padrão</p>
+          <p className="text-xs text-ink-muted">Compare cotações item a item.</p>
+        </Card>
+        <Card className="opacity-50">
+          <p className="text-sm font-medium text-ink">Detalhada (Itens A)</p>
+          <p className="text-xs text-ink-muted">Em breve — depende de classificação por curva ABC.</p>
+        </Card>
+        <Card className="opacity-50">
+          <p className="text-sm font-medium text-ink">Pela Concorrência</p>
+          <p className="text-xs text-ink-muted">Em breve — módulo futuro do roadmap.</p>
+        </Card>
+      </div>
+
+      <label className="mt-3 flex items-center gap-2 text-sm text-ink-muted opacity-50">
+        <input type="checkbox" disabled />
+        Anexar foto do produto por fornecedor (Decoração)
+      </label>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
         <div className="flex flex-col gap-2">
@@ -91,7 +156,10 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
           ) : (
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-ink">{selectedRequest.unitName}</h2>
+                <div>
+                  <h2 className="text-lg font-semibold text-ink">{selectedRequest.unitName}</h2>
+                  <p className="text-xs text-ink-muted">Fontes: Solicitação + até 4 fornecedores.</p>
+                </div>
                 <Button variant="secondary" onClick={() => setImportOpen(true)}>
                   Adicionar cotação por PDF
                 </Button>
@@ -100,10 +168,10 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
               <ComparisonTable
                 requestItems={selectedRequest.requestItems}
                 quotations={selectedRequest.quotations}
-                winningQuotationId={selectedRequest.winningQuotationId}
-                onSelectWinner={(quotationId) => {
+                winners={selectedRequest.winners}
+                onSelectWinner={(requestItemId, quotationItemId) => {
                   if (!resolvedComparisonId) return
-                  setWinningQuotation.mutate({ comparisonId: resolvedComparisonId, quotationId })
+                  setItemWinner.mutate({ comparisonId: resolvedComparisonId, requestItemId, quotationItemId })
                 }}
                 onSendToApproval={() => {
                   if (!resolvedComparisonId) return
@@ -111,7 +179,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                 }}
                 canSendToApproval={
                   Boolean(resolvedComparisonId) &&
-                  Boolean(selectedRequest.winningQuotationId) &&
+                  allItemsHaveWinner &&
                   selectedRequest.comparisonStatus !== 'pending_approval'
                 }
               />
