@@ -40,13 +40,17 @@ export function UnitsPage({ tenantId }: UnitsPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      <Link to="/suprimentos" className="text-sm text-ink-muted hover:text-ink">
-        ← Suprimentos
-      </Link>
-      <h1 className="mt-4 text-2xl font-semibold text-ink">Unidades</h1>
+    <div className="min-h-screen bg-bg">
+      <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
+        <div className="mx-auto max-w-6xl">
+          <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
+            ← Suprimentos
+          </Link>
+          <h1 className="mt-4 text-2xl font-semibold text-on-primary">Unidades</h1>
+        </div>
+      </div>
 
-      <div className="mt-6">
+      <div className="mx-auto max-w-6xl px-6 py-8">
         <UnitsTable
           units={filteredUnits}
           search={search}

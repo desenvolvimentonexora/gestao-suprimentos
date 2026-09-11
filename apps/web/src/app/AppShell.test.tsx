@@ -54,4 +54,14 @@ describe('AppShell', () => {
 
     expect(onSignOut).toHaveBeenCalledTimes(1)
   })
+
+  it('usa a cor escura da marca na barra superior, para casar com o topo em degradê das telas de trabalho', () => {
+    render(
+      <AppShell tenantName="Construtora Beta" userName="Marcelo" onSignOut={vi.fn()}>
+        <p>Conteúdo</p>
+      </AppShell>,
+    )
+
+    expect(screen.getByText('Construtora Beta').closest('header')?.className).toContain('bg-primary-dark')
+  })
 })

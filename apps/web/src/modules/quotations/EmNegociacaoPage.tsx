@@ -74,18 +74,25 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8">
-      <Link to="/suprimentos" className="text-sm text-ink-muted hover:text-ink">
-        ← Suprimentos
-      </Link>
-      <div className="mt-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-ink">🤝 Em Negociação</h1>
-          <p className="text-sm text-ink-muted">Requisições enviadas, aguardando cotação dos fornecedores.</p>
+    <div className="min-h-screen bg-bg">
+      <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
+        <div className="mx-auto max-w-4xl">
+          <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
+            ← Suprimentos
+          </Link>
+          <div className="mt-4 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-on-primary">🤝 Em Negociação</h1>
+              <p className="text-sm text-on-primary/80">
+                Requisições enviadas, aguardando cotação dos fornecedores.
+              </p>
+            </div>
+            <Badge>{requests.length} SOLs na fila</Badge>
+          </div>
         </div>
-        <Badge>{requests.length} SOLs na fila</Badge>
       </div>
 
+      <div className="mx-auto max-w-4xl px-6 py-8">
       <div className="mt-4">
         <NegotiatorChips counts={negotiatorCounts} selected={negotiatorFilter} onSelect={setNegotiatorFilter} />
       </div>
@@ -134,6 +141,7 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
             />
           ))
         )}
+      </div>
       </div>
 
       {activeRequest && (

@@ -44,13 +44,13 @@ export function AppShell({ tenantName, userName, onSignOut, children }: AppShell
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
-      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface px-4 py-2">
-        <span className="shrink-0 text-sm font-semibold text-ink">{tenantName}</span>
+      <header className="flex items-center justify-between gap-4 bg-primary-dark px-4 py-2">
+        <span className="shrink-0 text-sm font-semibold text-on-primary">{tenantName}</span>
 
         <div className="relative w-full max-w-md">
           <Search
             size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-on-primary/70"
             aria-hidden="true"
           />
           <input
@@ -58,7 +58,7 @@ export function AppShell({ tenantName, userName, onSignOut, children }: AppShell
             type="search"
             placeholder="Buscar…"
             aria-label="Buscar"
-            className="w-full rounded border border-line bg-bg py-1.5 pl-9 pr-3 text-sm text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="w-full rounded border border-white/20 bg-white/10 py-1.5 pl-9 pr-3 text-sm text-on-primary placeholder:text-on-primary/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           />
         </div>
 
@@ -66,7 +66,7 @@ export function AppShell({ tenantName, userName, onSignOut, children }: AppShell
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex items-center gap-1 text-sm text-ink hover:text-primary"
+            className="flex items-center gap-1 text-sm text-on-primary hover:underline"
           >
             {userName}
             <ChevronDown size={14} aria-hidden="true" />

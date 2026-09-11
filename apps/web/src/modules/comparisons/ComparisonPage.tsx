@@ -60,38 +60,43 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
     )
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      <Link to="/suprimentos" className="text-sm text-ink-muted hover:text-ink">
-        ← Suprimentos
-      </Link>
-      <h1 className="mt-4 text-2xl font-semibold text-ink">Nova Equalização</h1>
+    <div className="min-h-screen bg-bg">
+      <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
+        <div className="mx-auto max-w-6xl">
+          <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
+            ← Suprimentos
+          </Link>
+          <h1 className="mt-4 text-2xl font-semibold text-on-primary">Nova Equalização</h1>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {canApprove && (
-          <Button
-            variant={queueView === 'approvals' ? 'primary' : 'secondary'}
-            onClick={() => setQueueView(queueView === 'approvals' ? null : 'approvals')}
-          >
-            Fila de Aprovações
-          </Button>
-        )}
-        {canApprove && (
-          <Button
-            variant={queueView === 'releases' ? 'primary' : 'secondary'}
-            onClick={() => setQueueView(queueView === 'releases' ? null : 'releases')}
-          >
-            Fila de Alterações
-          </Button>
-        )}
-        <ComingSoonButton label="Fila de Pedidos (0)" variant="secondary" />
-        <Button
-          variant={queueView === 'history' ? 'primary' : 'secondary'}
-          onClick={() => setQueueView(queueView === 'history' ? null : 'history')}
-        >
-          Histórico
-        </Button>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {canApprove && (
+              <Button
+                variant={queueView === 'approvals' ? 'primary' : 'on-primary'}
+                onClick={() => setQueueView(queueView === 'approvals' ? null : 'approvals')}
+              >
+                Fila de Aprovações
+              </Button>
+            )}
+            {canApprove && (
+              <Button
+                variant={queueView === 'releases' ? 'primary' : 'on-primary'}
+                onClick={() => setQueueView(queueView === 'releases' ? null : 'releases')}
+              >
+                Fila de Alterações
+              </Button>
+            )}
+            <ComingSoonButton label="Fila de Pedidos (0)" variant="on-primary" />
+            <Button
+              variant={queueView === 'history' ? 'primary' : 'on-primary'}
+              onClick={() => setQueueView(queueView === 'history' ? null : 'history')}
+            >
+              Histórico
+            </Button>
+          </div>
+        </div>
       </div>
 
+      <div className="mx-auto max-w-6xl px-6 py-8">
       {queueView === 'approvals' && canApprove && <PendingApprovalsSection />}
       {queueView === 'releases' && canApprove && <PendingReleaseSection />}
       {queueView === 'history' && (
@@ -197,6 +202,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   )
