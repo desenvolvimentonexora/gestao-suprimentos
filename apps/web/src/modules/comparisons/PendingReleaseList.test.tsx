@@ -25,9 +25,9 @@ describe('PendingReleaseList', () => {
     expect(screen.getByText('SOL-1')).toBeInTheDocument()
   })
 
-  it('não mostra nada quando não há comparações pendentes', () => {
-    const { container } = render(<PendingReleaseList {...baseProps()} rows={[]} />)
-    expect(container).toBeEmptyDOMElement()
+  it('mostra mensagem de estado vazio quando não há comparações pendentes', () => {
+    render(<PendingReleaseList {...baseProps()} rows={[]} />)
+    expect(screen.getByText(/nenhuma comparação aprovada aguardando liberação/i)).toBeInTheDocument()
   })
 
   it('chama onRelease com a condição de pagamento preenchida', async () => {

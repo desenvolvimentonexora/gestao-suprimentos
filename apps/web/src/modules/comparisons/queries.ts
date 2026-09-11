@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   confirmExtractedItems,
+  createOrder,
   createPdfQuotation,
   decideComparison,
   fetchComparableRequests,
+  fetchComparisonOrderDraft,
   fetchHistory,
+  fetchNextOrderNumberSuggestion,
   fetchPendingApprovals,
   fetchPendingReleases,
+  fetchReleasedAwaitingOrder,
   fetchSupplierOptions,
   getOrCreateDraftComparison,
   releaseComparison,
@@ -15,6 +19,7 @@ import {
   setFinancialChargeRequested,
   setItemWinner,
   uploadQuotationAttachment,
+  type CreateOrderInput,
   type DecideComparisonInput,
   type ReleaseComparisonInput,
 } from './api'
@@ -143,5 +148,35 @@ export function useSetFinancialChargeRequested() {
   return useMutation({
     mutationFn: ({ comparisonId, value }: { comparisonId: string; value: boolean }) =>
       setFinancialChargeRequested(comparisonId, value),
+  })
+}
+
+export function useReleasedAwaitingOrder(enabled: boolean) {
+  return useQuery({ queryKey: ['released-awaiting-order'], queryFn: fetchReleasedAwaitingOrder, enabled })
+}
+
+export function useComparisonOrderDraft(comparisonId: string | null) {
+  return useQuery({
+    queryKey: ['comparison-order-draft', comparisonId],
+    queryFn: () => fetchComparisonOrderDraft(comparisonId!),
+    enabled: Boolean(comparisonId),
+  })
+}
+
+export function useNextOrderNumberSuggestion(tenantId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['next-order-number', tenantId],
+    queryFn: () => fetchNextOrderNumberSuggestion(tenantId),
+    enabled,
+  })
+}
+
+export function useCreateOrder(tenantId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: Omit<CreateOrderInput, 'tenantId'>) => createOrder({ tenantId, ...input }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['released-awaiting-order'] })
+    },
   })
 }

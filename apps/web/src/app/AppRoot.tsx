@@ -16,7 +16,6 @@ import { UnitsPage } from '../modules/units/UnitsPage'
 import { DisparoSolicitacoesPage } from '../modules/requests/DisparoSolicitacoesPage'
 import { EmNegociacaoPage } from '../modules/quotations/EmNegociacaoPage'
 import { ComparisonPage } from '../modules/comparisons/ComparisonPage'
-import { OrdersPage } from '../modules/orders/OrdersPage'
 import { AppShell } from './AppShell'
 import { LoginPage } from './LoginPage'
 
@@ -80,10 +79,6 @@ function EmNegociacaoRoute({ tenantId }: { tenantId: string }) {
 
 function ComparisonRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
   return <ComparisonPage tenantId={tenantId} userId={userId} />
-}
-
-function OrdersRoute({ tenantId }: { tenantId: string }) {
-  return <OrdersPage tenantId={tenantId} />
 }
 
 function ProtectedLayout({ tenantName, userName }: { tenantName: string; userName: string }) {
@@ -197,7 +192,6 @@ export function AppRoot() {
               <ComparisonRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />
             }
           />
-          <Route path="/suprimentos/pedidos" element={<OrdersRoute tenantId={tenant.tenantId} />} />
         </Route>
       </Routes>
     </BrowserRouter>

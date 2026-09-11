@@ -81,3 +81,29 @@ export interface HistoryRow {
   rejectionReason: string | null
   releasedAt: string | null
 }
+
+export interface ReleasedComparisonRow {
+  comparisonId: string
+  requestId: string
+  unitId: string
+  unitName: string
+  externalRef: string | null
+  totalValue: number
+}
+
+export interface OrderDraftItem {
+  requestItemId: string
+  quotationItemId: string
+  materialId: string
+  materialName: string
+  quantity: number
+  unitOfMeasure: string | null
+  supplierId: string
+  supplierName: string
+  unitPrice: number
+}
+
+export interface CreateOrderValues {
+  orderNumber: string
+  expectedDeliveryDate: string
+}

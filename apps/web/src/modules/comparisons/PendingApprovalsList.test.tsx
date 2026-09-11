@@ -24,9 +24,9 @@ describe('PendingApprovalsList', () => {
     expect(screen.getByText('SOL-1')).toBeInTheDocument()
   })
 
-  it('não mostra nada quando não há aprovações pendentes', () => {
-    const { container } = render(<PendingApprovalsList {...baseProps()} rows={[]} />)
-    expect(container).toBeEmptyDOMElement()
+  it('mostra mensagem de estado vazio quando não há aprovações pendentes', () => {
+    render(<PendingApprovalsList {...baseProps()} rows={[]} />)
+    expect(screen.getByText(/nenhuma comparação aguardando aprovação/i)).toBeInTheDocument()
   })
 
   it('chama onApprove ao clicar em aprovar', async () => {

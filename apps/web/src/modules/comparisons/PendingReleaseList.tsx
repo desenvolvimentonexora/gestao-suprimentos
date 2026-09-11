@@ -21,8 +21,6 @@ export function PendingReleaseList({
   const [reasons, setReasons] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  if (rows.length === 0) return null
-
   function handleReject(comparisonId: string) {
     const reason = (reasons[comparisonId] ?? '').trim()
     if (!reason) {
@@ -33,9 +31,12 @@ export function PendingReleaseList({
     onReject(comparisonId, reason)
   }
 
+  if (rows.length === 0) {
+    return <p className="text-sm text-ink-muted">Nenhuma comparação aprovada aguardando liberação.</p>
+  }
+
   return (
-    <div className="mt-6 flex flex-col gap-3">
-      <h2 className="text-lg font-semibold text-ink">Fila de Alterações</h2>
+    <div className="flex flex-col gap-3">
       {rows.map((row) => (
         <Card key={row.comparisonId} className="flex flex-col gap-2">
           <div>

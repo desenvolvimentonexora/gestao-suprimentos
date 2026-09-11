@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Badge, Button, Card } from '../../components'
+import { Link } from 'react-router-dom'
+import { Badge, Button, Card, Modal } from '../../components'
 import { useUserPermissions } from '../../core/permissions'
 import { ComparisonTable } from './ComparisonTable'
 import { HistoryList } from './HistoryList'
 import { ImportQuotationPdfModal } from './ImportQuotationPdfModal'
+import { OrdersQueueModal } from './OrdersQueueModal'
 import { PendingApprovalsSection } from './PendingApprovalsSection'
 import { PendingReleaseSection } from './PendingReleaseSection'
 import {
@@ -15,7 +16,7 @@ import {
   useSetItemWinner,
 } from './queries'
 
-type QueueView = 'approvals' | 'releases' | 'history' | null
+type QueueView = 'approvals' | 'releases' | 'orders' | 'history' | null
 
 export interface ComparisonPageProps {
   tenantId: string
@@ -23,7 +24,6 @@ export interface ComparisonPageProps {
 }
 
 export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
-  const navigate = useNavigate()
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [createdComparisonIds, setCreatedComparisonIds] = useState<Record<string, string>>({})
   const [importOpen, setImportOpen] = useState(false)
@@ -86,7 +86,10 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                 Fila de Alterações
               </Button>
             )}
-            <Button variant="on-primary" onClick={() => navigate('/suprimentos/pedidos')}>
+            <Button
+              variant={queueView === 'orders' ? 'primary' : 'on-primary'}
+              onClick={() => setQueueView(queueView === 'orders' ? null : 'orders')}
+            >
               Fila de Pedidos
             </Button>
             <Button
@@ -99,15 +102,29 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 py-8">
-      {queueView === 'approvals' && canApprove && <PendingApprovalsSection />}
-      {queueView === 'releases' && canApprove && <PendingReleaseSection />}
-      {queueView === 'history' && (
-        <div className="mt-4">
-          <HistoryList rows={historyQuery.data ?? []} />
-        </div>
+      {canApprove && (
+        <Modal
+          isOpen={queueView === 'approvals'}
+          onClose={() => setQueueView(null)}
+          title="Fila de Aprovações"
+        >
+          <PendingApprovalsSection />
+        </Modal>
       )}
 
+      {canApprove && (
+        <Modal isOpen={queueView === 'releases'} onClose={() => setQueueView(null)} title="Fila de Alterações">
+          <PendingReleaseSection />
+        </Modal>
+      )}
+
+      <OrdersQueueModal isOpen={queueView === 'orders'} onClose={() => setQueueView(null)} tenantId={tenantId} />
+
+      <Modal isOpen={queueView === 'history'} onClose={() => setQueueView(null)} title="Histórico">
+        <HistoryList rows={historyQuery.data ?? []} />
+      </Modal>
+
+      <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Card className="border-primary">
           <p className="text-sm font-medium text-ink">Equalização Padrão</p>

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { OrderFormModal } from './OrderFormModal'
+import { OrderGenerationForm } from './OrderGenerationForm'
 import type { OrderDraftItem } from './types'
 
 const items: OrderDraftItem[] = [
@@ -31,19 +31,17 @@ const items: OrderDraftItem[] = [
 
 function baseProps() {
   return {
-    isOpen: true,
-    onClose: vi.fn(),
-    unitName: 'UP Graça',
     items,
     suggestedOrderNumber: 'PED-0001',
+    onBack: vi.fn(),
     onSubmit: vi.fn(),
     isSubmitting: false,
   }
 }
 
-describe('OrderFormModal', () => {
+describe('OrderGenerationForm', () => {
   it('mostra os itens da comparação, somente leitura, com fornecedor e preço', () => {
-    render(<OrderFormModal {...baseProps()} />)
+    render(<OrderGenerationForm {...baseProps()} />)
     expect(screen.getByText('Cimento CP-II')).toBeInTheDocument()
     expect(screen.getByText('Fornecedor A')).toBeInTheDocument()
     expect(screen.getByText('Areia')).toBeInTheDocument()
@@ -51,20 +49,20 @@ describe('OrderFormModal', () => {
   })
 
   it('mostra o valor total somado dos itens', () => {
-    render(<OrderFormModal {...baseProps()} />)
+    render(<OrderGenerationForm {...baseProps()} />)
     // 10 * 30 + 5 * 100 = 800
     expect(screen.getByText(/R\$\s*800,00/)).toBeInTheDocument()
   })
 
   it('pré-preenche o número do pedido sugerido, editável', () => {
-    render(<OrderFormModal {...baseProps()} />)
+    render(<OrderGenerationForm {...baseProps()} />)
     expect(screen.getByLabelText(/número do pedido/i)).toHaveValue('PED-0001')
   })
 
   it('exige o número do pedido ao emitir', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
-    render(<OrderFormModal {...baseProps()} onSubmit={onSubmit} />)
+    render(<OrderGenerationForm {...baseProps()} onSubmit={onSubmit} />)
 
     await user.clear(screen.getByLabelText(/número do pedido/i))
     await user.click(screen.getByRole('button', { name: /emitir pedido/i }))
@@ -76,7 +74,7 @@ describe('OrderFormModal', () => {
   it('envia número do pedido e data prevista de entrega preenchidos', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
-    render(<OrderFormModal {...baseProps()} onSubmit={onSubmit} />)
+    render(<OrderGenerationForm {...baseProps()} onSubmit={onSubmit} />)
 
     await user.clear(screen.getByLabelText(/número do pedido/i))
     await user.type(screen.getByLabelText(/número do pedido/i), 'PED-9999')
@@ -87,5 +85,15 @@ describe('OrderFormModal', () => {
       orderNumber: 'PED-9999',
       expectedDeliveryDate: '2026-10-01',
     })
+  })
+
+  it('chama onBack ao clicar em voltar, sem fechar o pop-up', async () => {
+    const user = userEvent.setup()
+    const onBack = vi.fn()
+    render(<OrderGenerationForm {...baseProps()} onBack={onBack} />)
+
+    await user.click(screen.getByRole('button', { name: /voltar/i }))
+
+    expect(onBack).toHaveBeenCalledTimes(1)
   })
 })
