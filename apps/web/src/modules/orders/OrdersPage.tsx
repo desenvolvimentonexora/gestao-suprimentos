@@ -49,8 +49,8 @@ export function OrdersPage({ tenantId }: OrdersPageProps) {
     <div className="min-h-screen bg-bg">
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
-            ← Suprimentos
+          <Link to="/suprimentos/equalizacao" className="text-sm text-on-primary hover:underline">
+            ← Equalização
           </Link>
           <h1 className="mt-4 text-2xl font-semibold text-on-primary">Pedidos</h1>
         </div>
