@@ -122,7 +122,10 @@ Fases posteriores (entregas, notas fiscais, concorrência, dashboard, RH, logís
 
 ## 7. Direção visual (Fase 1)
 
-**Histórico:** a versão original desta seção pedia uma home discreta ("mesa de trabalho calma", sem gradiente, sem selo colorido), rejeitando de propósito uma referência do cliente com cards em grade e gradiente. Essa decisão foi revista: o cliente quer fidelidade ao layout do sistema anterior dele (grade de cards, saudação centralizada, degradê, badges de status), trocando só a paleta (era vermelho/bordô, agora preto + verde Nexora). Isso vale **para as telas de navegação** — Login, Home, hubs de setor como Suprimentos. Para telas de trabalho de fato (listagens, formulários, comparação de cotações — a partir da Fase 3), a lógica "mesa de trabalho calma" continua valendo: sem degradê, bordas finas em vez de cor, sem selo decorativo fora do que já é catálogo de produto (`StatusBadge`).
+**Histórico:** a versão original desta seção pedia uma home discreta ("mesa de trabalho calma", sem gradiente, sem selo colorido), rejeitando de propósito uma referência do cliente com cards em grade e gradiente. Essa decisão foi revista duas vezes:
+
+1. Primeira revisão: o cliente quer fidelidade ao layout do sistema anterior dele (grade de cards, saudação centralizada, degradê, badges de status), trocando só a paleta (era vermelho/bordô, agora preto + verde Nexora) — mas só nas telas de navegação (Login, Home, hubs de setor). As telas de trabalho (listagens, formulários, comparação) ficaram na linha "mesa de trabalho calma": sem degradê, bordas finas em vez de cor.
+2. Segunda revisão (atual): o cliente pediu mais cor também nas telas de trabalho. Em vez de aplicar o degradê completo atrás de tabelas e listas densas (o que prejudica leitura de dados em uso prolongado), adotamos um **modelo híbrido**: o topo de cada tela de trabalho ganha o mesmo degradê preto→verde da Home (com o título da página, ações e cards de indicador, se houver), e a área de conteúdo abaixo — onde ficam listas, tabelas, formulários — continua em `--color-bg`, clara, sem degradê. Ver "Telas de trabalho" mais abaixo para o padrão exato.
 
 **Tema (valores padrão, sobrescritos por `settings.theme` e `settings.brand` do tenant):**
 - `--color-bg`: #F4F5F4
@@ -155,6 +158,14 @@ Fases posteriores (entregas, notas fiscais, concorrência, dashboard, RH, logís
 - Mesma grade de `ModuleCard`, conteúdo em `modules/registry.ts` (`suprimentosRegistry`). Só "Agenda de Fornecedores" navega (para um placeholder "em construção" até a Fase 2 implementar de verdade); os demais mostram a mesma mensagem de indisponibilidade.
 
 Ao adicionar um novo setor ou ferramenta, editar `modules/registry.ts` — nunca hardcodar card fora dali. Esse conteúdo (nomes, descrições, ordem) é do produto Nexora, igual entre tenants; o que muda por configuração é só tema e marca (`settings.theme`, `settings.brand`).
+
+**Telas de trabalho (Fase 2+, modelo híbrido):**
+- Estrutura em duas faixas: `<div className="min-h-screen bg-bg">` envolvendo tudo; dentro, uma faixa de topo `bg-gradient-to-b from-primary-dark to-primary` com padding próprio, e depois a área de conteúdo normal (`mx-auto max-w-6xl px-6 py-8`, fundo `--color-bg` herdado).
+- Na faixa de topo: link de voltar (`text-on-primary`, **nunca** com opacidade reduzida tipo `/80` — testar contraste, o topo do degradê é bem escuro), título da página (`text-on-primary`), ações da tela (botões) e, se a tela tiver métricas, os cards de indicador.
+- Botões dentro da faixa de topo usam o variant `on-primary` de `components/Button` (borda e fundo translúcidos brancos, texto `text-on-primary`) — os variants `primary`/`secondary`/`ghost` não têm contraste adequado sobre o degradê. `components/ComingSoonButton` aceita esse variant também.
+- Cards de indicador (números, KPIs) ficam brancos (`bg-surface`, como um `Card` comum) flutuando sobre o degradê — mesmo padrão de `ModuleCard` sobre o degradê da Home.
+- Abaixo da faixa de topo, tudo volta ao padrão "mesa de trabalho calma": fundo `--color-bg`, listas/tabelas/formulários com bordas finas em `--color-line`, sem degradê, sem sombra em repouso. É aqui que fica a densidade de dados (linhas de tabela, cards de item, listas longas) — não decorar essa área com cor de marca além do que já é catálogo de produto (`StatusBadge`, badges de status do domínio).
+- Cores semânticas (atraso/erro em vermelho, pendência em âmbar, aprovado em verde de status) nunca são substituídas pela cor de marca — mesmo o verde da Nexora sendo similar a "aprovado", são conceitos diferentes e devem continuar visualmente distintos.
 
 ## 8. Convenções de código
 

@@ -30,4 +30,9 @@ describe('Button', () => {
 
     expect(onClick).not.toHaveBeenCalled()
   })
+
+  it('aplica o estilo translúcido do variant on-primary, para uso sobre fundo em degradê', () => {
+    render(<Button variant="on-primary">Importar Excel</Button>)
+    expect(screen.getByRole('button', { name: 'Importar Excel' }).className).toContain('text-on-primary')
+  })
 })

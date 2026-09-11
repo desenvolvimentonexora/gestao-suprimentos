@@ -64,26 +64,30 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      <Link to="/suprimentos" className="text-sm text-ink-muted hover:text-ink">
-        ← Suprimentos
-      </Link>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold text-ink">Disparo de Solicitações</h1>
-        <div className="flex gap-2">
-          <ComingSoonButton label="Limpar NF" variant="secondary" />
-          <Button variant="secondary" onClick={() => setImportOpen(true)}>
-            Importar Excel
-          </Button>
-          <ComingSoonButton label="Buscar SOL sumida" variant="primary" />
+    <div className="min-h-screen bg-bg">
+      <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
+        <div className="mx-auto max-w-6xl">
+          <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
+            ← Suprimentos
+          </Link>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <h1 className="text-2xl font-semibold text-on-primary">Disparo de Solicitações</h1>
+            <div className="flex gap-2">
+              <ComingSoonButton label="Limpar NF" variant="on-primary" />
+              <Button variant="on-primary" onClick={() => setImportOpen(true)}>
+                Importar Excel
+              </Button>
+              <ComingSoonButton label="Buscar SOL sumida" variant="on-primary" />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <IndicatorCards indicators={getRequestIndicators(requests)} />
+          </div>
         </div>
       </div>
 
-      <div className="mt-6">
-        <IndicatorCards indicators={getRequestIndicators(requests)} />
-      </div>
-
-      <div className="mt-6">
+      <div className="mx-auto max-w-6xl px-6 py-8">
         <RequestsTable
           requests={filteredRequests}
           units={units}
