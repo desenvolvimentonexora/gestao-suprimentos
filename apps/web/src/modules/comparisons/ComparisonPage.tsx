@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Badge, Button, Card, ComingSoonButton } from '../../components'
+import { Link, useNavigate } from 'react-router-dom'
+import { Badge, Button, Card } from '../../components'
 import { useUserPermissions } from '../../core/permissions'
 import { ComparisonTable } from './ComparisonTable'
 import { HistoryList } from './HistoryList'
@@ -23,6 +23,7 @@ export interface ComparisonPageProps {
 }
 
 export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
+  const navigate = useNavigate()
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [createdComparisonIds, setCreatedComparisonIds] = useState<Record<string, string>>({})
   const [importOpen, setImportOpen] = useState(false)
@@ -85,7 +86,9 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                 Fila de Alterações
               </Button>
             )}
-            <ComingSoonButton label="Fila de Pedidos (0)" variant="on-primary" />
+            <Button variant="on-primary" onClick={() => navigate('/suprimentos/pedidos')}>
+              Fila de Pedidos
+            </Button>
             <Button
               variant={queueView === 'history' ? 'primary' : 'on-primary'}
               onClick={() => setQueueView(queueView === 'history' ? null : 'history')}

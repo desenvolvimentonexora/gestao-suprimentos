@@ -366,6 +366,155 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          order_id: string
+          quantity: number
+          request_item_id: string
+          supplier_id: string
+          tenant_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          order_id: string
+          quantity: number
+          request_item_id: string
+          supplier_id: string
+          tenant_id: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          order_id?: string
+          quantity?: number
+          request_item_id?: string
+          supplier_id?: string
+          tenant_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_request_item_id_fkey"
+            columns: ["request_item_id"]
+            isOneToOne: false
+            referencedRelation: "request_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          comparison_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          expected_delivery_date: string | null
+          id: string
+          order_number: string
+          payment_condition_note: string | null
+          request_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          tenant_id: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          comparison_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          expected_delivery_date?: string | null
+          id?: string
+          order_number: string
+          payment_condition_note?: string | null
+          request_id: string
+          status?: Database["public"]["Enums"]["order_status"]
+          tenant_id: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          comparison_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          expected_delivery_date?: string | null
+          id?: string
+          order_number?: string
+          payment_condition_note?: string | null
+          request_id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          tenant_id?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_comparison_id_fkey"
+            columns: ["comparison_id"]
+            isOneToOne: false
+            referencedRelation: "comparisons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -1473,6 +1622,7 @@ export type Database = {
         | "rejected"
         | "pending_release"
         | "released"
+      order_status: "issued" | "cancelled"
       quotation_status: "pending" | "received" | "discarded"
       request_status: "draft" | "open" | "negotiating" | "quoted" | "cancelled"
     }
@@ -1613,6 +1763,7 @@ export const Constants = {
         "pending_release",
         "released",
       ],
+      order_status: ["issued", "cancelled"],
       quotation_status: ["pending", "received", "discarded"],
       request_status: ["draft", "open", "negotiating", "quoted", "cancelled"],
     },
