@@ -83,6 +83,135 @@ export type Database = {
           },
         ]
       }
+      comparison_lines: {
+        Row: {
+          ai_confidence: number | null
+          comparison_id: string
+          created_at: string
+          extracted_by_ai: boolean
+          id: string
+          quotation_item_id: string
+          request_item_id: string
+          tenant_id: string
+        }
+        Insert: {
+          ai_confidence?: number | null
+          comparison_id: string
+          created_at?: string
+          extracted_by_ai?: boolean
+          id?: string
+          quotation_item_id: string
+          request_item_id: string
+          tenant_id: string
+        }
+        Update: {
+          ai_confidence?: number | null
+          comparison_id?: string
+          created_at?: string
+          extracted_by_ai?: boolean
+          id?: string
+          quotation_item_id?: string
+          request_item_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comparison_lines_comparison_id_fkey"
+            columns: ["comparison_id"]
+            isOneToOne: false
+            referencedRelation: "comparisons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparison_lines_quotation_item_id_fkey"
+            columns: ["quotation_item_id"]
+            isOneToOne: false
+            referencedRelation: "quotation_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparison_lines_request_item_id_fkey"
+            columns: ["request_item_id"]
+            isOneToOne: false
+            referencedRelation: "request_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparison_lines_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comparisons: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          rejection_reason: string | null
+          request_id: string
+          status: Database["public"]["Enums"]["comparison_status"]
+          tenant_id: string
+          updated_at: string
+          winning_quotation_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          rejection_reason?: string | null
+          request_id: string
+          status?: Database["public"]["Enums"]["comparison_status"]
+          tenant_id: string
+          updated_at?: string
+          winning_quotation_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          rejection_reason?: string | null
+          request_id?: string
+          status?: Database["public"]["Enums"]["comparison_status"]
+          tenant_id?: string
+          updated_at?: string
+          winning_quotation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comparisons_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparisons_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparisons_winning_quotation_id_fkey"
+            columns: ["winning_quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_mappings: {
         Row: {
           column_mapping: Json
@@ -230,6 +359,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quotation_attachments: {
+        Row: {
+          file_name: string
+          id: string
+          quotation_id: string
+          storage_path: string
+          tenant_id: string
+          uploaded_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          file_name: string
+          id?: string
+          quotation_id: string
+          storage_path: string
+          tenant_id: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          file_name?: string
+          id?: string
+          quotation_id?: string
+          storage_path?: string
+          tenant_id?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_attachments_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotation_attachments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quotation_items: {
         Row: {
@@ -1184,8 +1358,19 @@ export type Database = {
     }
     Functions: {
       current_tenant_id: { Args: never; Returns: string }
+      fn_decide_comparison: {
+        Args: {
+          p_comparison_id: string
+          p_decided_by: string
+          p_decision: Database["public"]["Enums"]["comparison_status"]
+          p_rejection_reason?: string
+          p_winning_quotation_id?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
+      comparison_status: "draft" | "pending_approval" | "approved" | "rejected"
       quotation_status: "pending" | "received" | "discarded"
       request_status: "draft" | "open" | "negotiating" | "quoted" | "cancelled"
     }
@@ -1318,6 +1503,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      comparison_status: ["draft", "pending_approval", "approved", "rejected"],
       quotation_status: ["pending", "received", "discarded"],
       request_status: ["draft", "open", "negotiating", "quoted", "cancelled"],
     },

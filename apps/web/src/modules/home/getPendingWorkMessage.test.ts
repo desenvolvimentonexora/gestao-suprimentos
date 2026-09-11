@@ -28,4 +28,22 @@ describe('getPendingWorkMessage', () => {
     const result = getPendingWorkMessage({ dueTodayCount: 0, awaitingQuoteCount: 1 })
     expect(result?.[0]?.text).toBe('1 aguardando cotação')
   })
+
+  it('mostra a frase de aprovações pendentes quando há dados', () => {
+    const result = getPendingWorkMessage({
+      dueTodayCount: 0,
+      awaitingQuoteCount: 0,
+      pendingApprovalsCount: 2,
+    })
+    expect(result).toEqual([{ text: '2 aprovações aguardando você', href: '/suprimentos/equalizacao' }])
+  })
+
+  it('usa singular para aprovações pendentes quando a contagem é 1', () => {
+    const result = getPendingWorkMessage({
+      dueTodayCount: 0,
+      awaitingQuoteCount: 0,
+      pendingApprovalsCount: 1,
+    })
+    expect(result?.[0]?.text).toBe('1 aprovação aguardando você')
+  })
 })

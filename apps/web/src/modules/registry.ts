@@ -144,6 +144,7 @@ export const suprimentosRegistry: ModuleCardData[] = [
     description: 'Compare cotações e gere pedidos de compra',
     icon: BarChart3,
     status: 'disponivel',
+    route: '/suprimentos/equalizacao',
   },
   {
     id: 'cobrador-entregas',

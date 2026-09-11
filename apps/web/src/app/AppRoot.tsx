@@ -7,6 +7,7 @@ import { fetchCurrentUserProfile, getSession, onAuthStateChange, signOut } from 
 import { loadSettings, type Brand } from '../core/config'
 import { applyTheme } from '../core/theme'
 import { getTenant } from '../core/tenant'
+import { useUserPermissions } from '../core/permissions'
 import { HomePage } from '../modules/home/HomePage'
 import { usePendingWorkSummary } from '../modules/home/queries'
 import { SuprimentosPage } from '../modules/suprimentos/SuprimentosPage'
@@ -14,6 +15,7 @@ import { AgendaFornecedoresPage } from '../modules/suppliers/AgendaFornecedoresP
 import { UnitsPage } from '../modules/units/UnitsPage'
 import { DisparoSolicitacoesPage } from '../modules/requests/DisparoSolicitacoesPage'
 import { EmNegociacaoPage } from '../modules/quotations/EmNegociacaoPage'
+import { ComparisonPage } from '../modules/comparisons/ComparisonPage'
 import { AppShell } from './AppShell'
 import { LoginPage } from './LoginPage'
 
@@ -46,9 +48,11 @@ function LoginRoute({ brand }: { brand: Brand }) {
   return <LoginPage brand={brand} onLoginSuccess={() => navigate('/', { replace: true })} />
 }
 
-function HomeRoute({ fullName }: { fullName: string }) {
+function HomeRoute({ fullName, userId }: { fullName: string; userId: string }) {
   const handleSignOut = useSignOutHandler()
-  const pendingWorkQuery = usePendingWorkSummary()
+  const permissionsQuery = useUserPermissions(userId)
+  const canApprove = (permissionsQuery.data ?? []).includes('comparisons.approve')
+  const pendingWorkQuery = usePendingWorkSummary(canApprove)
   return <HomePage fullName={fullName} onSignOut={handleSignOut} pendingWork={pendingWorkQuery.data} />
 }
 
@@ -71,6 +75,10 @@ function DisparoSolicitacoesRoute({ tenantId }: { tenantId: string }) {
 
 function EmNegociacaoRoute({ tenantId }: { tenantId: string }) {
   return <EmNegociacaoPage tenantId={tenantId} />
+}
+
+function ComparisonRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
+  return <ComparisonPage tenantId={tenantId} userId={userId} />
 }
 
 function ProtectedLayout({ tenantName, userName }: { tenantName: string; userName: string }) {
@@ -144,7 +152,7 @@ export function AppRoot() {
           path="/"
           element={
             <RequireSession session={session ?? null}>
-              <HomeRoute fullName={userName} />
+              <HomeRoute fullName={userName} userId={session?.user.id ?? ''} />
             </RequireSession>
           }
         />
@@ -177,6 +185,12 @@ export function AppRoot() {
           <Route
             path="/suprimentos/em-negociacao"
             element={<EmNegociacaoRoute tenantId={tenant.tenantId} />}
+          />
+          <Route
+            path="/suprimentos/equalizacao"
+            element={
+              <ComparisonRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />
+            }
           />
         </Route>
       </Routes>

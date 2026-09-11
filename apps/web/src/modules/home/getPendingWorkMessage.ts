@@ -1,6 +1,7 @@
 export interface PendingWorkSummary {
   dueTodayCount: number
   awaitingQuoteCount: number
+  pendingApprovalsCount?: number
 }
 
 export interface PendingWorkSegment {
@@ -22,6 +23,14 @@ export function getPendingWorkMessage(summary: PendingWorkSummary): PendingWorkS
     segments.push({
       text: `${summary.awaitingQuoteCount} aguardando cotação`,
       href: '/suprimentos/em-negociacao',
+    })
+  }
+
+  const pendingApprovalsCount = summary.pendingApprovalsCount ?? 0
+  if (pendingApprovalsCount > 0) {
+    segments.push({
+      text: `${pendingApprovalsCount} ${pendingApprovalsCount === 1 ? 'aprovação aguardando' : 'aprovações aguardando'} você`,
+      href: '/suprimentos/equalizacao',
     })
   }
 

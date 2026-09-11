@@ -81,4 +81,29 @@ describe('RequestFormModal', () => {
       }),
     )
   })
+
+  it('inclui itens adicionados dinamicamente ao enviar', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(<RequestFormModal {...baseProps()} onSubmit={onSubmit} />)
+
+    await user.selectOptions(screen.getByLabelText('Unidade'), 'u1')
+    await user.selectOptions(screen.getAllByLabelText(/material/i)[0]!, 'm1')
+    await user.type(screen.getAllByLabelText(/quantidade/i)[0]!, '10')
+
+    await user.click(screen.getByRole('button', { name: /adicionar item/i }))
+    await user.selectOptions(screen.getAllByLabelText(/material/i)[1]!, 'm2')
+    await user.type(screen.getAllByLabelText(/quantidade/i)[1]!, '5')
+
+    await user.click(screen.getByRole('button', { name: /criar requisição/i }))
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [
+          expect.objectContaining({ materialId: 'm1', quantity: 10 }),
+          expect.objectContaining({ materialId: 'm2', quantity: 5 }),
+        ],
+      }),
+    )
+  })
 })
