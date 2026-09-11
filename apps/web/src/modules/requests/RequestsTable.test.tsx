@@ -20,7 +20,18 @@ function makeRequest(overrides: Partial<RequestRow>): RequestRow {
     negotiatorId: null,
     negotiatorName: null,
     negotiatingStartedAt: null,
-    items: [{ id: 'i1', materialId: 'm1', materialName: 'Cimento', quantity: 10, unitOfMeasure: 'sc' }],
+    quotationsCount: 0,
+    items: [
+      {
+        id: 'i1',
+        materialId: 'm1',
+        materialName: 'Cimento',
+        quantity: 10,
+        unitOfMeasure: 'sc',
+        statusCode: null,
+        authorizedAt: null,
+      },
+    ],
     ...overrides,
   }
 }
@@ -40,6 +51,8 @@ function baseProps() {
     onEditRequest: vi.fn(),
     onDispatch: vi.fn(),
     onCancelRequest: vi.fn(),
+    onNegotiateDirectly: vi.fn(),
+    onUpdateNotes: vi.fn(),
   }
 }
 

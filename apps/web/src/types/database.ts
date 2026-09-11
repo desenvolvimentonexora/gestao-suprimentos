@@ -740,32 +740,38 @@ export type Database = {
       }
       request_items: {
         Row: {
+          authorized_at: string | null
           created_at: string
           deleted_at: string | null
           id: string
           material_id: string
           quantity: number
           request_id: string
+          status_code: string | null
           tenant_id: string
           unit_of_measure: string | null
         }
         Insert: {
+          authorized_at?: string | null
           created_at?: string
           deleted_at?: string | null
           id?: string
           material_id: string
           quantity: number
           request_id: string
+          status_code?: string | null
           tenant_id: string
           unit_of_measure?: string | null
         }
         Update: {
+          authorized_at?: string | null
           created_at?: string
           deleted_at?: string | null
           id?: string
           material_id?: string
           quantity?: number
           request_id?: string
+          status_code?: string | null
           tenant_id?: string
           unit_of_measure?: string | null
         }

@@ -27,7 +27,18 @@ const request: RequestRow = {
   negotiatorId: null,
   negotiatorName: null,
   negotiatingStartedAt: null,
-  items: [{ id: 'i1', materialId: 'm1', materialName: 'Argamassa', quantity: 20, unitOfMeasure: 'sc' }],
+  quotationsCount: 0,
+  items: [
+    {
+      id: 'i1',
+      materialId: 'm1',
+      materialName: 'Argamassa',
+      quantity: 20,
+      unitOfMeasure: 'sc',
+      statusCode: null,
+      authorizedAt: null,
+    },
+  ],
 }
 
 function baseProps() {

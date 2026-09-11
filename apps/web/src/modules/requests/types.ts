@@ -6,6 +6,8 @@ export interface RequestItemRow {
   materialName: string
   quantity: number
   unitOfMeasure: string | null
+  statusCode: string | null
+  authorizedAt: string | null
 }
 
 export interface RequestRow {
@@ -21,6 +23,7 @@ export interface RequestRow {
   negotiatorId: string | null
   negotiatorName: string | null
   negotiatingStartedAt: string | null
+  quotationsCount: number
   items: RequestItemRow[]
 }
 

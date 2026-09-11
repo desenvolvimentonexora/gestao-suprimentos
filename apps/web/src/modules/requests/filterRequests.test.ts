@@ -16,6 +16,7 @@ function makeRequest(overrides: Partial<RequestRow>): RequestRow {
     negotiatorId: null,
     negotiatorName: null,
     negotiatingStartedAt: null,
+    quotationsCount: 0,
     items: [],
     ...overrides,
   }

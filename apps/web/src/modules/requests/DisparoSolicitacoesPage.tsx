@@ -17,6 +17,8 @@ import {
   useRequests,
   useUnitOptions,
   useUpdateRequest,
+  useUpdateRequestNotes,
+  useUpdateRequestStatus,
 } from './queries'
 import type { RequestFormValues, RequestStatus } from './types'
 
@@ -42,6 +44,8 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const updateRequest = useUpdateRequest(tenantId)
   const dispatchRequest = useDispatchRequest()
   const cancelRequest = useCancelRequest()
+  const updateRequestStatus = useUpdateRequestStatus()
+  const updateRequestNotes = useUpdateRequestNotes()
 
   const requests = requestsQuery.data ?? []
   const units = unitsQuery.data ?? []
@@ -102,6 +106,10 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
           onEditRequest={(requestId) => setFormState({ mode: 'edit', requestId })}
           onDispatch={setDispatchRequestId}
           onCancelRequest={(requestId) => cancelRequest.mutate(requestId)}
+          onNegotiateDirectly={(requestId) =>
+            updateRequestStatus.mutate({ requestId, status: 'negotiating' })
+          }
+          onUpdateNotes={(requestId, notes) => updateRequestNotes.mutate({ requestId, notes })}
         />
       </div>
 

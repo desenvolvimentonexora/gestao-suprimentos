@@ -15,7 +15,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, status, needed_by, external_ref, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, deleted_at, materials(name))',
+      'id, status, needed_by, external_ref, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, materials(name)), quotations(id, deleted_at)',
     )
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -35,6 +35,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
     negotiatorId: row.negotiator?.id ?? null,
     negotiatorName: row.negotiator?.full_name ?? null,
     negotiatingStartedAt: row.negotiating_started_at,
+    quotationsCount: row.quotations.filter((quotation) => !quotation.deleted_at).length,
     items: row.request_items
       .filter((item) => !item.deleted_at)
       .map((item) => ({
@@ -43,8 +44,18 @@ export async function fetchRequests(): Promise<RequestRow[]> {
         materialName: item.materials?.name ?? '',
         quantity: Number(item.quantity),
         unitOfMeasure: item.unit_of_measure,
+        statusCode: item.status_code,
+        authorizedAt: item.authorized_at,
       })),
   }))
+}
+
+export async function updateRequestNotes(requestId: string, notes: string): Promise<void> {
+  const { error } = await supabase
+    .from('requests')
+    .update({ notes: notes || null })
+    .eq('id', requestId)
+  if (error) throw error
 }
 
 export async function fetchMaterialsWithSupplierCount(): Promise<MaterialWithSupplierCount[]> {

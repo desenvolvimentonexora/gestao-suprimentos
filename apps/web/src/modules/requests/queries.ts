@@ -11,6 +11,7 @@ import {
   fetchUnitOptions,
   saveImportMapping,
   updateRequest,
+  updateRequestNotes,
   updateRequestStatus,
   type DispatchDetailsValues,
 } from './api'
@@ -93,6 +94,17 @@ export function useDispatchRequest() {
   return useMutation({
     mutationFn: ({ requestId, values }: { requestId: string; values: DispatchDetailsValues }) =>
       dispatchRequest(requestId, values),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useUpdateRequestNotes() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ requestId, notes }: { requestId: string; notes: string }) =>
+      updateRequestNotes(requestId, notes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
