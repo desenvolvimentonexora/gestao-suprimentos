@@ -61,13 +61,14 @@ export async function updateRequestNotes(requestId: string, notes: string): Prom
 export async function fetchMaterialsWithSupplierCount(): Promise<MaterialWithSupplierCount[]> {
   const { data, error } = await supabase
     .from('materials')
-    .select('id, name, supplier_materials(count)')
+    .select('id, name, code, supplier_materials(count)')
     .is('deleted_at', null)
     .order('name')
   if (error) throw error
   return data.map((row) => ({
     id: row.id,
     name: row.name,
+    code: row.code,
     supplierCount: row.supplier_materials[0]?.count ?? 0,
   }))
 }

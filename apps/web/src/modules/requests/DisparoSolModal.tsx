@@ -114,7 +114,7 @@ export function DisparoSolModal({
                     checked={selectedMaterialIds.has(material.id)}
                     onChange={() => toggleMaterial(material.id)}
                   />
-                  {material.name}
+                  {material.code ? `${material.code} · ${material.name}` : material.name}
                 </span>
                 <span className="text-xs text-ink-muted">
                   {material.supplierCount} {material.supplierCount === 1 ? 'fornecedor' : 'fornecedores'}

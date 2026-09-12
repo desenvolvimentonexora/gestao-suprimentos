@@ -31,6 +31,7 @@ export interface MaterialWithSupplierCount {
   id: string
   name: string
   supplierCount: number
+  code: string | null
 }
 
 export interface RequestItemFormValues {

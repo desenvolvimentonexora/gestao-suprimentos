@@ -10,8 +10,8 @@ const units: UnitOption[] = [
 ]
 
 const materials: MaterialWithSupplierCount[] = [
-  { id: 'm1', name: 'Argamassa', supplierCount: 3 },
-  { id: 'm2', name: 'Tintas', supplierCount: 5 },
+  { id: 'm1', name: 'Argamassa', supplierCount: 3, code: '1023' },
+  { id: 'm2', name: 'Tintas', supplierCount: 5, code: null },
 ]
 
 const request: RequestRow = {
@@ -74,6 +74,16 @@ describe('DisparoSolModal', () => {
   it('mostra a contagem de fornecedores por material', () => {
     render(<DisparoSolModal {...baseProps()} />)
     expect(screen.getByText(/3 fornecedores/i)).toBeInTheDocument()
+  })
+
+  it('mostra o código do material no checklist, quando existe', () => {
+    render(<DisparoSolModal {...baseProps()} />)
+    expect(screen.getByText('1023 · Argamassa')).toBeInTheDocument()
+  })
+
+  it('mostra só o nome quando o material não tem código', () => {
+    render(<DisparoSolModal {...baseProps()} />)
+    expect(screen.getByText('Tintas')).toBeInTheDocument()
   })
 
   it('filtra a lista de materiais pela busca', async () => {
