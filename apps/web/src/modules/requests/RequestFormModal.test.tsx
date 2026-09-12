@@ -10,8 +10,8 @@ const units: UnitOption[] = [
 ]
 
 const materials: MaterialOption[] = [
-  { id: 'm1', name: 'Cimento' },
-  { id: 'm2', name: 'Areia' },
+  { id: 'm1', name: 'Cimento', code: '1023' },
+  { id: 'm2', name: 'Areia', code: null },
 ]
 
 function baseProps() {
@@ -105,5 +105,15 @@ describe('RequestFormModal', () => {
         ],
       }),
     )
+  })
+
+  it('mostra o código do material junto ao nome, quando existe', () => {
+    render(<RequestFormModal {...baseProps()} />)
+    expect(screen.getByRole('option', { name: '1023 · Cimento' })).toBeInTheDocument()
+  })
+
+  it('mostra só o nome quando o material não tem código', () => {
+    render(<RequestFormModal {...baseProps()} />)
+    expect(screen.getByRole('option', { name: 'Areia' })).toBeInTheDocument()
   })
 })

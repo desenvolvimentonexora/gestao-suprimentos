@@ -318,9 +318,11 @@ export type Database = {
       materials: {
         Row: {
           category_id: string
+          code: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          description: string | null
           icon: string
           id: string
           name: string
@@ -329,9 +331,11 @@ export type Database = {
         }
         Insert: {
           category_id: string
+          code?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          description?: string | null
           icon?: string
           id?: string
           name: string
@@ -340,9 +344,11 @@ export type Database = {
         }
         Update: {
           category_id?: string
+          code?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          description?: string | null
           icon?: string
           id?: string
           name?: string

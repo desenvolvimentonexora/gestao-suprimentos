@@ -17,13 +17,25 @@ describe('ImportMappingForm', () => {
     render(
       <ImportMappingForm
         columns={columns}
-        initialMapping={{ unit: 'Obra', material: 'Insumo', quantity: 'Qtd', neededBy: 'Prazo', externalRef: 'SOL' }}
+        initialMapping={{
+          unit: 'Obra',
+          material: 'Insumo',
+          materialCode: '',
+          quantity: 'Qtd',
+          neededBy: 'Prazo',
+          externalRef: 'SOL',
+        }}
         onConfirm={vi.fn()}
         onCancel={vi.fn()}
       />,
     )
     expect(screen.getByLabelText('Unidade')).toHaveValue('Obra')
     expect(screen.getByLabelText('Prazo')).toHaveValue('Prazo')
+  })
+
+  it('mostra o campo opcional de código do insumo', () => {
+    render(<ImportMappingForm columns={columns} onConfirm={vi.fn()} onCancel={vi.fn()} />)
+    expect(screen.getByLabelText('Código do insumo')).toBeInTheDocument()
   })
 
   it('exige que os campos obrigatórios sejam mapeados', async () => {
@@ -50,6 +62,7 @@ describe('ImportMappingForm', () => {
     expect(onConfirm).toHaveBeenCalledWith({
       unit: 'Obra',
       material: 'Insumo',
+      materialCode: '',
       quantity: 'Qtd',
       neededBy: '',
       externalRef: '',

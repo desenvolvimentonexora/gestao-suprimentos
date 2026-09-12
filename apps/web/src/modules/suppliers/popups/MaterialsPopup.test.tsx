@@ -8,8 +8,8 @@ import type { SupplierMaterialLinkRow } from './types'
 const links: SupplierMaterialLinkRow[] = [{ materialId: 'm1', materialName: 'Cimento' }]
 
 const allMaterials: MaterialRow[] = [
-  { id: 'm1', name: 'Cimento', categoryId: 'c1', supplierCount: 1, icon: 'layers' },
-  { id: 'm2', name: 'Areia', categoryId: 'c1', supplierCount: 0, icon: 'layers' },
+  { id: 'm1', name: 'Cimento', categoryId: 'c1', supplierCount: 1, icon: 'layers', code: null, description: null },
+  { id: 'm2', name: 'Areia', categoryId: 'c1', supplierCount: 0, icon: 'layers', code: null, description: null },
 ]
 
 describe('MaterialsPopup', () => {

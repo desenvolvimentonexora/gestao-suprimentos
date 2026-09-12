@@ -2,7 +2,7 @@ import type { ImportColumnMapping, ImportParseResult, RequestFormValues } from '
 
 export interface ImportLookup {
   findUnitId: (name: string) => string | null
-  findMaterialId: (name: string) => string | null
+  findMaterialId: (args: { name: string; code: string }) => string | null
 }
 
 function readCell(row: Record<string, unknown>, column: string): string {
@@ -22,6 +22,7 @@ export function parseImportRows(
     const rowNumber = index + 1
     const unitName = readCell(row, mapping.unit)
     const materialName = readCell(row, mapping.material)
+    const materialCode = readCell(row, mapping.materialCode)
     const quantityRaw = readCell(row, mapping.quantity)
     const neededBy = readCell(row, mapping.neededBy)
     const externalRef = readCell(row, mapping.externalRef)
@@ -32,7 +33,7 @@ export function parseImportRows(
       return
     }
 
-    const materialId = lookup.findMaterialId(materialName)
+    const materialId = lookup.findMaterialId({ name: materialName, code: materialCode })
     if (!materialId) {
       errors.push({ row: rowNumber, reason: `Material não encontrado: "${materialName}".` })
       return

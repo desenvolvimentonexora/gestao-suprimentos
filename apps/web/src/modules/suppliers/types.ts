@@ -11,6 +11,8 @@ export interface MaterialRow {
   categoryId: string
   supplierCount: number
   icon: string
+  code: string | null
+  description: string | null
 }
 
 export interface SupplierContactRow {

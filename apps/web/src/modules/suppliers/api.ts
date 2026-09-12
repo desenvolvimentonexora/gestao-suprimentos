@@ -16,7 +16,7 @@ export async function fetchCategories(): Promise<CategoryRow[]> {
 export async function fetchMaterials(): Promise<MaterialRow[]> {
   const { data, error } = await supabase
     .from('materials')
-    .select('id, name, category_id, icon, supplier_materials(count)')
+    .select('id, name, category_id, icon, code, description, supplier_materials(count)')
     .is('deleted_at', null)
     .order('name')
 
@@ -27,17 +27,25 @@ export async function fetchMaterials(): Promise<MaterialRow[]> {
     name: row.name,
     categoryId: row.category_id,
     icon: row.icon,
+    code: row.code,
+    description: row.description,
     supplierCount: row.supplier_materials[0]?.count ?? 0,
   }))
 }
 
 export async function updateMaterial(
   materialId: string,
-  values: { name: string; categoryId: string; icon: string },
+  values: { name: string; categoryId: string; icon: string; code: string; description: string },
 ): Promise<void> {
   const { error } = await supabase
     .from('materials')
-    .update({ name: values.name, category_id: values.categoryId, icon: values.icon })
+    .update({
+      name: values.name,
+      category_id: values.categoryId,
+      icon: values.icon,
+      code: values.code || null,
+      description: values.description || null,
+    })
     .eq('id', materialId)
   if (error) throw error
 }
@@ -312,11 +320,20 @@ export async function createMaterial(
   name: string,
   categoryId: string,
   icon: string,
+  code: string,
+  description: string,
 ): Promise<MaterialRow> {
   const { data, error } = await supabase
     .from('materials')
-    .insert({ tenant_id: tenantId, name, category_id: categoryId, icon })
-    .select('id, name, category_id, icon')
+    .insert({
+      tenant_id: tenantId,
+      name,
+      category_id: categoryId,
+      icon,
+      code: code || null,
+      description: description || null,
+    })
+    .select('id, name, category_id, icon, code, description')
     .single()
 
   if (error) throw error
@@ -326,6 +343,8 @@ export async function createMaterial(
     name: data.name,
     categoryId: data.category_id,
     icon: data.icon,
+    code: data.code,
+    description: data.description,
     supplierCount: 0,
   }
 }

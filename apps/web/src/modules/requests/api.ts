@@ -104,7 +104,7 @@ export async function fetchUnitOptions(): Promise<UnitOption[]> {
 export async function fetchMaterialOptions(): Promise<MaterialOption[]> {
   const { data, error } = await supabase
     .from('materials')
-    .select('id, name')
+    .select('id, name, code')
     .is('deleted_at', null)
     .order('name')
   if (error) throw error

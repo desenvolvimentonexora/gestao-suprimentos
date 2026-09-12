@@ -91,8 +91,19 @@ export function useCreateMaterial(tenantId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ name, categoryId, icon }: { name: string; categoryId: string; icon: string }) =>
-      createMaterial(tenantId, name, categoryId, icon),
+    mutationFn: ({
+      name,
+      categoryId,
+      icon,
+      code,
+      description,
+    }: {
+      name: string
+      categoryId: string
+      icon: string
+      code: string
+      description: string
+    }) => createMaterial(tenantId, name, categoryId, icon, code, description),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] })
     },
@@ -108,7 +119,7 @@ export function useUpdateMaterial() {
       values,
     }: {
       materialId: string
-      values: { name: string; categoryId: string; icon: string }
+      values: { name: string; categoryId: string; icon: string; code: string; description: string }
     }) => updateMaterial(materialId, values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] })

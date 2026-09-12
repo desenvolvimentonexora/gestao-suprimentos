@@ -3,9 +3,9 @@ import { filterMaterials } from './filterMaterials'
 import type { MaterialRow } from './types'
 
 const materials: MaterialRow[] = [
-  { id: 'm1', name: 'Cimento', categoryId: 'c1', supplierCount: 3, icon: 'layers' },
-  { id: 'm2', name: 'Cabo elétrico', categoryId: 'c2', supplierCount: 1, icon: 'zap' },
-  { id: 'm3', name: 'Cimento branco', categoryId: 'c1', supplierCount: 0, icon: 'layers' },
+  { id: 'm1', name: 'Cimento', categoryId: 'c1', supplierCount: 3, icon: 'layers', code: null, description: null },
+  { id: 'm2', name: 'Cabo elétrico', categoryId: 'c2', supplierCount: 1, icon: 'zap', code: null, description: null },
+  { id: 'm3', name: 'Cimento branco', categoryId: 'c1', supplierCount: 0, icon: 'layers', code: null, description: null },
 ]
 
 describe('filterMaterials', () => {

@@ -13,8 +13,15 @@ export interface MaterialColumnProps {
   selectedCategoryId: string | null
   selectedMaterialId: string | null
   onSelectMaterial: (materialId: string) => void
-  onCreateMaterial: (name: string, categoryId: string, icon: string) => void
-  onUpdateMaterial: (materialId: string, name: string, categoryId: string, icon: string) => void
+  onCreateMaterial: (name: string, categoryId: string, icon: string, code: string, description: string) => void
+  onUpdateMaterial: (
+    materialId: string,
+    name: string,
+    categoryId: string,
+    icon: string,
+    code: string,
+    description: string,
+  ) => void
   onDeleteMaterial: (materialId: string) => void
   supplierSearch: string
   onSupplierSearchChange: (value: string) => void
@@ -25,6 +32,8 @@ interface MaterialFormValues {
   name: string
   categoryId: string
   icon: string
+  code: string
+  description: string
 }
 
 function MaterialForm({
@@ -44,6 +53,8 @@ function MaterialForm({
   const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? categories[0]?.id ?? '')
   const [icon, setIcon] = useState(initialValues?.icon ?? guessMaterialIcon(''))
   const [iconTouched, setIconTouched] = useState(Boolean(initialValues))
+  const [code, setCode] = useState(initialValues?.code ?? '')
+  const [description, setDescription] = useState(initialValues?.description ?? '')
 
   function handleNameChange(value: string) {
     setName(value)
@@ -53,7 +64,7 @@ function MaterialForm({
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!name.trim() || !categoryId) return
-    onSubmit({ name: name.trim(), categoryId, icon })
+    onSubmit({ name: name.trim(), categoryId, icon, code: code.trim(), description: description.trim() })
   }
 
   return (
@@ -63,6 +74,8 @@ function MaterialForm({
         value={name}
         onChange={(e) => handleNameChange(e.target.value)}
       />
+      <Input label="Código" value={code} onChange={(e) => setCode(e.target.value)} />
+      <Input label="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
       <div className="flex flex-col gap-1">
         <label htmlFor="material-category" className="text-sm font-medium text-ink">
           Categoria
@@ -133,8 +146,8 @@ export function MaterialColumn({
         <MaterialForm
           categories={categories}
           submitLabel="Criar material"
-          onSubmit={({ name, categoryId, icon }) => {
-            onCreateMaterial(name, categoryId, icon)
+          onSubmit={({ name, categoryId, icon, code, description }) => {
+            onCreateMaterial(name, categoryId, icon, code, description)
             setShowNewForm(false)
           }}
           onCancel={() => setShowNewForm(false)}
@@ -168,10 +181,12 @@ export function MaterialColumn({
                     name: material.name,
                     categoryId: material.categoryId,
                     icon: material.icon,
+                    code: material.code ?? '',
+                    description: material.description ?? '',
                   }}
                   submitLabel="Salvar"
-                  onSubmit={({ name, categoryId, icon }) => {
-                    onUpdateMaterial(material.id, name, categoryId, icon)
+                  onSubmit={({ name, categoryId, icon, code, description }) => {
+                    onUpdateMaterial(material.id, name, categoryId, icon, code, description)
                     setEditingMaterialId(null)
                   }}
                   onCancel={() => setEditingMaterialId(null)}
@@ -195,6 +210,7 @@ export function MaterialColumn({
                 className="flex flex-1 items-center gap-2 text-left text-sm text-ink hover:text-primary"
               >
                 <Icon size={16} className="shrink-0 text-ink-muted" aria-hidden="true" />
+                {material.code && <span className="text-xs text-ink-muted">{material.code}</span>}
                 {material.name}
                 <span className="text-xs text-ink-muted">{material.supplierCount}</span>
               </button>

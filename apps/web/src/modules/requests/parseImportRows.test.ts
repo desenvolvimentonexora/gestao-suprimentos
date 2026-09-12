@@ -5,15 +5,19 @@ import type { ImportColumnMapping } from './types'
 const mapping: ImportColumnMapping = {
   unit: 'Obra',
   material: 'Insumo',
+  materialCode: '',
   quantity: 'Qtd',
   neededBy: 'Prazo',
   externalRef: 'SOL',
 }
 
-function lookup(units: Record<string, string>, materials: Record<string, string>) {
+const mappingWithCode: ImportColumnMapping = { ...mapping, materialCode: 'Código' }
+
+function lookup(units: Record<string, string>, materialsByName: Record<string, string>) {
   return {
     findUnitId: (name: string) => units[name.trim().toLowerCase()] ?? null,
-    findMaterialId: (name: string) => materials[name.trim().toLowerCase()] ?? null,
+    findMaterialId: ({ name }: { name: string; code: string }) =>
+      materialsByName[name.trim().toLowerCase()] ?? null,
   }
 }
 
@@ -66,5 +70,36 @@ describe('parseImportRows', () => {
 
     expect(result.successes).toHaveLength(1)
     expect(result.errors).toEqual([{ row: 2, reason: 'Unidade não encontrada: "Obra Inexistente".' }])
+  })
+
+  it('repassa o código do insumo da coluna mapeada para o lookup, quando mapeada', () => {
+    const rows = [{ Obra: 'UP Graça', Insumo: 'Cimento', Código: '1023', Qtd: '10' }]
+    let receivedArgs: { name: string; code: string } | null = null
+
+    const result = parseImportRows(rows, mappingWithCode, {
+      findUnitId: () => 'u1',
+      findMaterialId: (args) => {
+        receivedArgs = args
+        return 'm1'
+      },
+    })
+
+    expect(receivedArgs).toEqual({ name: 'Cimento', code: '1023' })
+    expect(result.successes).toHaveLength(1)
+  })
+
+  it('repassa código vazio quando a coluna de código não está mapeada', () => {
+    const rows = [{ Obra: 'UP Graça', Insumo: 'Cimento', Qtd: '10' }]
+    let receivedArgs: { name: string; code: string } | null = null
+
+    parseImportRows(rows, mapping, {
+      findUnitId: () => 'u1',
+      findMaterialId: (args) => {
+        receivedArgs = args
+        return 'm1'
+      },
+    })
+
+    expect(receivedArgs).toEqual({ name: 'Cimento', code: '' })
   })
 })

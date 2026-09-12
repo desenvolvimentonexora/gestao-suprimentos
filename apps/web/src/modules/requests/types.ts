@@ -49,6 +49,7 @@ export interface RequestFormValues {
 export interface MaterialOption {
   id: string
   name: string
+  code: string | null
 }
 
 export interface UnitOption {
@@ -59,6 +60,7 @@ export interface UnitOption {
 export interface ImportColumnMapping {
   unit: string
   material: string
+  materialCode: string
   quantity: string
   neededBy: string
   externalRef: string

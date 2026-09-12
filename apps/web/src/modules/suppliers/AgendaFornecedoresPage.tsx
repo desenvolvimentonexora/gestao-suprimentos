@@ -98,11 +98,11 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             selectedCategoryId={selectedCategoryId}
             selectedMaterialId={selectedMaterialId}
             onSelectMaterial={selectMaterial}
-            onCreateMaterial={(name, categoryId, icon) =>
-              createMaterial.mutate({ name, categoryId, icon })
+            onCreateMaterial={(name, categoryId, icon, code, description) =>
+              createMaterial.mutate({ name, categoryId, icon, code, description })
             }
-            onUpdateMaterial={(materialId, name, categoryId, icon) =>
-              updateMaterial.mutate({ materialId, values: { name, categoryId, icon } })
+            onUpdateMaterial={(materialId, name, categoryId, icon, code, description) =>
+              updateMaterial.mutate({ materialId, values: { name, categoryId, icon, code, description } })
             }
             onDeleteMaterial={(materialId) => deleteMaterial.mutate(materialId)}
             supplierSearch={supplierSearch}

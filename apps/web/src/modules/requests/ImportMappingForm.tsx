@@ -7,6 +7,7 @@ import type { ImportColumnMapping } from './types'
 const mappingSchema = z.object({
   unit: z.string().min(1, 'Selecione a coluna correspondente.'),
   material: z.string().min(1, 'Selecione a coluna correspondente.'),
+  materialCode: z.string(),
   quantity: z.string().min(1, 'Selecione a coluna correspondente.'),
   neededBy: z.string(),
   externalRef: z.string(),
@@ -22,6 +23,7 @@ export interface ImportMappingFormProps {
 const FIELDS: { name: keyof ImportColumnMapping; label: string; required: boolean }[] = [
   { name: 'unit', label: 'Unidade', required: true },
   { name: 'material', label: 'Material', required: true },
+  { name: 'materialCode', label: 'Código do insumo', required: false },
   { name: 'quantity', label: 'Quantidade', required: true },
   { name: 'neededBy', label: 'Prazo', required: false },
   { name: 'externalRef', label: 'N° externo', required: false },
@@ -37,6 +39,7 @@ export function ImportMappingForm({ columns, initialMapping, onConfirm, onCancel
     defaultValues: initialMapping ?? {
       unit: '',
       material: '',
+      materialCode: '',
       quantity: '',
       neededBy: '',
       externalRef: '',
