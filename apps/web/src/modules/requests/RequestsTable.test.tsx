@@ -26,6 +26,8 @@ function makeRequest(overrides: Partial<RequestRow>): RequestRow {
         id: 'i1',
         materialId: 'm1',
         materialName: 'Cimento',
+        materialCode: null,
+        materialDescription: null,
         quantity: 10,
         unitOfMeasure: 'sc',
         statusCode: null,

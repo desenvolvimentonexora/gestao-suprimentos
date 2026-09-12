@@ -15,7 +15,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, status, needed_by, external_ref, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, materials(name)), quotations(id, deleted_at)',
+      'id, status, needed_by, external_ref, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, materials(name, code, description)), quotations(id, deleted_at)',
     )
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -42,6 +42,8 @@ export async function fetchRequests(): Promise<RequestRow[]> {
         id: item.id,
         materialId: item.material_id,
         materialName: item.materials?.name ?? '',
+        materialCode: item.materials?.code ?? null,
+        materialDescription: item.materials?.description ?? null,
         quantity: Number(item.quantity),
         unitOfMeasure: item.unit_of_measure,
         statusCode: item.status_code,

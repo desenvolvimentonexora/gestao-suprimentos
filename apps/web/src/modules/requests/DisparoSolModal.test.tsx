@@ -33,6 +33,8 @@ const request: RequestRow = {
       id: 'i1',
       materialId: 'm1',
       materialName: 'Argamassa',
+      materialCode: null,
+      materialDescription: null,
       quantity: 20,
       unitOfMeasure: 'sc',
       statusCode: null,

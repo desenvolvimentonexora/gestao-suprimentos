@@ -4,6 +4,8 @@ export interface RequestItemRow {
   id: string
   materialId: string
   materialName: string
+  materialCode: string | null
+  materialDescription: string | null
   quantity: number
   unitOfMeasure: string | null
   statusCode: string | null

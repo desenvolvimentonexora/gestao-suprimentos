@@ -141,9 +141,11 @@ export function RequestCard({
                 {request.items.map((item, index) => (
                   <tr key={item.id} className="text-ink">
                     <td className="py-1 pr-3">{request.unitName}</td>
-                    <td className="py-1 pr-3">{item.materialName}</td>
+                    <td className="py-1 pr-3">
+                      {item.materialCode ? `${item.materialCode} · ${item.materialName}` : item.materialName}
+                    </td>
                     <td className="py-1 pr-3">{item.statusCode ?? '—'}</td>
-                    <td className="py-1 pr-3">—</td>
+                    <td className="py-1 pr-3">{item.materialDescription ?? '—'}</td>
                     <td className="py-1 pr-3">{item.unitOfMeasure ?? '—'}</td>
                     <td className="py-1 pr-3">{item.quantity}</td>
                     <td className="py-1 pr-3">

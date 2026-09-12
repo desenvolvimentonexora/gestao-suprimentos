@@ -23,6 +23,8 @@ const baseRequest: RequestRow = {
       id: 'i1',
       materialId: 'm1',
       materialName: 'Cimento CP-II',
+      materialCode: '1023',
+      materialDescription: 'Cimento CP-II 50kg saco',
       quantity: 10,
       unitOfMeasure: 'saco',
       statusCode: 'OK',
@@ -32,6 +34,8 @@ const baseRequest: RequestRow = {
       id: 'i2',
       materialId: 'm2',
       materialName: 'Areia',
+      materialCode: null,
+      materialDescription: null,
       quantity: 5,
       unitOfMeasure: 'm³',
       statusCode: null,
@@ -73,7 +77,7 @@ describe('RequestCard', () => {
 
   it('não mostra a expansão por padrão', () => {
     render(<RequestCard {...baseProps()} />)
-    expect(screen.queryByText('Cimento CP-II')).not.toBeInTheDocument()
+    expect(screen.queryByText('1023 · Cimento CP-II')).not.toBeInTheDocument()
   })
 
   it('expande ao clicar no corpo do card, mostrando itens e observação', async () => {
@@ -82,9 +86,28 @@ describe('RequestCard', () => {
 
     await user.click(screen.getByText('1243'))
 
-    expect(screen.getByText('Cimento CP-II')).toBeInTheDocument()
+    expect(screen.getByText('1023 · Cimento CP-II')).toBeInTheDocument()
     expect(screen.getByText('Areia')).toBeInTheDocument()
     expect(screen.getByLabelText('Observação')).toBeInTheDocument()
+  })
+
+  it('mostra o código do material na coluna Insumo-Sub, com o nome como reserva sem código', async () => {
+    const user = userEvent.setup()
+    render(<RequestCard {...baseProps()} />)
+    await user.click(screen.getByText('1243'))
+
+    expect(screen.getByText('1023 · Cimento CP-II')).toBeInTheDocument()
+    expect(screen.getByText('Areia')).toBeInTheDocument()
+  })
+
+  it('mostra a descrição do material na coluna Especificação, ou "—" quando não há', async () => {
+    const user = userEvent.setup()
+    render(<RequestCard {...baseProps()} />)
+    await user.click(screen.getByText('1243'))
+
+    expect(screen.getByText('Cimento CP-II 50kg saco')).toBeInTheDocument()
+    const areiaRow = screen.getByText('Areia').closest('tr')
+    expect(areiaRow?.textContent).toContain('—')
   })
 
   it('mostra a referência formatada de cada item na expansão', async () => {
@@ -101,10 +124,10 @@ describe('RequestCard', () => {
     render(<RequestCard {...baseProps()} />)
 
     await user.click(screen.getByText('1243'))
-    expect(screen.getByText('Cimento CP-II')).toBeInTheDocument()
+    expect(screen.getByText('1023 · Cimento CP-II')).toBeInTheDocument()
 
     await user.click(screen.getByText('1243'))
-    expect(screen.queryByText('Cimento CP-II')).not.toBeInTheDocument()
+    expect(screen.queryByText('1023 · Cimento CP-II')).not.toBeInTheDocument()
   })
 
   it('não expande ao clicar nos ícones de ação (Editar/Cancelar)', async () => {
@@ -115,7 +138,7 @@ describe('RequestCard', () => {
     await user.click(screen.getByRole('button', { name: /editar requisição/i }))
 
     expect(onEditRequest).toHaveBeenCalledWith('r1')
-    expect(screen.queryByText('Cimento CP-II')).not.toBeInTheDocument()
+    expect(screen.queryByText('1023 · Cimento CP-II')).not.toBeInTheDocument()
   })
 
   it('chama onUpdateNotes ao sair do campo de observação', async () => {
