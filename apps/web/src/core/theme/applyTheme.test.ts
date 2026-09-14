@@ -6,13 +6,13 @@ function createRoot() {
 }
 
 describe('applyTheme', () => {
-  it('define a variável CSS correspondente para cada token informado', () => {
+  it('converte cada token informado para "R G B" (para o Tailwind aceitar opacidade com bg-cor/NN)', () => {
     const root = createRoot()
 
     applyTheme({ primary: '#123456', accent: '#abcdef' }, root)
 
-    expect(root.style.getPropertyValue('--color-primary')).toBe('#123456')
-    expect(root.style.getPropertyValue('--color-accent')).toBe('#abcdef')
+    expect(root.style.getPropertyValue('--color-primary')).toBe('18 52 86')
+    expect(root.style.getPropertyValue('--color-accent')).toBe('171 205 239')
   })
 
   it('não altera variáveis para tokens não informados', () => {
@@ -37,10 +37,10 @@ describe('applyTheme', () => {
       root,
     )
 
-    expect(root.style.getPropertyValue('--color-primary-dark')).toBe('#0E0E0E')
-    expect(root.style.getPropertyValue('--color-on-primary')).toBe('#FFFFFF')
-    expect(root.style.getPropertyValue('--color-badge-available')).toBe('#3A7769')
-    expect(root.style.getPropertyValue('--color-badge-beta')).toBe('#B45309')
-    expect(root.style.getPropertyValue('--color-badge-soon')).toBe('#8A8F8C')
+    expect(root.style.getPropertyValue('--color-primary-dark')).toBe('14 14 14')
+    expect(root.style.getPropertyValue('--color-on-primary')).toBe('255 255 255')
+    expect(root.style.getPropertyValue('--color-badge-available')).toBe('58 119 105')
+    expect(root.style.getPropertyValue('--color-badge-beta')).toBe('180 83 9')
+    expect(root.style.getPropertyValue('--color-badge-soon')).toBe('138 143 140')
   })
 })

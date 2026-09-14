@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button } from '../../components'
+import { Card } from '../../components'
 import { getCheapestQuotationId, getQuotationTotal } from './combinedPrice'
 import { getSupplierColor } from './supplierColor'
 import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
@@ -15,11 +15,10 @@ export interface ComparisonTableProps {
   quotations: ComparisonQuotationRow[]
   onWinnerChange: (quotationId: string | null) => void
   onUpdateQuotationTerms: (quotationId: string, terms: QuotationTerms) => void
-  onSendToApproval: () => void
-  canSendToApproval: boolean
 }
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+const COLUMN_DIVIDER = 'border-l border-line'
 
 function parseNumberInput(value: string): number | null {
   if (value.trim() === '') return null
@@ -32,8 +31,6 @@ export function ComparisonTable({
   quotations,
   onWinnerChange,
   onUpdateQuotationTerms,
-  onSendToApproval,
-  canSendToApproval,
 }: ComparisonTableProps) {
   const [excludedQuotationIds, setExcludedQuotationIds] = useState<string[]>([])
 
@@ -46,6 +43,18 @@ export function ComparisonTable({
       .map((quotation) => priceFor(quotation, requestItemId)?.unitPrice ?? null)
       .filter((price): price is number => price !== null)
     return prices.length > 0 ? Math.min(...prices) : null
+  }
+
+  function cheapestSupplierFor(requestItemId: string): { supplierName: string; unitPrice: number } | null {
+    let cheapest: { supplierName: string; unitPrice: number } | null = null
+    for (const quotation of quotations) {
+      const price = priceFor(quotation, requestItemId)
+      if (price?.unitPrice == null) continue
+      if (!cheapest || price.unitPrice < cheapest.unitPrice) {
+        cheapest = { supplierName: quotation.supplierName, unitPrice: price.unitPrice }
+      }
+    }
+    return cheapest
   }
 
   const winningQuotationId = getCheapestQuotationId(requestItems, quotations, excludedQuotationIds)
@@ -65,19 +74,19 @@ export function ComparisonTable({
   const combinedBestPrice = winningQuotation ? getQuotationTotal(requestItems, winningQuotation) : null
 
   return (
-    <div className="flex flex-col gap-4">
+    <Card className="flex flex-col gap-4">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-line text-ink-muted">
-              <th className="py-2 pr-4 font-medium">Item</th>
+              <th className="w-1/4 py-2 pr-4 font-medium">Item</th>
               {quotations.map((quotation) => {
                 const isExcluded = excludedQuotationIds.includes(quotation.quotationId)
                 const color = getSupplierColor(quotation.quotationId)
                 return (
                   <th
                     key={quotation.quotationId}
-                    className={`rounded-t border px-3 py-2 font-medium ${isExcluded ? 'opacity-40' : color.header}`}
+                    className={`${COLUMN_DIVIDER} px-3 py-2 font-medium ${isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.header}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span>{quotation.supplierName}</span>
@@ -95,18 +104,21 @@ export function ComparisonTable({
                   </th>
                 )
               })}
+              <th className={`${COLUMN_DIVIDER} py-2 px-3 font-medium`}>Melhor Forn.</th>
             </tr>
           </thead>
           <tbody>
             {requestItems.map((item) => {
               const cheapest = cheapestPriceFor(item.id)
+              const bestSupplier = cheapestSupplierFor(item.id)
               return (
                 <tr key={item.id} className="border-b border-line">
-                  <td className="py-2 pr-4 text-ink">
+                  <td className="py-2.5 pr-4 text-ink">
                     {item.materialName}
                     <span className="text-ink-muted"> — {item.quantity} {item.unitOfMeasure ?? ''}</span>
                   </td>
                   {quotations.map((quotation) => {
+                    const isExcluded = excludedQuotationIds.includes(quotation.quotationId)
                     const price = priceFor(quotation, item.id)
                     const isCheapest =
                       price?.unitPrice !== null && price?.unitPrice !== undefined && price.unitPrice === cheapest
@@ -114,20 +126,28 @@ export function ComparisonTable({
                       <td
                         key={quotation.quotationId}
                         data-testid={`price-${quotation.quotationId}-${item.id}`}
-                        className={`py-2 pr-4 ${isCheapest ? 'bg-badge-available/20 font-medium text-ink' : 'text-ink-muted'}`}
+                        className={`${COLUMN_DIVIDER} px-3 py-2.5 ${isExcluded ? 'opacity-40' : ''} ${isCheapest ? 'bg-badge-available/30 font-semibold text-ink' : 'text-ink-muted'}`}
                       >
                         {price?.unitPrice == null ? '—' : currencyFormatter.format(price.unitPrice)}
                       </td>
                     )
                   })}
+                  <td
+                    data-testid={`best-${item.id}`}
+                    className={`${COLUMN_DIVIDER} bg-ink px-3 py-2.5 font-medium text-white`}
+                  >
+                    {bestSupplier
+                      ? `${bestSupplier.supplierName} — ${currencyFormatter.format(bestSupplier.unitPrice)}`
+                      : '—'}
+                  </td>
                 </tr>
               )
             })}
 
-            <tr className="border-b border-line">
-              <td className="py-2 pr-4 text-ink-muted">Frete</td>
+            <tr className="border-b border-line bg-bg/60">
+              <td className="py-2.5 pr-4 text-ink-muted">Frete</td>
               {quotations.map((quotation) => (
-                <td key={quotation.quotationId} className="py-2 pr-4">
+                <td key={quotation.quotationId} className={`${COLUMN_DIVIDER} px-3 py-2`}>
                   <input
                     type="number"
                     defaultValue={quotation.freight ?? ''}
@@ -143,12 +163,13 @@ export function ComparisonTable({
                   />
                 </td>
               ))}
+              <td className={COLUMN_DIVIDER} />
             </tr>
 
-            <tr className="border-b border-line">
-              <td className="py-2 pr-4 text-ink-muted">Pagamento</td>
+            <tr className="border-b border-line bg-bg/60">
+              <td className="py-2.5 pr-4 text-ink-muted">Pagamento</td>
               {quotations.map((quotation) => (
-                <td key={quotation.quotationId} className="py-2 pr-4">
+                <td key={quotation.quotationId} className={`${COLUMN_DIVIDER} px-3 py-2`}>
                   <input
                     type="text"
                     defaultValue={quotation.paymentTerms ?? ''}
@@ -164,12 +185,13 @@ export function ComparisonTable({
                   />
                 </td>
               ))}
+              <td className={COLUMN_DIVIDER} />
             </tr>
 
-            <tr className="border-b border-line">
-              <td className="py-2 pr-4 text-ink-muted">Entrega (dias)</td>
+            <tr className="border-b border-line bg-bg/60">
+              <td className="py-2.5 pr-4 text-ink-muted">Entrega (dias)</td>
               {quotations.map((quotation) => (
-                <td key={quotation.quotationId} className="py-2 pr-4">
+                <td key={quotation.quotationId} className={`${COLUMN_DIVIDER} px-3 py-2`}>
                   <input
                     type="number"
                     defaultValue={quotation.deliveryDays ?? ''}
@@ -185,10 +207,11 @@ export function ComparisonTable({
                   />
                 </td>
               ))}
+              <td className={COLUMN_DIVIDER} />
             </tr>
 
             <tr>
-              <td className="py-2 pr-4 font-medium text-ink">Total</td>
+              <td className="py-2.5 pr-4 font-medium text-ink">Total</td>
               {quotations.map((quotation) => {
                 const total = getQuotationTotal(requestItems, quotation)
                 const isWinner = quotation.quotationId === winningQuotationId
@@ -196,12 +219,13 @@ export function ComparisonTable({
                   <td
                     key={quotation.quotationId}
                     data-testid={`total-${quotation.quotationId}`}
-                    className={`py-2 pr-4 font-semibold ${isWinner ? 'bg-blue-900 text-white' : 'text-ink'}`}
+                    className={`${COLUMN_DIVIDER} px-3 py-2.5 font-semibold ${isWinner ? 'rounded bg-blue-900 text-white' : 'text-ink'}`}
                   >
                     {total === null ? '—' : currencyFormatter.format(total)}
                   </td>
                 )
               })}
+              <td className={COLUMN_DIVIDER} />
             </tr>
           </tbody>
         </table>
@@ -212,10 +236,6 @@ export function ComparisonTable({
           🏆 Melhor preço combinado: {currencyFormatter.format(combinedBestPrice)}
         </div>
       )}
-
-      <Button onClick={onSendToApproval} disabled={!canSendToApproval}>
-        Enviar para aprovação
-      </Button>
-    </div>
+    </Card>
   )
 }

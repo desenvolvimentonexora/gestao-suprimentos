@@ -5,18 +5,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: 'var(--color-bg)',
-        surface: 'var(--color-surface)',
-        ink: 'var(--color-ink)',
-        'ink-muted': 'var(--color-ink-muted)',
-        primary: 'var(--color-primary)',
-        'primary-dark': 'var(--color-primary-dark)',
-        'on-primary': 'var(--color-on-primary)',
-        accent: 'var(--color-accent)',
-        line: 'var(--color-line)',
-        'badge-available': 'var(--color-badge-available)',
-        'badge-beta': 'var(--color-badge-beta)',
-        'badge-soon': 'var(--color-badge-soon)',
+        // rgb(var(--x) / <alpha-value>), não var(--x) direto — é o formato
+        // que permite ao Tailwind aplicar o modificador de opacidade
+        // (bg-primary/50) sobre uma cor guardada em variável CSS.
+        bg: 'rgb(var(--color-bg) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        'ink-muted': 'rgb(var(--color-ink-muted) / <alpha-value>)',
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        'primary-dark': 'rgb(var(--color-primary-dark) / <alpha-value>)',
+        'on-primary': 'rgb(var(--color-on-primary) / <alpha-value>)',
+        accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        line: 'rgb(var(--color-line) / <alpha-value>)',
+        'badge-available': 'rgb(var(--color-badge-available) / <alpha-value>)',
+        'badge-beta': 'rgb(var(--color-badge-beta) / <alpha-value>)',
+        'badge-soon': 'rgb(var(--color-badge-soon) / <alpha-value>)',
       },
       transitionDuration: {
         DEFAULT: '120ms',

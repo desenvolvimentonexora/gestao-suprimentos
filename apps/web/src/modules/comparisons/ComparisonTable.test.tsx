@@ -39,8 +39,6 @@ function baseProps() {
     quotations: [sika, votorantim],
     onWinnerChange: vi.fn(),
     onUpdateQuotationTerms: vi.fn(),
-    onSendToApproval: vi.fn(),
-    canSendToApproval: false,
   }
 }
 
@@ -56,8 +54,19 @@ describe('ComparisonTable', () => {
     render(<ComparisonTable {...baseProps()} />)
     const cheapestCell = screen.getByTestId('price-q2-ri1')
     const pricierCell = screen.getByTestId('price-q1-ri1')
-    expect(cheapestCell.className).toContain('bg-badge-available/20')
-    expect(pricierCell.className).not.toContain('bg-badge-available/20')
+    expect(cheapestCell.className).toContain('bg-badge-available/30')
+    expect(pricierCell.className).not.toContain('bg-badge-available/30')
+  })
+
+  it('mostra a coluna "Melhor Forn." com o fornecedor e o preço mais barato de cada item', () => {
+    render(<ComparisonTable {...baseProps()} />)
+    expect(screen.getByText('Melhor Forn.')).toBeInTheDocument()
+    const bestRi1 = screen.getByTestId('best-ri1')
+    const bestRi2 = screen.getByTestId('best-ri2')
+    expect(bestRi1).toHaveTextContent('Votorantim')
+    expect(bestRi1).toHaveTextContent('R$ 25,00')
+    expect(bestRi2).toHaveTextContent('Sika')
+    expect(bestRi2).toHaveTextContent('R$ 110,00')
   })
 
   it('mostra — quando o fornecedor não cotou aquele item', () => {
@@ -155,16 +164,4 @@ describe('ComparisonTable', () => {
     })
   })
 
-  it('desabilita o botão de enviar para aprovação quando canSendToApproval é falso', () => {
-    render(<ComparisonTable {...baseProps()} canSendToApproval={false} />)
-    expect(screen.getByRole('button', { name: /enviar para aprovação/i })).toBeDisabled()
-  })
-
-  it('chama onSendToApproval ao clicar no botão habilitado', async () => {
-    const user = userEvent.setup()
-    const onSendToApproval = vi.fn()
-    render(<ComparisonTable {...baseProps()} canSendToApproval onSendToApproval={onSendToApproval} />)
-    await user.click(screen.getByRole('button', { name: /enviar para aprovação/i }))
-    expect(onSendToApproval).toHaveBeenCalled()
-  })
 })

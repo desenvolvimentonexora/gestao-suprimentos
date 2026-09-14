@@ -4,18 +4,21 @@
 
 @layer base {
   :root {
-    --color-bg: #f4f5f4;
-    --color-surface: #ffffff;
-    --color-ink: #141414;
-    --color-ink-muted: #5c645f;
-    --color-primary: #3a7769;
-    --color-primary-dark: #0e0e0e;
-    --color-on-primary: #ffffff;
-    --color-accent: #b45309;
-    --color-line: #e2e5e3;
-    --color-badge-available: #3a7769;
-    --color-badge-beta: #b45309;
-    --color-badge-soon: #8a8f8c;
+    /* Componentes "R G B" separados por espaço (não hex) — formato exigido
+       pelo Tailwind para o modificador de opacidade (bg-primary/50) funcionar
+       com cores baseadas em variável CSS. Ver tailwind.config.ts. */
+    --color-bg: 244 245 244;
+    --color-surface: 255 255 255;
+    --color-ink: 20 20 20;
+    --color-ink-muted: 92 100 95;
+    --color-primary: 58 119 105;
+    --color-primary-dark: 14 14 14;
+    --color-on-primary: 255 255 255;
+    --color-accent: 180 83 9;
+    --color-line: 226 229 227;
+    --color-badge-available: 58 119 105;
+    --color-badge-beta: 180 83 9;
+    --color-badge-soon: 138 143 140;
   }
 
   html {
@@ -27,8 +30,8 @@
   }
 
   body {
-    background-color: var(--color-bg);
-    color: var(--color-ink);
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-ink));
   }
 
   @media (prefers-reduced-motion: reduce) {

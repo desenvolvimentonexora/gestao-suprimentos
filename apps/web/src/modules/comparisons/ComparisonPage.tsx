@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Badge, Button, Card, Modal } from '../../components'
+import { Badge, Button, Card, ComingSoonButton, Modal } from '../../components'
 import { useUserPermissions } from '../../core/permissions'
 import { ComparisonTable } from './ComparisonTable'
 import { HistoryList } from './HistoryList'
@@ -8,6 +8,7 @@ import { ImportQuotationPdfModal } from './ImportQuotationPdfModal'
 import { OrdersQueueModal } from './OrdersQueueModal'
 import { PendingApprovalsSection } from './PendingApprovalsSection'
 import { PendingReleaseSection } from './PendingReleaseSection'
+import { SourceCards } from './SourceCards'
 import {
   useComparableRequests,
   useGetOrCreateDraftComparison,
@@ -178,15 +179,38 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
             <p className="text-sm text-ink-muted">Selecione uma requisição para comparar.</p>
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-ink">{selectedRequest.unitName}</h2>
-                  <p className="text-xs text-ink-muted">Fontes: Solicitação + até 4 fornecedores.</p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold text-ink">{selectedRequest.unitName}</h2>
+                <div className="flex flex-wrap gap-2">
+                  <ComingSoonButton label="Imprimir" variant="secondary" />
+                  <ComingSoonButton label="Excel" variant="secondary" />
+                  <ComingSoonButton label="Pedido" variant="secondary" />
+                  <ComingSoonButton label="Editar" variant="secondary" />
+                  <Button
+                    variant="accent"
+                    disabled={
+                      !(
+                        Boolean(resolvedComparisonId) &&
+                        hasWinner &&
+                        selectedRequest.comparisonStatus !== 'pending_approval'
+                      )
+                    }
+                    onClick={() => {
+                      if (!resolvedComparisonId) return
+                      sendToApproval.mutate(resolvedComparisonId)
+                    }}
+                  >
+                    Enviar p/ Aprovação
+                  </Button>
+                  <ComingSoonButton label="Nova" variant="secondary" />
                 </div>
-                <Button variant="secondary" onClick={() => setImportOpen(true)}>
-                  Adicionar cotação por PDF
-                </Button>
               </div>
+
+              <SourceCards
+                itemCount={selectedRequest.requestItems.length}
+                quotations={selectedRequest.quotations}
+                onAddQuotation={() => setImportOpen(true)}
+              />
 
               <ComparisonTable
                 requestItems={selectedRequest.requestItems}
@@ -204,15 +228,6 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                 onUpdateQuotationTerms={(quotationId, terms) => {
                   updateQuotationTerms.mutate({ quotationId, terms })
                 }}
-                onSendToApproval={() => {
-                  if (!resolvedComparisonId) return
-                  sendToApproval.mutate(resolvedComparisonId)
-                }}
-                canSendToApproval={
-                  Boolean(resolvedComparisonId) &&
-                  hasWinner &&
-                  selectedRequest.comparisonStatus !== 'pending_approval'
-                }
               />
 
               {resolvedComparisonId && (
