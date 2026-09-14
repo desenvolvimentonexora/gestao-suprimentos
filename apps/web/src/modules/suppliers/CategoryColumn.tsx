@@ -1,3 +1,4 @@
+import { getCategoryColor } from './categoryColor'
 import { getIconComponent } from './iconMap'
 import type { CategoryRow } from './types'
 
@@ -11,11 +12,15 @@ function CategoryItem({
   label,
   icon,
   selected,
+  restingClassName,
+  iconClassName,
   onClick,
 }: {
   label: string
   icon: string
   selected: boolean
+  restingClassName: string
+  iconClassName: string
   onClick: () => void
 }) {
   const Icon = getIconComponent(icon)
@@ -24,16 +29,12 @@ function CategoryItem({
       type="button"
       aria-current={selected ? 'true' : undefined}
       onClick={onClick}
-      className={`flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm transition duration-DEFAULT hover:bg-bg ${
-        selected ? 'bg-bg font-medium text-ink' : 'text-ink-muted'
+      className={`flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm transition duration-DEFAULT ${
+        selected ? 'bg-primary font-medium text-white' : `${restingClassName} hover:opacity-80`
       }`}
     >
       {/* eslint-disable-next-line react-hooks/static-components -- ICON_MAP é um mapa estático; o mesmo nome sempre resolve ao mesmo componente. */}
-      <Icon
-        size={16}
-        className={selected ? 'text-primary' : 'text-ink-muted'}
-        aria-hidden="true"
-      />
+      <Icon size={16} className={selected ? 'text-white' : iconClassName} aria-hidden="true" />
       {label}
     </button>
   )
@@ -46,17 +47,24 @@ export function CategoryColumn({ categories, selectedCategoryId, onSelect }: Cat
         label="Todos"
         icon="layout-grid"
         selected={selectedCategoryId === null}
+        restingClassName="text-ink-muted hover:bg-bg"
+        iconClassName="text-ink-muted"
         onClick={() => onSelect(null)}
       />
-      {categories.map((category) => (
-        <CategoryItem
-          key={category.id}
-          label={category.name}
-          icon={category.icon}
-          selected={selectedCategoryId === category.id}
-          onClick={() => onSelect(category.id)}
-        />
-      ))}
+      {categories.map((category) => {
+        const color = getCategoryColor(category.id)
+        return (
+          <CategoryItem
+            key={category.id}
+            label={category.name}
+            icon={category.icon}
+            selected={selectedCategoryId === category.id}
+            restingClassName={`${color.itemBg} text-ink`}
+            iconClassName={color.icon}
+            onClick={() => onSelect(category.id)}
+          />
+        )
+      })}
     </div>
   )
 }

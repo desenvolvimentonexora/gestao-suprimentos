@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from 'react'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'on-primary' | 'accent'
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'on-primary' | 'accent' | 'info' | 'danger'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -12,6 +12,11 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   ghost: 'text-ink hover:bg-bg',
   'on-primary': 'border border-white/30 bg-white/10 text-on-primary hover:bg-white/20',
   accent: 'bg-accent text-white hover:opacity-90',
+  // Ação de destaque que não é de marca nem semântica (ex.: relatório,
+  // copiar para outro setor) — azul, não o verde/preto da Nexora.
+  info: 'bg-blue-800 text-white hover:opacity-90',
+  // Ação destrutiva (excluir) — vermelho sempre, nunca a cor da marca.
+  danger: 'bg-red-600 text-white hover:opacity-90',
 }
 
 export function Button({ variant = 'primary', className = '', ...props }: ButtonProps) {

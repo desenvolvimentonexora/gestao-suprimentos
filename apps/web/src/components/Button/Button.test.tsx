@@ -45,4 +45,14 @@ describe('Button', () => {
     const secondaryClass = screen.getByRole('button', { name: 'Liberar' }).className
     expect(accentClass).not.toBe(secondaryClass)
   })
+
+  it('aplica um azul de destaque no variant info, para ações que não são de marca', () => {
+    render(<Button variant="info">Relatório</Button>)
+    expect(screen.getByRole('button', { name: 'Relatório' }).className).toContain('bg-blue')
+  })
+
+  it('aplica vermelho preenchido no variant danger, para ações destrutivas', () => {
+    render(<Button variant="danger">Excluir</Button>)
+    expect(screen.getByRole('button', { name: 'Excluir' }).className).toContain('bg-red')
+  })
 })

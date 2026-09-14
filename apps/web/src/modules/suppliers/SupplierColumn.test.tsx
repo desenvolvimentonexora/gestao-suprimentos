@@ -19,6 +19,7 @@ const suppliers: SupplierRow[] = [
 function baseProps() {
   return {
     materialName: 'Cimento',
+    materialIcon: 'layers',
     suppliers,
     totalCount: 1,
     page: 0,
@@ -45,10 +46,11 @@ describe('SupplierColumn', () => {
     expect(screen.getByText(/selecione um material/i)).toBeInTheDocument()
   })
 
-  it('mostra o nome do material e a contagem no cabeçalho', () => {
+  it('mostra o nome do material, o ícone e a contagem no cabeçalho', () => {
     render(<SupplierColumn {...baseProps()} />)
     expect(screen.getByRole('heading', { name: 'Cimento' })).toBeInTheDocument()
     expect(screen.getByText('1 fornecedor')).toBeInTheDocument()
+    expect(screen.getByTestId('material-header-icon')).toBeInTheDocument()
   })
 
   it('mostra o estado vazio quando o material não tem fornecedores', () => {
@@ -81,5 +83,11 @@ describe('SupplierColumn', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /Adicionar Fornecedor/ }))
     expect(props.onAddSupplier).toHaveBeenCalledTimes(1)
+  })
+
+  it('usa uma cor de destaque em Pedir Orçamento e a cor da marca em Adicionar Fornecedor', () => {
+    render(<SupplierColumn {...baseProps()} />)
+    expect(screen.getByRole('button', { name: /Pedir Orçamento/ }).className).toContain('bg-accent')
+    expect(screen.getByRole('button', { name: /Adicionar Fornecedor/ }).className).toContain('bg-primary')
   })
 })

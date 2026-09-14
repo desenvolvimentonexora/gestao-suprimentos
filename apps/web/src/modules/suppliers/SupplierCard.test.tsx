@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { getSupplierColor } from './supplierColor'
 import { SupplierCard } from './SupplierCard'
 import type { SupplierRow } from './types'
 
@@ -74,5 +75,34 @@ describe('SupplierCard', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Copiar' }))
 
     expect(screen.getByText('Em breve')).toBeInTheDocument()
+  })
+
+  it('usa a cor consistente do fornecedor no avatar', () => {
+    render(<SupplierCard {...baseProps()} />)
+    expect(screen.getByText('F').className).toContain(getSupplierColor('s1').avatar)
+  })
+
+  it('mostra um indicador de status com bolinha verde quando ativo', () => {
+    render(<SupplierCard {...baseProps()} />)
+    expect(screen.getByTestId('status-dot').className).toContain('bg-emerald')
+  })
+
+  it('mostra um indicador de status com bolinha cinza quando inativo', () => {
+    render(<SupplierCard {...baseProps()} supplier={{ ...supplier, status: 'inactive' }} />)
+    expect(screen.getByText('Inativo')).toBeInTheDocument()
+    expect(screen.getByTestId('status-dot').className).not.toContain('bg-emerald')
+  })
+
+  it('usa cores distintas nos links do rodapé: editar em azul, avaliar em âmbar, excluir preenchido em vermelho', () => {
+    render(<SupplierCard {...baseProps()} />)
+    expect(screen.getByRole('button', { name: 'Editar' }).className).toContain('text-blue')
+    expect(screen.getByRole('button', { name: 'Avaliar' }).className).toContain('text-amber')
+    expect(screen.getByRole('button', { name: 'Excluir' }).className).toContain('bg-red')
+  })
+
+  it('mostra a seção de contatos da empresa com estado vazio', () => {
+    render(<SupplierCard {...baseProps()} />)
+    expect(screen.getByText('Contatos da empresa')).toBeInTheDocument()
+    expect(screen.getByText('Nenhum contato extra. Clique em + Adicionar.')).toBeInTheDocument()
   })
 })

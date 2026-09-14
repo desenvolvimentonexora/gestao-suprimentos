@@ -173,4 +173,24 @@ describe('MaterialColumn', () => {
 
     expect(props.onOpenReport).toHaveBeenCalledTimes(1)
   })
+
+  it('usa a cor da marca no botão "+ Novo" e uma cor de destaque própria no de relatório', () => {
+    render(<MaterialColumn {...baseProps()} />)
+    expect(screen.getByRole('button', { name: '+ Novo' }).className).toContain('bg-primary')
+    expect(screen.getByRole('button', { name: /Relatório de Fornecedores/ }).className).toContain('bg-blue')
+  })
+
+  it('destaca o material selecionado com a cor da marca', () => {
+    render(<MaterialColumn {...baseProps()} selectedMaterialId="m1" />)
+    const row = screen.getByText('Cimento').closest('div[class*="border-l-4"]')
+    expect(row?.className).toContain('border-primary')
+  })
+
+  it('ícone de editar em âmbar e de excluir em cinza que fica vermelho no hover', () => {
+    render(<MaterialColumn {...baseProps()} />)
+    expect(screen.getByRole('button', { name: 'Editar Cimento' }).className).toContain('text-amber')
+    const deleteClass = screen.getByRole('button', { name: 'Excluir Cimento' }).className
+    expect(deleteClass).toContain('text-ink-muted')
+    expect(deleteClass).toContain('hover:text-red')
+  })
 })

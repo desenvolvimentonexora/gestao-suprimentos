@@ -1,9 +1,11 @@
 import { Button } from '../../components'
+import { getIconComponent } from './iconMap'
 import { SupplierCard, type SupplierPopupKind } from './SupplierCard'
 import type { SupplierRow } from './types'
 
 export interface SupplierColumnProps {
   materialName: string | null
+  materialIcon: string | null
   suppliers: SupplierRow[]
   totalCount: number
   page: number
@@ -25,6 +27,7 @@ export interface SupplierColumnProps {
 
 export function SupplierColumn({
   materialName,
+  materialIcon,
   suppliers,
   totalCount,
   page,
@@ -52,18 +55,30 @@ export function SupplierColumn({
   }
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+  const MaterialIcon = materialIcon ? getIconComponent(materialIcon) : null
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-ink">{materialName}</h2>
-          <p className="text-sm text-ink-muted">
-            {totalCount} {totalCount === 1 ? 'fornecedor' : 'fornecedores'}
-          </p>
+        <div className="flex items-center gap-2">
+          {MaterialIcon && (
+            // eslint-disable-next-line react-hooks/static-components -- ICON_MAP é um mapa estático; o mesmo nome sempre resolve ao mesmo componente.
+            <MaterialIcon
+              size={20}
+              className="text-ink-muted"
+              aria-hidden="true"
+              data-testid="material-header-icon"
+            />
+          )}
+          <div>
+            <h2 className="text-lg font-semibold text-ink">{materialName}</h2>
+            <p className="text-sm text-ink-muted">
+              {totalCount} {totalCount === 1 ? 'fornecedor' : 'fornecedores'}
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={onRequestQuote}>
+          <Button variant="accent" onClick={onRequestQuote}>
             📋 Pedir Orçamento
           </Button>
           <Button onClick={onAddSupplier}>+ Adicionar Fornecedor</Button>

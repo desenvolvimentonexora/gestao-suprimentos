@@ -16,4 +16,9 @@ describe('ComingSoonButton', () => {
     await user.click(screen.getByRole('button', { name: 'Limpar NF' }))
     expect(screen.getByText('Em breve')).toBeInTheDocument()
   })
+
+  it('repassa className extra para o botão', () => {
+    render(<ComingSoonButton label="Copiar" className="text-slate-500" />)
+    expect(screen.getByRole('button', { name: 'Copiar' }).className).toContain('text-slate-500')
+  })
 })

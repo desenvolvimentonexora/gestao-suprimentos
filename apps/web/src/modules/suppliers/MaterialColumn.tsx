@@ -153,9 +153,7 @@ export function MaterialColumn({
           onCancel={() => setShowNewForm(false)}
         />
       ) : (
-        <Button variant="secondary" onClick={() => setShowNewForm(true)}>
-          + Novo
-        </Button>
+        <Button onClick={() => setShowNewForm(true)}>+ Novo</Button>
       )}
 
       <input
@@ -166,7 +164,7 @@ export function MaterialColumn({
         className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
       />
 
-      <Button variant="ghost" onClick={onOpenReport}>
+      <Button variant="info" onClick={onOpenReport}>
         📋 Relatório de Fornecedores
       </Button>
 
@@ -197,11 +195,13 @@ export function MaterialColumn({
 
           const Icon = getIconComponent(material.icon)
 
+          const isSelected = selectedMaterialId === material.id
+
           return (
             <div
               key={material.id}
-              className={`group flex items-center justify-between px-2 py-2 ${
-                selectedMaterialId === material.id ? 'bg-bg' : ''
+              className={`group flex items-center justify-between border-l-4 px-2 py-2 ${
+                isSelected ? 'border-primary bg-primary/5' : 'border-transparent'
               }`}
             >
               <button
@@ -219,7 +219,7 @@ export function MaterialColumn({
                   type="button"
                   aria-label={`Editar ${material.name}`}
                   onClick={() => setEditingMaterialId(material.id)}
-                  className="text-ink-muted hover:text-primary"
+                  className="text-amber-600 hover:text-amber-700"
                 >
                   <Pencil size={16} aria-hidden="true" />
                 </button>
@@ -227,7 +227,7 @@ export function MaterialColumn({
                   type="button"
                   aria-label={`Excluir ${material.name}`}
                   onClick={() => onDeleteMaterial(material.id)}
-                  className="text-ink-muted hover:text-accent"
+                  className="text-ink-muted hover:text-red-600"
                 >
                   <Trash2 size={16} aria-hidden="true" />
                 </button>
