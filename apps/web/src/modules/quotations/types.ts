@@ -36,6 +36,7 @@ export interface NegotiatingRequestRow {
   unitId: string
   unitName: string
   neededBy: string | null
+  neededByChanged: boolean
   externalRef: string | null
   createdAt: string
   notes: string | null

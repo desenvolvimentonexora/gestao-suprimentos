@@ -8,6 +8,7 @@ function makeRequest(overrides: Partial<NegotiatingRequestRow>): NegotiatingRequ
     unitId: 'u1',
     unitName: 'UP Graça',
     neededBy: null,
+    neededByChanged: false,
     externalRef: null,
     createdAt: '2026-09-01T00:00:00Z',
     notes: null,

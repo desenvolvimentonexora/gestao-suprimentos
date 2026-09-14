@@ -1,4 +1,5 @@
 import type { NegotiatorCount } from './getNegotiatorCounts'
+import { getNegotiatorColor } from './negotiatorColor'
 
 export interface NegotiatorChipsProps {
   counts: NegotiatorCount[]
@@ -11,15 +12,14 @@ export function NegotiatorChips({ counts, selected, onSelect }: NegotiatorChipsP
     <div className="flex flex-wrap gap-2">
       {counts.map((entry) => {
         const isSelected = selected === entry.id
+        const color = getNegotiatorColor(entry.id)
         return (
           <button
             key={entry.id}
             type="button"
             onClick={() => onSelect(isSelected ? null : entry.id)}
             className={`rounded-full border px-3 py-1 text-xs font-medium ${
-              isSelected
-                ? 'border-primary bg-primary text-white'
-                : 'border-line bg-surface text-ink hover:bg-bg'
+              isSelected ? color.chipSelected : color.chipUnselected
             }`}
           >
             {entry.name} ({entry.count})

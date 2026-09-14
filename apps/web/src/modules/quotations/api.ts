@@ -11,7 +11,7 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, unit_id, needed_by, external_ref, created_at, notes, negotiating_started_at, units(name), negotiator:users!negotiator_id(id, full_name), request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, supplier_id, status, submitted_at, deleted_at, suppliers(name))',
+      'id, unit_id, needed_by, needed_by_changed, external_ref, created_at, notes, negotiating_started_at, units(name), negotiator:users!negotiator_id(id, full_name), request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, supplier_id, status, submitted_at, deleted_at, suppliers(name))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
@@ -24,6 +24,7 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
     unitId: row.unit_id,
     unitName: row.units?.name ?? '',
     neededBy: row.needed_by,
+    neededByChanged: row.needed_by_changed,
     externalRef: row.external_ref,
     createdAt: row.created_at,
     notes: row.notes,

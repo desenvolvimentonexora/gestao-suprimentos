@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Folder } from 'lucide-react'
+import { Clock, Folder, Search } from 'lucide-react'
 import { Badge, Button, Card, ComingSoonButton } from '../../components'
 import { getDaysInNegotiation, isReadyToEqualize } from './negotiationStatus'
+import { getNegotiatorColor } from './negotiatorColor'
 import type { NegotiatingRequestRow, NegotiatorOption, QuotationStatus } from './types'
 
 const STATUS_LABELS: Record<QuotationStatus, string> = {
@@ -27,6 +28,11 @@ function isOverdue(neededBy: string | null, today: Date): boolean {
   return neededBy < today.toISOString().slice(0, 10)
 }
 
+function daysLate(neededBy: string, today: Date): number {
+  const diff = today.getTime() - new Date(`${neededBy}T00:00:00`).getTime()
+  return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)))
+}
+
 export function NegotiatingRequestCard({
   request,
   negotiators,
@@ -43,9 +49,15 @@ export function NegotiatingRequestCard({
 
   const daysInNegotiation = getDaysInNegotiation(request.negotiatingStartedAt, today)
   const overdue = isOverdue(request.neededBy, today)
+  const negotiatorColor = getNegotiatorColor(request.negotiatorId)
 
   return (
-    <Card className="flex flex-col gap-3">
+    <Card
+      data-testid={`negotiating-card-${request.id}`}
+      className={`flex flex-col gap-3 border-l-4 ${
+        overdue ? 'border-line border-l-red-500 bg-red-50/60' : 'border-line border-l-line'
+      }`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-start gap-2">
           <Folder size={18} className="mt-1 text-ink-muted" aria-hidden="true" />
@@ -58,7 +70,14 @@ export function NegotiatingRequestCard({
               Solicitada em {new Intl.DateTimeFormat('pt-BR').format(new Date(request.createdAt))}
               {request.neededBy &&
                 ` · Entrega ${new Intl.DateTimeFormat('pt-BR').format(new Date(`${request.neededBy}T00:00:00`))}`}
-              {overdue && <span className="font-medium text-red-600"> · Atrasada</span>}
+              {overdue && request.neededBy && (
+                <span className="font-medium text-red-600"> · Atrasada {daysLate(request.neededBy, today)}d</span>
+              )}
+              {request.neededByChanged && (
+                <span className="ml-2 rounded border border-line px-1.5 py-0.5 text-xs text-ink-muted">
+                  ⚠ data alterada
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -71,7 +90,7 @@ export function NegotiatingRequestCard({
             id={`negotiator-${request.id}`}
             value={request.negotiatorId ?? ''}
             onChange={(e) => onAssignNegotiator(request.id, e.target.value || null)}
-            className="rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+            className={`rounded border px-2 py-1 text-sm ${negotiatorColor.select}`}
           >
             <option value="">Sem resp.</option>
             {negotiators.map((negotiator) => (
@@ -84,8 +103,18 @@ export function NegotiatingRequestCard({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {isReadyToEqualize(request) && <Badge>Só falta equalizar</Badge>}
-        {daysInNegotiation !== null && <Badge>Em negociação há {daysInNegotiation} dias</Badge>}
+        {isReadyToEqualize(request) && (
+          <Badge className="gap-1 border-line bg-transparent text-ink">
+            <Search size={12} aria-hidden="true" />
+            Só falta equalizar
+          </Badge>
+        )}
+        {daysInNegotiation !== null && (
+          <Badge className="gap-1 border-amber-300 bg-amber-100 text-amber-800">
+            <Clock size={12} aria-hidden="true" />
+            Em negociação há {daysInNegotiation} dias
+          </Badge>
+        )}
         <span className="text-xs text-ink-muted">
           {request.items.length} {request.items.length === 1 ? 'item' : 'itens'}
         </span>

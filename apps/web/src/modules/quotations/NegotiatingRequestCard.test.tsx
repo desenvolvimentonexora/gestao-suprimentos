@@ -14,6 +14,7 @@ const request: NegotiatingRequestRow = {
   unitId: 'u1',
   unitName: 'UP Graça',
   neededBy: '2026-09-01',
+  neededByChanged: false,
   externalRef: 'SOL-1',
   createdAt: '2026-08-20T00:00:00Z',
   notes: null,
@@ -66,19 +67,51 @@ describe('NegotiatingRequestCard', () => {
     expect(onAssignNegotiator).toHaveBeenCalledWith('r1', 'n2')
   })
 
-  it('mostra o badge "Só falta equalizar" quando há cotação recebida', () => {
+  it('mostra o badge "Só falta equalizar" em estilo contorno, com ícone', () => {
     render(<NegotiatingRequestCard {...baseProps()} />)
-    expect(screen.getByText('Só falta equalizar')).toBeInTheDocument()
+    const badge = screen.getByText('Só falta equalizar')
+    expect(badge.closest('span')?.querySelector('svg')).toBeInTheDocument()
+    expect(badge.closest('span')?.className).not.toContain('bg-amber')
   })
 
-  it('mostra o badge de dias em negociação', () => {
+  it('mostra o badge de dias em negociação preenchido em âmbar, com ícone', () => {
     render(<NegotiatingRequestCard {...baseProps()} />)
-    expect(screen.getByText(/em negociação há 6 dias/i)).toBeInTheDocument()
+    const badge = screen.getByText(/em negociação há 6 dias/i)
+    expect(badge.closest('span')?.querySelector('svg')).toBeInTheDocument()
+    expect(badge.closest('span')?.className).toContain('amber')
   })
 
-  it('mostra atrasada quando o prazo já passou', () => {
+  it('mostra atrasada com a contagem de dias quando o prazo já passou', () => {
     render(<NegotiatingRequestCard {...baseProps()} />)
-    expect(screen.getByText(/atrasada/i)).toBeInTheDocument()
+    // today 2026-09-11, neededBy 2026-09-01 → 10 dias
+    expect(screen.getByText(/atrasada 10d/i)).toBeInTheDocument()
+  })
+
+  it('marca o card com fundo e borda de atraso quando o prazo já passou', () => {
+    render(<NegotiatingRequestCard {...baseProps()} />)
+    expect(screen.getByTestId('negotiating-card-r1').className).toContain('border-l-red')
+  })
+
+  it('não marca o card como atrasado quando o prazo ainda não venceu', () => {
+    render(<NegotiatingRequestCard {...baseProps()} request={{ ...request, neededBy: '2026-09-20' }} />)
+    expect(screen.getByTestId('negotiating-card-r1').className).not.toContain('border-l-red')
+    expect(screen.queryByText(/atrasada/i)).not.toBeInTheDocument()
+  })
+
+  it('mostra a tag "data alterada" quando needed_by_changed é true', () => {
+    render(<NegotiatingRequestCard {...baseProps()} request={{ ...request, neededByChanged: true }} />)
+    expect(screen.getByText(/data alterada/i)).toBeInTheDocument()
+  })
+
+  it('não mostra a tag "data alterada" quando needed_by_changed é false', () => {
+    render(<NegotiatingRequestCard {...baseProps()} />)
+    expect(screen.queryByText(/data alterada/i)).not.toBeInTheDocument()
+  })
+
+  it('estiliza o seletor de negociador com a cor do negociador atribuído', () => {
+    render(<NegotiatingRequestCard {...baseProps()} />)
+    const select = screen.getByLabelText(/negociador/i)
+    expect(select.className).not.toBe('')
   })
 
   it('expande e mostra a tabela de itens, observação e ações ao clicar no card', async () => {

@@ -813,6 +813,7 @@ export type Database = {
           external_ref: string | null
           id: string
           needed_by: string | null
+          needed_by_changed: boolean
           negotiating_started_at: string | null
           negotiator_id: string | null
           notes: string | null
@@ -830,6 +831,7 @@ export type Database = {
           external_ref?: string | null
           id?: string
           needed_by?: string | null
+          needed_by_changed?: boolean
           negotiating_started_at?: string | null
           negotiator_id?: string | null
           notes?: string | null
@@ -847,6 +849,7 @@ export type Database = {
           external_ref?: string | null
           id?: string
           needed_by?: string | null
+          needed_by_changed?: boolean
           negotiating_started_at?: string | null
           negotiator_id?: string | null
           notes?: string | null

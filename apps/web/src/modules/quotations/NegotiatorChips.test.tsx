@@ -33,4 +33,20 @@ describe('NegotiatorChips', () => {
     await user.click(screen.getByRole('button', { name: /lucas/i }))
     expect(onSelect).toHaveBeenCalledWith(null)
   })
+
+  it('cada negociador selecionado usa uma cor própria, não uma única cor de destaque genérica', () => {
+    const { rerender } = render(<NegotiatorChips counts={counts} selected="n1" onSelect={vi.fn()} />)
+    const lucasSelectedClass = screen.getByRole('button', { name: /lucas/i }).className
+
+    rerender(<NegotiatorChips counts={counts} selected="n2" onSelect={vi.fn()} />)
+    const taisSelectedClass = screen.getByRole('button', { name: /tais/i }).className
+
+    expect(lucasSelectedClass).not.toBe(taisSelectedClass)
+  })
+
+  it('usa a cor cinza fixa para o chip "Sem resp."', () => {
+    render(<NegotiatorChips counts={counts} selected="unassigned" onSelect={vi.fn()} />)
+    const chip = screen.getByRole('button', { name: /sem resp/i })
+    expect(chip.className).toContain('ink-muted')
+  })
 })
