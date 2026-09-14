@@ -10,6 +10,7 @@ function makeRequest(overrides: Partial<RequestRow>): RequestRow {
     status: 'open',
     neededBy: null,
     externalRef: null,
+    sequenceNumber: 1,
     createdAt: '2026-09-01T00:00:00Z',
     subjectCategory: null,
     notes: null,

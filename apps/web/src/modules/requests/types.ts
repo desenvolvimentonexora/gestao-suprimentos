@@ -19,6 +19,7 @@ export interface RequestRow {
   status: RequestStatus
   neededBy: string | null
   externalRef: string | null
+  sequenceNumber: number | null
   createdAt: string
   subjectCategory: string | null
   notes: string | null

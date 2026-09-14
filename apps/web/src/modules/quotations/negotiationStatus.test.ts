@@ -10,6 +10,7 @@ function makeRequest(overrides: Partial<NegotiatingRequestRow>): NegotiatingRequ
     neededBy: null,
     neededByChanged: false,
     externalRef: null,
+    sequenceNumber: 1,
     createdAt: '2026-09-01T00:00:00Z',
     notes: null,
     negotiatorId: null,

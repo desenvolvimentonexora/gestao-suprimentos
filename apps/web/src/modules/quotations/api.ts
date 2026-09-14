@@ -11,7 +11,7 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, unit_id, needed_by, needed_by_changed, external_ref, created_at, notes, negotiating_started_at, units(name), negotiator:users!negotiator_id(id, full_name), request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, supplier_id, status, submitted_at, deleted_at, suppliers(name))',
+      'id, unit_id, needed_by, needed_by_changed, external_ref, sequence_number, created_at, notes, negotiating_started_at, units(name), negotiator:users!negotiator_id(id, full_name), request_items(id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, materials(name, code, description)), quotations(id, supplier_id, status, submitted_at, deleted_at, suppliers(name))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
@@ -26,6 +26,7 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
     neededBy: row.needed_by,
     neededByChanged: row.needed_by_changed,
     externalRef: row.external_ref,
+    sequenceNumber: row.sequence_number,
     createdAt: row.created_at,
     notes: row.notes,
     negotiatorId: row.negotiator?.id ?? null,
@@ -36,8 +37,12 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
       .map((item) => ({
         id: item.id,
         materialName: item.materials?.name ?? '',
+        materialCode: item.materials?.code ?? null,
+        materialDescription: item.materials?.description ?? null,
         quantity: Number(item.quantity),
         unitOfMeasure: item.unit_of_measure,
+        statusCode: item.status_code,
+        authorizedAt: item.authorized_at,
       })),
     quotations: row.quotations
       .filter((quotation) => !quotation.deleted_at)

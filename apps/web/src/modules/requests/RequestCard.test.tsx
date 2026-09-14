@@ -11,6 +11,7 @@ const baseRequest: RequestRow = {
   status: 'open',
   neededBy: '2026-09-18',
   externalRef: '1243',
+  sequenceNumber: 42,
   createdAt: '2026-09-10T00:00:00Z',
   subjectCategory: null,
   notes: null,
@@ -57,6 +58,12 @@ function baseProps() {
 }
 
 describe('RequestCard', () => {
+  it('nunca exibe o uuid da requisição — usa "SOL {sequência}" quando não há número externo', () => {
+    render(<RequestCard {...baseProps()} request={{ ...baseRequest, externalRef: null }} />)
+    expect(screen.getByText('SOL 42')).toBeInTheDocument()
+    expect(screen.queryByText('r1')).not.toBeInTheDocument()
+  })
+
   it('mostra os dados do cabeçalho, incluindo o badge de prazo restante', () => {
     render(<RequestCard {...baseProps()} />)
     expect(screen.getByText('1243')).toBeInTheDocument()

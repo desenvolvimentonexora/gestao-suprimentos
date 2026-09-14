@@ -27,8 +27,12 @@ export interface QuotationRow {
 export interface NegotiatingRequestItemRow {
   id: string
   materialName: string
+  materialCode: string | null
+  materialDescription: string | null
   quantity: number
   unitOfMeasure: string | null
+  statusCode: string | null
+  authorizedAt: string | null
 }
 
 export interface NegotiatingRequestRow {
@@ -38,6 +42,7 @@ export interface NegotiatingRequestRow {
   neededBy: string | null
   neededByChanged: boolean
   externalRef: string | null
+  sequenceNumber: number | null
   createdAt: string
   notes: string | null
   negotiatorId: string | null

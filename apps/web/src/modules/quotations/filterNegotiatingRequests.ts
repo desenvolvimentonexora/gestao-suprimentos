@@ -21,7 +21,10 @@ export function filterNegotiatingRequests(
     if (normalizedSearch) {
       const matchesUnit = request.unitName.toLowerCase().includes(normalizedSearch)
       const matchesRef = request.externalRef?.toLowerCase().includes(normalizedSearch) ?? false
-      if (!matchesUnit && !matchesRef) return false
+      const matchesMaterial = request.items.some((item) =>
+        item.materialName.toLowerCase().includes(normalizedSearch),
+      )
+      if (!matchesUnit && !matchesRef && !matchesMaterial) return false
     }
     return true
   })

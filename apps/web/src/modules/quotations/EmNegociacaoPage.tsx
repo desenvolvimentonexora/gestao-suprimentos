@@ -100,7 +100,7 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
       <div className="mt-4 flex flex-wrap gap-2">
         <input
           type="search"
-          placeholder="Buscar por unidade ou n° externo"
+          placeholder="Buscar SOL, centro ou material"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 rounded border border-line bg-surface px-3 py-2 text-sm text-ink"

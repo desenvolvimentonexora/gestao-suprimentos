@@ -21,6 +21,7 @@ const request: RequestRow = {
   status: 'open',
   neededBy: null,
   externalRef: 'SOL-42',
+  sequenceNumber: 1,
   createdAt: '2026-09-01T00:00:00Z',
   subjectCategory: null,
   notes: null,

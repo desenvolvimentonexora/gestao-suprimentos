@@ -10,6 +10,7 @@ function makeRequest(overrides: Partial<NegotiatingRequestRow>): NegotiatingRequ
     neededBy: null,
     neededByChanged: false,
     externalRef: null,
+    sequenceNumber: 1,
     createdAt: '2026-09-01T00:00:00Z',
     notes: null,
     negotiatorId: null,
@@ -38,6 +39,24 @@ describe('filterNegotiatingRequests', () => {
 
   it('busca por número externo, sem diferenciar maiúsculas', () => {
     const result = filterNegotiatingRequests(requests, { search: 'sol-1', unitId: null, negotiatorFilter: null })
+    expect(result.map((r) => r.id)).toEqual(['r1'])
+  })
+
+  it('busca por nome de material dos itens da requisição', () => {
+    const withItems = [
+      makeRequest({
+        id: 'r1',
+        unitId: 'u1',
+        unitName: 'UP Graça',
+        items: [{ id: 'i1', materialName: 'Cimento CP-II', materialCode: null, materialDescription: null, quantity: 1, unitOfMeasure: null, statusCode: null, authorizedAt: null }],
+      }),
+      makeRequest({ id: 'r2', unitId: 'u2', unitName: 'UP Barra', items: [] }),
+    ]
+    const result = filterNegotiatingRequests(withItems, {
+      search: 'cimento',
+      unitId: null,
+      negotiatorFilter: null,
+    })
     expect(result.map((r) => r.id)).toEqual(['r1'])
   })
 

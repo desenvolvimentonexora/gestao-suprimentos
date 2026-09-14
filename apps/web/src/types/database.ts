@@ -818,6 +818,7 @@ export type Database = {
           negotiator_id: string | null
           notes: string | null
           requester_id: string | null
+          sequence_number: number | null
           status: Database["public"]["Enums"]["request_status"]
           subject_category: string | null
           tenant_id: string
@@ -836,6 +837,7 @@ export type Database = {
           negotiator_id?: string | null
           notes?: string | null
           requester_id?: string | null
+          sequence_number?: number | null
           status?: Database["public"]["Enums"]["request_status"]
           subject_category?: string | null
           tenant_id: string
@@ -854,6 +856,7 @@ export type Database = {
           negotiator_id?: string | null
           notes?: string | null
           requester_id?: string | null
+          sequence_number?: number | null
           status?: Database["public"]["Enums"]["request_status"]
           subject_category?: string | null
           tenant_id?: string
@@ -1384,6 +1387,32 @@ export type Database = {
           },
         ]
       }
+      tenant_sequences: {
+        Row: {
+          current_value: number
+          sequence_name: string
+          tenant_id: string
+        }
+        Insert: {
+          current_value?: number
+          sequence_name: string
+          tenant_id: string
+        }
+        Update: {
+          current_value?: number
+          sequence_name?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_sequences_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           created_at: string
@@ -1617,6 +1646,10 @@ export type Database = {
           p_rejection_reason?: string
         }
         Returns: undefined
+      }
+      fn_next_tenant_sequence: {
+        Args: { p_sequence_name: string; p_tenant_id: string }
+        Returns: number
       }
       fn_release_comparison: {
         Args: {

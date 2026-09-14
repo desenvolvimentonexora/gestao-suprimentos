@@ -35,4 +35,14 @@ describe('Button', () => {
     render(<Button variant="on-primary">Importar Excel</Button>)
     expect(screen.getByRole('button', { name: 'Importar Excel' }).className).toContain('text-on-primary')
   })
+
+  it('aplica o estilo preenchido de destaque do variant accent, distinto de primary e secondary', () => {
+    const { rerender } = render(<Button variant="accent">Liberar</Button>)
+    const accentClass = screen.getByRole('button', { name: 'Liberar' }).className
+    expect(accentClass).toContain('bg-accent')
+
+    rerender(<Button variant="secondary">Liberar</Button>)
+    const secondaryClass = screen.getByRole('button', { name: 'Liberar' }).className
+    expect(accentClass).not.toBe(secondaryClass)
+  })
 })

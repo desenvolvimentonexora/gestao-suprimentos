@@ -15,7 +15,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, status, needed_by, external_ref, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, materials(name, code, description)), quotations(id, deleted_at)',
+      'id, status, needed_by, external_ref, sequence_number, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, materials(name, code, description)), quotations(id, deleted_at)',
     )
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -29,6 +29,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
     status: row.status as RequestStatus,
     neededBy: row.needed_by,
     externalRef: row.external_ref,
+    sequenceNumber: row.sequence_number,
     createdAt: row.created_at,
     subjectCategory: row.subject_category,
     notes: row.notes,

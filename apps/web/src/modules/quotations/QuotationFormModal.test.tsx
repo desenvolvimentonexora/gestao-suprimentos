@@ -10,7 +10,16 @@ const suppliers: SupplierOption[] = [
 ]
 
 const requestItems: NegotiatingRequestItemRow[] = [
-  { id: 'i1', materialName: 'Cimento', quantity: 10, unitOfMeasure: 'sc' },
+  {
+    id: 'i1',
+    materialName: 'Cimento',
+    materialCode: null,
+    materialDescription: null,
+    quantity: 10,
+    unitOfMeasure: 'sc',
+    statusCode: null,
+    authorizedAt: null,
+  },
 ]
 
 function baseProps() {

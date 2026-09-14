@@ -3,6 +3,7 @@ import { Folder, Heart } from 'lucide-react'
 import { Badge, Button } from '../../components'
 import { getDeadlineBadge } from './deadlineBadge'
 import { formatItemReference } from './formatItemReference'
+import { formatRequestNumber } from './formatRequestNumber'
 import { isOverdue } from './requestIndicators'
 import type { RequestRow, RequestStatus } from './types'
 
@@ -51,6 +52,7 @@ export function RequestCard({
 
   const overdue = isOverdue(request, today)
   const deadlineBadge = getDeadlineBadge(request.neededBy, today)
+  const displayNumber = formatRequestNumber(request.externalRef, request.sequenceNumber)
 
   return (
     <div
@@ -70,7 +72,7 @@ export function RequestCard({
           <Heart size={16} className="text-ink-muted" aria-hidden="true" aria-label="Favorito" />
 
           <div className="flex min-w-[10rem] flex-1 flex-col">
-            <span className="font-semibold text-ink">{request.externalRef ?? request.id}</span>
+            <span className="font-semibold text-ink">{displayNumber}</span>
             <span className="text-xs text-ink-muted">{request.unitName}</span>
           </div>
 
@@ -148,9 +150,7 @@ export function RequestCard({
                     <td className="py-1 pr-3">{item.materialDescription ?? '—'}</td>
                     <td className="py-1 pr-3">{item.unitOfMeasure ?? '—'}</td>
                     <td className="py-1 pr-3">{item.quantity}</td>
-                    <td className="py-1 pr-3">
-                      {formatItemReference(request.externalRef, request.id, index)}
-                    </td>
+                    <td className="py-1 pr-3">{formatItemReference(displayNumber, index)}</td>
                     <td className="py-1 pr-3">{request.neededBy ? formatDateOnly(request.neededBy) : '—'}</td>
                     <td className="py-1 pr-3">{formatDate(request.createdAt)}</td>
                     <td className="py-1 pr-3">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
