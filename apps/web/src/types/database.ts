@@ -688,7 +688,10 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          delivery_days: number | null
+          freight_amount: number | null
           id: string
+          payment_terms: string | null
           request_id: string
           status: Database["public"]["Enums"]["quotation_status"]
           submitted_at: string | null
@@ -700,7 +703,10 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          delivery_days?: number | null
+          freight_amount?: number | null
           id?: string
+          payment_terms?: string | null
           request_id: string
           status?: Database["public"]["Enums"]["quotation_status"]
           submitted_at?: string | null
@@ -712,7 +718,10 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          delivery_days?: number | null
+          freight_amount?: number | null
           id?: string
+          payment_terms?: string | null
           request_id?: string
           status?: Database["public"]["Enums"]["quotation_status"]
           submitted_at?: string | null

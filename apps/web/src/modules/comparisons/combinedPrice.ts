@@ -1,54 +1,35 @@
-import type { ComparisonQuotationRow, ComparisonRequestItemRow, ComparisonWinner } from './types'
+import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
 
-export function suggestCheapestWinners(
+export function getQuotationTotal(
   requestItems: ComparisonRequestItemRow[],
-  quotations: ComparisonQuotationRow[],
-): ComparisonWinner[] {
-  const winners: ComparisonWinner[] = []
-
-  for (const item of requestItems) {
-    let cheapest: { quotationItemId: string; unitPrice: number } | null = null
-
-    for (const quotation of quotations) {
-      const price = quotation.prices.find((p) => p.requestItemId === item.id)
-      if (!price || price.unitPrice === null || !price.quotationItemId) continue
-      if (!cheapest || price.unitPrice < cheapest.unitPrice) {
-        cheapest = { quotationItemId: price.quotationItemId, unitPrice: price.unitPrice }
-      }
-    }
-
-    if (cheapest) {
-      winners.push({ requestItemId: item.id, quotationItemId: cheapest.quotationItemId })
-    }
-  }
-
-  return winners
-}
-
-export function getCombinedBestPrice(
-  requestItems: ComparisonRequestItemRow[],
-  quotations: ComparisonQuotationRow[],
-  winners: ComparisonWinner[],
+  quotation: ComparisonQuotationRow,
 ): number | null {
-  if (winners.length < requestItems.length) return null
+  let total = quotation.freight ?? 0
 
-  let total = 0
   for (const item of requestItems) {
-    const winner = winners.find((w) => w.requestItemId === item.id)
-    if (!winner) return null
-
-    let unitPrice: number | null = null
-    for (const quotation of quotations) {
-      const price = quotation.prices.find((p) => p.quotationItemId === winner.quotationItemId)
-      if (price) {
-        unitPrice = price.unitPrice
-        break
-      }
-    }
-    if (unitPrice === null) return null
-
-    total += unitPrice * item.quantity
+    const price = quotation.prices.find((p) => p.requestItemId === item.id)
+    if (!price || price.unitPrice === null) return null
+    total += price.unitPrice * item.quantity
   }
 
   return total
+}
+
+export function getCheapestQuotationId(
+  requestItems: ComparisonRequestItemRow[],
+  quotations: ComparisonQuotationRow[],
+  excludedQuotationIds: string[],
+): string | null {
+  let cheapest: { quotationId: string; total: number } | null = null
+
+  for (const quotation of quotations) {
+    if (excludedQuotationIds.includes(quotation.quotationId)) continue
+    const total = getQuotationTotal(requestItems, quotation)
+    if (total === null) continue
+    if (!cheapest || total < cheapest.total) {
+      cheapest = { quotationId: quotation.quotationId, total }
+    }
+  }
+
+  return cheapest?.quotationId ?? null
 }

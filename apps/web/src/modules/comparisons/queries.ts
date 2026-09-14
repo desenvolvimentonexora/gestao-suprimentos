@@ -16,14 +16,16 @@ import {
   releaseComparison,
   runExtraction,
   sendToApproval,
+  setComparisonWinner,
   setFinancialChargeRequested,
-  setItemWinner,
+  updateQuotationTerms,
   uploadQuotationAttachment,
   type CreateOrderInput,
   type DecideComparisonInput,
+  type QuotationTermsInput,
   type ReleaseComparisonInput,
 } from './api'
-import type { ExtractedItemReview } from './types'
+import type { ComparisonQuotationRow, ComparisonRequestItemRow, ExtractedItemReview } from './types'
 
 export function useComparableRequests() {
   return useQuery({ queryKey: ['comparable-requests'], queryFn: fetchComparableRequests })
@@ -89,18 +91,29 @@ export function useConfirmExtractedItems(tenantId: string) {
   })
 }
 
-export function useSetItemWinner(tenantId: string) {
+export function useSetComparisonWinner(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({
       comparisonId,
-      requestItemId,
-      quotationItemId,
+      quotation,
+      requestItems,
     }: {
       comparisonId: string
-      requestItemId: string
-      quotationItemId: string
-    }) => setItemWinner(tenantId, comparisonId, requestItemId, quotationItemId),
+      quotation: ComparisonQuotationRow | null
+      requestItems: ComparisonRequestItemRow[]
+    }) => setComparisonWinner(tenantId, comparisonId, quotation, requestItems),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
+    },
+  })
+}
+
+export function useUpdateQuotationTerms() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ quotationId, terms }: { quotationId: string; terms: QuotationTermsInput }) =>
+      updateQuotationTerms(quotationId, terms),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
     },

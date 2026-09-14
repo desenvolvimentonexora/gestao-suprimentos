@@ -3,8 +3,9 @@ import { getOrderTotal } from './getOrderTotal'
 import { suggestOrderNumber } from './suggestOrderNumber'
 import type {
   ComparableRequestRow,
+  ComparisonQuotationRow,
+  ComparisonRequestItemRow,
   ComparisonStatus,
-  ComparisonWinner,
   CreateOrderValues,
   ExtractedItemReview,
   ExtractedQuoteItem,
@@ -20,7 +21,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, units(name), external_ref, request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, status, deleted_at, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
+      'id, units(name), external_ref, request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, status, deleted_at, freight_amount, payment_terms, delivery_days, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
@@ -30,7 +31,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const requestIds = data.map((row) => row.id)
   const { data: comparisonsData, error: comparisonsError } = await supabase
     .from('comparisons')
-    .select('id, request_id, status')
+    .select('id, request_id, status, winning_quotation_id')
     .in('request_id', requestIds.length > 0 ? requestIds : [''])
     .is('deleted_at', null)
     .in('status', ['draft', 'pending_approval'])
@@ -40,24 +41,13 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const comparisonByRequestId = new Map(
     comparisonsData.map((comparison) => [
       comparison.request_id,
-      { id: comparison.id, status: comparison.status as ComparisonStatus },
+      {
+        id: comparison.id,
+        status: comparison.status as ComparisonStatus,
+        winningQuotationId: comparison.winning_quotation_id,
+      },
     ]),
   )
-
-  const comparisonIds = comparisonsData.map((comparison) => comparison.id)
-  const { data: winnersData, error: winnersError } = await supabase
-    .from('comparison_winners')
-    .select('comparison_id, request_item_id, quotation_item_id')
-    .in('comparison_id', comparisonIds.length > 0 ? comparisonIds : [''])
-
-  if (winnersError) throw winnersError
-
-  const winnersByComparisonId = new Map<string, ComparisonWinner[]>()
-  for (const winner of winnersData) {
-    const list = winnersByComparisonId.get(winner.comparison_id) ?? []
-    list.push({ requestItemId: winner.request_item_id, quotationItemId: winner.quotation_item_id })
-    winnersByComparisonId.set(winner.comparison_id, list)
-  }
 
   return data
     .map((row) => {
@@ -75,6 +65,9 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
         .map((quotation) => ({
           quotationId: quotation.id,
           supplierName: quotation.suppliers?.name ?? '',
+          freight: quotation.freight_amount === null ? null : Number(quotation.freight_amount),
+          paymentTerms: quotation.payment_terms,
+          deliveryDays: quotation.delivery_days,
           prices: quotation.quotation_items.map((item) => ({
             requestItemId: item.request_item_id,
             quotationItemId: item.id,
@@ -91,7 +84,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
         externalRef: row.external_ref,
         comparisonId: comparison?.id ?? null,
         comparisonStatus: comparison?.status ?? null,
-        winners: comparison ? (winnersByComparisonId.get(comparison.id) ?? []) : [],
+        winningQuotationId: comparison?.winningQuotationId ?? null,
         requestItems,
         quotations,
       }
@@ -215,22 +208,66 @@ export async function confirmExtractedItems(
   if (quotationError) throw quotationError
 }
 
-export async function setItemWinner(
+export interface QuotationTermsInput {
+  freight: number | null
+  paymentTerms: string | null
+  deliveryDays: number | null
+}
+
+export async function updateQuotationTerms(quotationId: string, terms: QuotationTermsInput): Promise<void> {
+  const { error } = await supabase
+    .from('quotations')
+    .update({
+      freight_amount: terms.freight,
+      payment_terms: terms.paymentTerms,
+      delivery_days: terms.deliveryDays,
+    })
+    .eq('id', quotationId)
+  if (error) throw error
+}
+
+// Define o vencedor único da comparação (menor Total). Também preenche
+// comparison_winners a partir dessa cotação vencedora — não para uso do
+// modelo de vencedor por item (abandonado), mas só para o rascunho de
+// pedido da Fase 5 continuar lendo a mesma tabela sem nenhuma alteração
+// (essa parte está pausada até confirmação).
+export async function setComparisonWinner(
   tenantId: string,
   comparisonId: string,
-  requestItemId: string,
-  quotationItemId: string,
+  quotation: ComparisonQuotationRow | null,
+  requestItems: ComparisonRequestItemRow[],
 ): Promise<void> {
-  const { error } = await supabase.from('comparison_winners').upsert(
-    {
-      tenant_id: tenantId,
-      comparison_id: comparisonId,
-      request_item_id: requestItemId,
-      quotation_item_id: quotationItemId,
-    },
-    { onConflict: 'comparison_id,request_item_id' },
-  )
-  if (error) throw error
+  const { error: updateError } = await supabase
+    .from('comparisons')
+    .update({ winning_quotation_id: quotation?.quotationId ?? null })
+    .eq('id', comparisonId)
+  if (updateError) throw updateError
+
+  const { error: deleteError } = await supabase
+    .from('comparison_winners')
+    .delete()
+    .eq('comparison_id', comparisonId)
+  if (deleteError) throw deleteError
+
+  if (!quotation) return
+
+  const rows = requestItems
+    .map((item) => {
+      const price = quotation.prices.find((p) => p.requestItemId === item.id)
+      if (!price || !price.quotationItemId || price.unitPrice === null) return null
+      return {
+        tenant_id: tenantId,
+        comparison_id: comparisonId,
+        request_item_id: item.id,
+        quotation_item_id: price.quotationItemId,
+      }
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null)
+
+  if (rows.length === 0) return
+
+  const { error: insertError } = await supabase.from('comparison_winners').insert(rows)
+  if (insertError) throw insertError
 }
 
 export async function sendToApproval(comparisonId: string): Promise<void> {

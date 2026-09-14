@@ -23,12 +23,10 @@ export interface ComparisonQuotationItemPrice {
 export interface ComparisonQuotationRow {
   quotationId: string
   supplierName: string
+  freight: number | null
+  paymentTerms: string | null
+  deliveryDays: number | null
   prices: ComparisonQuotationItemPrice[]
-}
-
-export interface ComparisonWinner {
-  requestItemId: string
-  quotationItemId: string
 }
 
 export interface ComparableRequestRow {
@@ -37,7 +35,7 @@ export interface ComparableRequestRow {
   externalRef: string | null
   comparisonId: string | null
   comparisonStatus: ComparisonStatus | null
-  winners: ComparisonWinner[]
+  winningQuotationId: string | null
   requestItems: ComparisonRequestItemRow[]
   quotations: ComparisonQuotationRow[]
 }

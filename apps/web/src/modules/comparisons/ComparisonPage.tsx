@@ -13,7 +13,8 @@ import {
   useGetOrCreateDraftComparison,
   useHistory,
   useSendToApproval,
-  useSetItemWinner,
+  useSetComparisonWinner,
+  useUpdateQuotationTerms,
 } from './queries'
 
 type QueueView = 'approvals' | 'releases' | 'orders' | 'history' | null
@@ -31,7 +32,8 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
 
   const requestsQuery = useComparableRequests()
   const getOrCreateDraftComparison = useGetOrCreateDraftComparison(tenantId)
-  const setItemWinner = useSetItemWinner(tenantId)
+  const setComparisonWinner = useSetComparisonWinner(tenantId)
+  const updateQuotationTerms = useUpdateQuotationTerms()
   const sendToApproval = useSendToApproval()
   const permissionsQuery = useUserPermissions(userId)
   const canApprove = (permissionsQuery.data ?? []).includes('comparisons.approve')
@@ -54,11 +56,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- só deve rodar quando a requisição selecionada muda, não a cada render do mutation
   }, [selectedRequest?.requestId, selectedRequest?.comparisonId])
 
-  const allItemsHaveWinner =
-    Boolean(selectedRequest) &&
-    selectedRequest!.requestItems.every((item) =>
-      selectedRequest!.winners.some((winner) => winner.requestItemId === item.id),
-    )
+  const hasWinner = Boolean(selectedRequest?.winningQuotationId)
 
   return (
     <div className="min-h-screen bg-bg">
@@ -193,10 +191,18 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
               <ComparisonTable
                 requestItems={selectedRequest.requestItems}
                 quotations={selectedRequest.quotations}
-                winners={selectedRequest.winners}
-                onSelectWinner={(requestItemId, quotationItemId) => {
+                onWinnerChange={(quotationId) => {
                   if (!resolvedComparisonId) return
-                  setItemWinner.mutate({ comparisonId: resolvedComparisonId, requestItemId, quotationItemId })
+                  const quotation =
+                    selectedRequest.quotations.find((q) => q.quotationId === quotationId) ?? null
+                  setComparisonWinner.mutate({
+                    comparisonId: resolvedComparisonId,
+                    quotation,
+                    requestItems: selectedRequest.requestItems,
+                  })
+                }}
+                onUpdateQuotationTerms={(quotationId, terms) => {
+                  updateQuotationTerms.mutate({ quotationId, terms })
                 }}
                 onSendToApproval={() => {
                   if (!resolvedComparisonId) return
@@ -204,7 +210,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                 }}
                 canSendToApproval={
                   Boolean(resolvedComparisonId) &&
-                  allItemsHaveWinner &&
+                  hasWinner &&
                   selectedRequest.comparisonStatus !== 'pending_approval'
                 }
               />
