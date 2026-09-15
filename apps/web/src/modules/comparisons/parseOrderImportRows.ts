@@ -80,7 +80,14 @@ export function parseOrderImportRows(
         expectedDeliveryDate: expectedDeliveryDate || null,
         items: [],
       }
-    group.items.push({ supplierId, materialId, requestItemId, quantity, unitPrice })
+    group.items.push({
+      supplierId,
+      materialId,
+      materialNameRaw: materialName,
+      requestItemId,
+      quantity,
+      unitPrice,
+    })
     groupsByComparisonId.set(comparison.comparisonId, group)
   })
 

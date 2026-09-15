@@ -8,7 +8,6 @@ import type {
   ExtractedItemReview,
   ExtractedQuoteItem,
   HistoryRow,
-  ImportedOrderRow,
   OrderImportColumnMapping,
   OrderImportContext,
   OrderImportGroup,
@@ -357,6 +356,18 @@ export async function fetchHistory(): Promise<HistoryRow[]> {
 
   if (error) throw error
 
+  const comparisonIds = data.map((row) => row.id)
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select('comparison_id, order_number, status')
+    .in('comparison_id', comparisonIds.length > 0 ? comparisonIds : [''])
+    .is('deleted_at', null)
+  if (ordersError) throw ordersError
+
+  const orderByComparisonId = new Map(
+    orders.map((order) => [order.comparison_id, { orderNumber: order.order_number, status: order.status as OrderStatus }]),
+  )
+
   return data.map((row) => ({
     comparisonId: row.id,
     unitName: row.requests?.units?.name ?? '',
@@ -364,6 +375,7 @@ export async function fetchHistory(): Promise<HistoryRow[]> {
     status: row.status as ComparisonStatus,
     rejectionReason: row.rejection_reason,
     releasedAt: row.released_at,
+    order: orderByComparisonId.get(row.id) ?? null,
   }))
 }
 
@@ -511,6 +523,7 @@ export async function bulkImportOrders(tenantId: string, groups: OrderImportGrou
         order_id: order.id,
         request_item_id: item.requestItemId,
         material_id: item.materialId,
+        material_name_raw: item.materialNameRaw,
         supplier_id: item.supplierId,
         quantity: item.quantity,
         unit_price: item.unitPrice,
@@ -520,26 +533,3 @@ export async function bulkImportOrders(tenantId: string, groups: OrderImportGrou
   }
 }
 
-export async function fetchImportedOrders(): Promise<ImportedOrderRow[]> {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('id, order_number, status, expected_delivery_date, units(name), order_items(suppliers(name))')
-    .is('deleted_at', null)
-    .order('imported_at', { ascending: false })
-  if (error) throw error
-
-  return data.map((row) => ({
-    orderId: row.id,
-    orderNumber: row.order_number,
-    unitName: row.units?.name ?? '',
-    supplierNames: Array.from(
-      new Set(
-        row.order_items
-          .map((item) => item.suppliers?.name)
-          .filter((name): name is string => Boolean(name)),
-      ),
-    ),
-    expectedDeliveryDate: row.expected_delivery_date,
-    status: row.status as OrderStatus,
-  }))
-}

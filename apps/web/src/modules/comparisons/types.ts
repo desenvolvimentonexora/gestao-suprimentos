@@ -78,6 +78,7 @@ export interface HistoryRow {
   status: ComparisonStatus
   rejectionReason: string | null
   releasedAt: string | null
+  order: { orderNumber: string; status: OrderStatus } | null
 }
 
 export interface ReleasedComparisonRow {
@@ -114,6 +115,7 @@ export interface OrderImportRowError {
 export interface OrderImportItemRow {
   supplierId: string
   materialId: string | null
+  materialNameRaw: string
   requestItemId: string | null
   quantity: number
   unitPrice: number
@@ -160,11 +162,3 @@ export interface OrderImportContext {
   requestItems: OrderImportRequestItemOption[]
 }
 
-export interface ImportedOrderRow {
-  orderId: string
-  orderNumber: string
-  unitName: string
-  supplierNames: string[]
-  expectedDeliveryDate: string | null
-  status: OrderStatus
-}

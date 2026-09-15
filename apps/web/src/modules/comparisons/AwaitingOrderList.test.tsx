@@ -16,6 +16,11 @@ const rows: ReleasedComparisonRow[] = [
 ]
 
 describe('AwaitingOrderList', () => {
+  it('mostra o título "Liberadas, pronto para pedido"', () => {
+    render(<AwaitingOrderList rows={rows} />)
+    expect(screen.getByText('Liberadas, pronto para pedido')).toBeInTheDocument()
+  })
+
   it('mostra as comparações liberadas aguardando pedido, com valor total formatado', () => {
     render(<AwaitingOrderList rows={rows} />)
     expect(screen.getByText('UP Graça')).toBeInTheDocument()

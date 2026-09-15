@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { Button, Modal } from '../../components'
 import { AwaitingOrderList } from './AwaitingOrderList'
-import { ImportedOrdersList } from './ImportedOrdersList'
 import { OrderImportModal } from './OrderImportModal'
-import { useImportedOrders, useReleasedAwaitingOrder } from './queries'
+import { useReleasedAwaitingOrder } from './queries'
 
 export interface OrdersQueueModalProps {
   isOpen: boolean
@@ -15,7 +14,6 @@ export function OrdersQueueModal({ isOpen, onClose, tenantId }: OrdersQueueModal
   const [importOpen, setImportOpen] = useState(false)
 
   const awaitingOrderQuery = useReleasedAwaitingOrder(isOpen)
-  const importedOrdersQuery = useImportedOrders(isOpen)
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Fila de Pedidos">
@@ -25,7 +23,6 @@ export function OrdersQueueModal({ isOpen, onClose, tenantId }: OrdersQueueModal
         </div>
 
         <AwaitingOrderList rows={awaitingOrderQuery.data ?? []} />
-        <ImportedOrdersList rows={importedOrdersQuery.data ?? []} />
       </div>
 
       <OrderImportModal isOpen={importOpen} onClose={() => setImportOpen(false)} tenantId={tenantId} />

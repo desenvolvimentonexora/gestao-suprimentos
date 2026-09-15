@@ -25,6 +25,11 @@ export function HistoryList({ rows }: HistoryListProps) {
           </div>
           <p className="text-xs text-ink-muted">{row.externalRef ?? '—'}</p>
           {row.rejectionReason && <p className="text-xs text-ink-muted">{row.rejectionReason}</p>}
+          {row.order && (
+            <p className="text-xs text-ink-muted">
+              Pedido {row.order.orderNumber} · {row.order.status === 'issued' ? 'Emitido' : 'Cancelado'}
+            </p>
+          )}
         </Card>
       ))}
     </div>

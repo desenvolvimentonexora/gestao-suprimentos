@@ -46,6 +46,7 @@ describe('parseOrderImportRows', () => {
     expect(result.successes[0]!.items[0]).toEqual({
       supplierId: 's1',
       materialId: 'm1',
+      materialNameRaw: 'Argamassa',
       requestItemId: 'ri1',
       quantity: 10,
       unitPrice: 30,
@@ -112,7 +113,7 @@ describe('parseOrderImportRows', () => {
     ])
   })
 
-  it('não gera erro quando o material não é encontrado — fica sem material vinculado', () => {
+  it('não gera erro quando o material não é encontrado — fica sem material vinculado, mas com o nome bruto da planilha preservado', () => {
     const rows = [
       { SOL: 'SOL-1', Pedido: 'PC-100', Fornecedor: 'Sika', Material: 'Item fora do catálogo', Qtd: '10', Preço: '30', Entrega: '' },
     ]
@@ -121,7 +122,11 @@ describe('parseOrderImportRows', () => {
     const result = parseOrderImportRows(rows, mapping, lookup)
 
     expect(result.errors).toEqual([])
-    expect(result.successes[0]!.items[0]).toMatchObject({ materialId: null, requestItemId: null })
+    expect(result.successes[0]!.items[0]).toMatchObject({
+      materialId: null,
+      materialNameRaw: 'Item fora do catálogo',
+      requestItemId: null,
+    })
   })
 
   it('trata data de entrega em branco como null', () => {

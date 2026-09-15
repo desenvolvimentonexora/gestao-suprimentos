@@ -377,6 +377,7 @@ export type Database = {
           created_at: string
           id: string
           material_id: string | null
+          material_name_raw: string
           order_id: string
           quantity: number
           request_item_id: string | null
@@ -388,6 +389,7 @@ export type Database = {
           created_at?: string
           id?: string
           material_id?: string | null
+          material_name_raw?: string
           order_id: string
           quantity: number
           request_item_id?: string | null
@@ -399,6 +401,7 @@ export type Database = {
           created_at?: string
           id?: string
           material_id?: string | null
+          material_name_raw?: string
           order_id?: string
           quantity?: number
           request_item_id?: string | null

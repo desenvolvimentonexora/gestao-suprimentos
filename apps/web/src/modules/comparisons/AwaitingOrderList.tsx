@@ -9,7 +9,7 @@ export interface AwaitingOrderListProps {
 export function AwaitingOrderList({ rows }: AwaitingOrderListProps) {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-ink">Aguardando importação do pedido</h3>
+      <h3 className="text-sm font-semibold text-ink">Liberadas, pronto para pedido</h3>
       {rows.length === 0 ? (
         <p className="text-sm text-ink-muted">Nenhuma comparação liberada aguardando pedido.</p>
       ) : (

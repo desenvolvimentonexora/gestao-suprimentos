@@ -6,7 +6,6 @@ import {
   decideComparison,
   fetchComparableRequests,
   fetchHistory,
-  fetchImportedOrders,
   fetchOrderImportContext,
   fetchOrderImportMapping,
   fetchPendingApprovals,
@@ -175,10 +174,6 @@ export function useReleasedAwaitingOrder(enabled: boolean) {
   return useQuery({ queryKey: ['released-awaiting-order'], queryFn: fetchReleasedAwaitingOrder, enabled })
 }
 
-export function useImportedOrders(enabled: boolean) {
-  return useQuery({ queryKey: ['imported-orders'], queryFn: fetchImportedOrders, enabled })
-}
-
 export function useOrderImportMapping() {
   return useQuery({ queryKey: ['order-import-mapping'], queryFn: fetchOrderImportMapping })
 }
@@ -199,7 +194,7 @@ export function useBulkImportOrders(tenantId: string) {
     mutationFn: (groups: OrderImportGroup[]) => bulkImportOrders(tenantId, groups),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['released-awaiting-order'] })
-      queryClient.invalidateQueries({ queryKey: ['imported-orders'] })
+      queryClient.invalidateQueries({ queryKey: ['comparisons-history'] })
       queryClient.invalidateQueries({ queryKey: ['order-import-context'] })
     },
   })
