@@ -22,7 +22,7 @@ values (
 )
 on conflict (id) do nothing;
 
-insert into settings (tenant_id, theme, vocabulary, currency, brand)
+insert into settings (tenant_id, theme, vocabulary, currency, brand, modules)
 values (
   '00000000-0000-0000-0000-000000000001',
   jsonb_build_object(
@@ -38,19 +38,35 @@ values (
     'badgeBeta', '#B45309',
     'badgeSoon', '#8A8F8C'
   ),
-  jsonb_build_object('unit', 'Obra', 'request', 'Solicitação', 'quotation', 'Cotação'),
+  jsonb_build_object(
+    'unit', 'Obra',
+    'request', 'SOL',
+    'quotation', 'Cotação',
+    'supplier', 'Fornecedor',
+    'material', 'Material'
+  ),
   'BRL',
   jsonb_build_object(
     'name', 'Nexora',
     'tagline', 'Sistema de Gestão Integrado',
     'logoUrl', '/assets/logo-nexora.svg'
+  ),
+  -- Módulos de Suprimentos que já têm tela construída (têm rota real em
+  -- suprimentosRegistry) — ativos por padrão, conforme Fase 5 Administração.
+  jsonb_build_array(
+    'agenda-fornecedores',
+    'disparo-solicitacoes',
+    'em-negociacao',
+    'equalizacao-orcamentos',
+    'dados-cadastrais-obras'
   )
 )
 on conflict (tenant_id) do update set
   theme = excluded.theme,
   vocabulary = excluded.vocabulary,
   currency = excluded.currency,
-  brand = excluded.brand;
+  brand = excluded.brand,
+  modules = excluded.modules;
 
 insert into roles (id, tenant_id, name)
 values ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'admin')

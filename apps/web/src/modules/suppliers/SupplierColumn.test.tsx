@@ -90,4 +90,9 @@ describe('SupplierColumn', () => {
     expect(screen.getByRole('button', { name: /Pedir Orçamento/ }).className).toContain('bg-accent')
     expect(screen.getByRole('button', { name: /Adicionar Fornecedor/ }).className).toContain('bg-primary')
   })
+
+  it('usa o rótulo de vocabulário do cliente para fornecedor, quando informado', () => {
+    render(<SupplierColumn {...baseProps()} supplierLabel="Parceiro" />)
+    expect(screen.getByRole('button', { name: /Adicionar Parceiro/ })).toBeInTheDocument()
+  })
 })

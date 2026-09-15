@@ -23,6 +23,8 @@ export interface SupplierColumnProps {
   onOpenPopup: (kind: SupplierPopupKind, supplierId: string) => void
   onEditSupplier: (supplierId: string) => void
   onDeleteSupplier: (supplierId: string) => void
+  /** Vocabulário do cliente para esta entidade (settings.vocabulary.supplier) — "Fornecedor" se não vier. */
+  supplierLabel?: string
 }
 
 export function SupplierColumn({
@@ -45,6 +47,7 @@ export function SupplierColumn({
   onOpenPopup,
   onEditSupplier,
   onDeleteSupplier,
+  supplierLabel = 'Fornecedor',
 }: SupplierColumnProps) {
   if (!materialName) {
     return (
@@ -81,7 +84,7 @@ export function SupplierColumn({
           <Button variant="accent" onClick={onRequestQuote}>
             📋 Pedir Orçamento
           </Button>
-          <Button onClick={onAddSupplier}>+ Adicionar Fornecedor</Button>
+          <Button onClick={onAddSupplier}>+ Adicionar {supplierLabel}</Button>
         </div>
       </div>
 

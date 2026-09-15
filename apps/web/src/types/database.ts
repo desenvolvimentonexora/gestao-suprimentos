@@ -985,6 +985,7 @@ export type Database = {
           currency: string
           deleted_at: string | null
           id: string
+          modules: Json
           tenant_id: string
           theme: Json
           updated_at: string
@@ -997,6 +998,7 @@ export type Database = {
           currency?: string
           deleted_at?: string | null
           id?: string
+          modules?: Json
           tenant_id: string
           theme?: Json
           updated_at?: string
@@ -1009,6 +1011,7 @@ export type Database = {
           currency?: string
           deleted_at?: string | null
           id?: string
+          modules?: Json
           tenant_id?: string
           theme?: Json
           updated_at?: string
@@ -1604,6 +1607,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_active: boolean
           organization_id: string | null
           tenant_id: string
           updated_at: string
@@ -1615,6 +1619,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_active?: boolean
           organization_id?: string | null
           tenant_id: string
           updated_at?: string
@@ -1626,6 +1631,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          is_active?: boolean
           organization_id?: string | null
           tenant_id?: string
           updated_at?: string

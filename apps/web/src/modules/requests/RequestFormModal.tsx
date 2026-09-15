@@ -29,6 +29,8 @@ export interface RequestFormModalProps {
   materials: MaterialOption[]
   onSubmit: (values: RequestFormValues) => void
   isSubmitting: boolean
+  /** Vocabulário do cliente para esta entidade (settings.vocabulary.unit) — "Unidade" se não vier. */
+  unitLabel?: string
 }
 
 function toFormShape(values?: RequestFormValues): FormShape {
@@ -51,6 +53,7 @@ export function RequestFormModal({
   materials,
   onSubmit,
   isSubmitting,
+  unitLabel = 'Unidade',
 }: RequestFormModalProps) {
   const {
     register,
@@ -77,7 +80,7 @@ export function RequestFormModal({
       <form onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <label htmlFor="request-unit" className="text-sm font-medium text-ink">
-            Unidade
+            {unitLabel}
           </label>
           <select
             id="request-unit"
