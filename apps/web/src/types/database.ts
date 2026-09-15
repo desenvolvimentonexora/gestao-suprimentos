@@ -376,10 +376,10 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          material_id: string
+          material_id: string | null
           order_id: string
           quantity: number
-          request_item_id: string
+          request_item_id: string | null
           supplier_id: string
           tenant_id: string
           unit_price: number
@@ -387,10 +387,10 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          material_id: string
+          material_id?: string | null
           order_id: string
           quantity: number
-          request_item_id: string
+          request_item_id?: string | null
           supplier_id: string
           tenant_id: string
           unit_price: number
@@ -398,10 +398,10 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          material_id?: string
+          material_id?: string | null
           order_id?: string
           quantity?: number
-          request_item_id?: string
+          request_item_id?: string | null
           supplier_id?: string
           tenant_id?: string
           unit_price?: number
@@ -452,6 +452,7 @@ export type Database = {
           deleted_at: string | null
           expected_delivery_date: string | null
           id: string
+          imported_at: string
           order_number: string
           payment_condition_note: string | null
           request_id: string
@@ -467,6 +468,7 @@ export type Database = {
           deleted_at?: string | null
           expected_delivery_date?: string | null
           id?: string
+          imported_at?: string
           order_number: string
           payment_condition_note?: string | null
           request_id: string
@@ -482,6 +484,7 @@ export type Database = {
           deleted_at?: string | null
           expected_delivery_date?: string | null
           id?: string
+          imported_at?: string
           order_number?: string
           payment_condition_note?: string | null
           request_id?: string

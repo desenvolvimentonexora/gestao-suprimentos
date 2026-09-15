@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  bulkImportOrders,
   confirmExtractedItems,
-  createOrder,
   createPdfQuotation,
   decideComparison,
   fetchComparableRequests,
-  fetchComparisonOrderDraft,
   fetchHistory,
-  fetchNextOrderNumberSuggestion,
+  fetchImportedOrders,
+  fetchOrderImportContext,
+  fetchOrderImportMapping,
   fetchPendingApprovals,
   fetchPendingReleases,
   fetchReleasedAwaitingOrder,
@@ -15,17 +16,23 @@ import {
   getOrCreateDraftComparison,
   releaseComparison,
   runExtraction,
+  saveOrderImportMapping,
   sendToApproval,
   setComparisonWinner,
   setFinancialChargeRequested,
   updateQuotationTerms,
   uploadQuotationAttachment,
-  type CreateOrderInput,
   type DecideComparisonInput,
   type QuotationTermsInput,
   type ReleaseComparisonInput,
 } from './api'
-import type { ComparisonQuotationRow, ComparisonRequestItemRow, ExtractedItemReview } from './types'
+import type {
+  ComparisonQuotationRow,
+  ComparisonRequestItemRow,
+  ExtractedItemReview,
+  OrderImportColumnMapping,
+  OrderImportGroup,
+} from './types'
 
 export function useComparableRequests() {
   return useQuery({ queryKey: ['comparable-requests'], queryFn: fetchComparableRequests })
@@ -168,28 +175,32 @@ export function useReleasedAwaitingOrder(enabled: boolean) {
   return useQuery({ queryKey: ['released-awaiting-order'], queryFn: fetchReleasedAwaitingOrder, enabled })
 }
 
-export function useComparisonOrderDraft(comparisonId: string | null) {
-  return useQuery({
-    queryKey: ['comparison-order-draft', comparisonId],
-    queryFn: () => fetchComparisonOrderDraft(comparisonId!),
-    enabled: Boolean(comparisonId),
+export function useImportedOrders(enabled: boolean) {
+  return useQuery({ queryKey: ['imported-orders'], queryFn: fetchImportedOrders, enabled })
+}
+
+export function useOrderImportMapping() {
+  return useQuery({ queryKey: ['order-import-mapping'], queryFn: fetchOrderImportMapping })
+}
+
+export function useSaveOrderImportMapping(tenantId: string) {
+  return useMutation({
+    mutationFn: (mapping: OrderImportColumnMapping) => saveOrderImportMapping(tenantId, mapping),
   })
 }
 
-export function useNextOrderNumberSuggestion(tenantId: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ['next-order-number', tenantId],
-    queryFn: () => fetchNextOrderNumberSuggestion(tenantId),
-    enabled,
-  })
+export function useOrderImportContext(enabled: boolean) {
+  return useQuery({ queryKey: ['order-import-context'], queryFn: fetchOrderImportContext, enabled })
 }
 
-export function useCreateOrder(tenantId: string) {
+export function useBulkImportOrders(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: Omit<CreateOrderInput, 'tenantId'>) => createOrder({ tenantId, ...input }),
+    mutationFn: (groups: OrderImportGroup[]) => bulkImportOrders(tenantId, groups),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['released-awaiting-order'] })
+      queryClient.invalidateQueries({ queryKey: ['imported-orders'] })
+      queryClient.invalidateQueries({ queryKey: ['order-import-context'] })
     },
   })
 }

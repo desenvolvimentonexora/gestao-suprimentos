@@ -89,19 +89,82 @@ export interface ReleasedComparisonRow {
   totalValue: number
 }
 
-export interface OrderDraftItem {
-  requestItemId: string
-  quotationItemId: string
-  materialId: string
-  materialName: string
-  quantity: number
-  unitOfMeasure: string | null
+export type OrderStatus = 'issued' | 'cancelled'
+
+// Pedido é emitido no ERP do cliente, não no nosso sistema — o comprador
+// importa aqui o Excel do pedido de compra que o ERP gerou. Cada linha
+// da planilha traz o número da SOL (external_ref) para casar com a
+// comparação já liberada correspondente.
+export interface OrderImportColumnMapping {
+  externalRef: string
+  orderNumber: string
+  supplier: string
+  material: string
+  materialCode: string
+  quantity: string
+  unitPrice: string
+  expectedDeliveryDate: string
+}
+
+export interface OrderImportRowError {
+  row: number
+  reason: string
+}
+
+export interface OrderImportItemRow {
   supplierId: string
-  supplierName: string
+  materialId: string | null
+  requestItemId: string | null
+  quantity: number
   unitPrice: number
 }
 
-export interface CreateOrderValues {
+export interface OrderImportGroup {
+  comparisonId: string
+  requestId: string
+  unitId: string
   orderNumber: string
-  expectedDeliveryDate: string
+  expectedDeliveryDate: string | null
+  items: OrderImportItemRow[]
+}
+
+export interface OrderImportParseResult {
+  successes: OrderImportGroup[]
+  errors: OrderImportRowError[]
+}
+
+export interface OrderImportComparisonOption {
+  comparisonId: string
+  requestId: string
+  unitId: string
+  externalRef: string
+  hasOrder: boolean
+}
+
+export interface OrderImportMaterialOption {
+  id: string
+  name: string
+  code: string | null
+}
+
+export interface OrderImportRequestItemOption {
+  id: string
+  requestId: string
+  materialId: string
+}
+
+export interface OrderImportContext {
+  comparisons: OrderImportComparisonOption[]
+  suppliers: SupplierOption[]
+  materials: OrderImportMaterialOption[]
+  requestItems: OrderImportRequestItemOption[]
+}
+
+export interface ImportedOrderRow {
+  orderId: string
+  orderNumber: string
+  unitName: string
+  supplierNames: string[]
+  expectedDeliveryDate: string | null
+  status: OrderStatus
 }

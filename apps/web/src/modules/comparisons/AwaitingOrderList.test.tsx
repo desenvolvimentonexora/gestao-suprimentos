@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { AwaitingOrderList } from './AwaitingOrderList'
 import type { ReleasedComparisonRow } from './types'
 
@@ -17,24 +17,24 @@ const rows: ReleasedComparisonRow[] = [
 
 describe('AwaitingOrderList', () => {
   it('mostra as comparações liberadas aguardando pedido, com valor total formatado', () => {
-    render(<AwaitingOrderList rows={rows} onGenerateOrder={vi.fn()} />)
+    render(<AwaitingOrderList rows={rows} />)
     expect(screen.getByText('UP Graça')).toBeInTheDocument()
     expect(screen.getByText('SOL-1')).toBeInTheDocument()
     expect(screen.getByText('R$ 1.500,00')).toBeInTheDocument()
   })
 
   it('mostra mensagem de estado vazio quando não há comparações aguardando pedido', () => {
-    render(<AwaitingOrderList rows={[]} onGenerateOrder={vi.fn()} />)
+    render(<AwaitingOrderList rows={[]} />)
     expect(screen.getByText(/nenhuma comparação liberada aguardando pedido/i)).toBeInTheDocument()
   })
 
-  it('chama onGenerateOrder com o id da comparação ao clicar em Gerar pedido', async () => {
+  it('não oferece geração manual de pedido — o pedido vem do ERP por importação', async () => {
     const user = userEvent.setup()
-    const onGenerateOrder = vi.fn()
-    render(<AwaitingOrderList rows={rows} onGenerateOrder={onGenerateOrder} />)
+    render(<AwaitingOrderList rows={rows} />)
 
-    await user.click(screen.getByRole('button', { name: /gerar pedido/i }))
+    expect(screen.queryByRole('button', { name: /gerar pedido/i })).not.toBeInTheDocument()
 
-    expect(onGenerateOrder).toHaveBeenCalledWith('c1')
+    await user.click(screen.getByRole('button', { name: 'Ver' }))
+    expect(screen.getByText('Em breve')).toBeInTheDocument()
   })
 })

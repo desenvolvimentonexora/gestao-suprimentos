@@ -1,21 +1,25 @@
 import { supabase } from '../../lib/supabase'
 import { getOrderTotal } from './getOrderTotal'
-import { suggestOrderNumber } from './suggestOrderNumber'
 import type {
   ComparableRequestRow,
   ComparisonQuotationRow,
   ComparisonRequestItemRow,
   ComparisonStatus,
-  CreateOrderValues,
   ExtractedItemReview,
   ExtractedQuoteItem,
   HistoryRow,
-  OrderDraftItem,
+  ImportedOrderRow,
+  OrderImportColumnMapping,
+  OrderImportContext,
+  OrderImportGroup,
+  OrderStatus,
   PendingApprovalRow,
   PendingReleaseRow,
   ReleasedComparisonRow,
   SupplierOption,
 } from './types'
+
+const IMPORT_TYPE_ORDERS = 'orders'
 
 export async function fetchComparableRequests(): Promise<ComparableRequestRow[]> {
   const { data, error } = await supabase
@@ -407,73 +411,135 @@ export async function fetchReleasedAwaitingOrder(): Promise<ReleasedComparisonRo
   }))
 }
 
-export async function fetchComparisonOrderDraft(comparisonId: string): Promise<OrderDraftItem[]> {
+export async function fetchOrderImportMapping(): Promise<OrderImportColumnMapping | null> {
   const { data, error } = await supabase
-    .from('comparison_winners')
-    .select(
-      'request_item_id, quotation_item_id, request_items(material_id, quantity, unit_of_measure, materials(name)), quotation_items(unit_price, quotations(supplier_id, suppliers(name)))',
+    .from('import_mappings')
+    .select('column_mapping')
+    .eq('import_type', IMPORT_TYPE_ORDERS)
+    .maybeSingle()
+  if (error) throw error
+  return (data?.column_mapping as OrderImportColumnMapping | undefined) ?? null
+}
+
+export async function saveOrderImportMapping(tenantId: string, mapping: OrderImportColumnMapping): Promise<void> {
+  const { error } = await supabase
+    .from('import_mappings')
+    .upsert(
+      {
+        tenant_id: tenantId,
+        import_type: IMPORT_TYPE_ORDERS,
+        column_mapping: mapping as unknown as Record<string, string>,
+      },
+      { onConflict: 'tenant_id,import_type' },
     )
-    .eq('comparison_id', comparisonId)
+  if (error) throw error
+}
+
+// Contexto necessário para casar cada linha do Excel do pedido (vindo do
+// ERP) com a comparação liberada, o fornecedor, o material e o item da
+// requisição correspondentes.
+export async function fetchOrderImportContext(): Promise<OrderImportContext> {
+  const { data: comparisons, error } = await supabase
+    .from('comparisons')
+    .select('id, request_id, requests(external_ref, unit_id)')
+    .eq('status', 'released')
+    .is('deleted_at', null)
+  if (error) throw error
+
+  const { data: existingOrders, error: ordersError } = await supabase
+    .from('orders')
+    .select('comparison_id')
+    .is('deleted_at', null)
+  if (ordersError) throw ordersError
+  const orderedComparisonIds = new Set(existingOrders.map((order) => order.comparison_id))
+
+  const suppliers = await fetchSupplierOptions()
+
+  const { data: materials, error: materialsError } = await supabase
+    .from('materials')
+    .select('id, name, code')
+    .is('deleted_at', null)
+  if (materialsError) throw materialsError
+
+  const requestIds = comparisons.map((comparison) => comparison.request_id)
+  const { data: requestItems, error: requestItemsError } = await supabase
+    .from('request_items')
+    .select('id, request_id, material_id')
+    .in('request_id', requestIds.length > 0 ? requestIds : [''])
+    .is('deleted_at', null)
+  if (requestItemsError) throw requestItemsError
+
+  return {
+    comparisons: comparisons
+      .filter((comparison) => Boolean(comparison.requests?.external_ref))
+      .map((comparison) => ({
+        comparisonId: comparison.id,
+        requestId: comparison.request_id,
+        unitId: comparison.requests!.unit_id,
+        externalRef: comparison.requests!.external_ref!,
+        hasOrder: orderedComparisonIds.has(comparison.id),
+      })),
+    suppliers,
+    materials,
+    requestItems: requestItems.map((item) => ({
+      id: item.id,
+      requestId: item.request_id,
+      materialId: item.material_id,
+    })),
+  }
+}
+
+export async function bulkImportOrders(tenantId: string, groups: OrderImportGroup[]): Promise<void> {
+  for (const group of groups) {
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        tenant_id: tenantId,
+        comparison_id: group.comparisonId,
+        request_id: group.requestId,
+        unit_id: group.unitId,
+        order_number: group.orderNumber,
+        expected_delivery_date: group.expectedDeliveryDate,
+      })
+      .select('id')
+      .single()
+    if (orderError) throw orderError
+
+    const { error: itemsError } = await supabase.from('order_items').insert(
+      group.items.map((item) => ({
+        tenant_id: tenantId,
+        order_id: order.id,
+        request_item_id: item.requestItemId,
+        material_id: item.materialId,
+        supplier_id: item.supplierId,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+      })),
+    )
+    if (itemsError) throw itemsError
+  }
+}
+
+export async function fetchImportedOrders(): Promise<ImportedOrderRow[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id, order_number, status, expected_delivery_date, units(name), order_items(suppliers(name))')
+    .is('deleted_at', null)
+    .order('imported_at', { ascending: false })
   if (error) throw error
 
   return data.map((row) => ({
-    requestItemId: row.request_item_id,
-    quotationItemId: row.quotation_item_id,
-    materialId: row.request_items?.material_id ?? '',
-    materialName: row.request_items?.materials?.name ?? '',
-    quantity: Number(row.request_items?.quantity ?? 0),
-    unitOfMeasure: row.request_items?.unit_of_measure ?? null,
-    supplierId: row.quotation_items?.quotations?.supplier_id ?? '',
-    supplierName: row.quotation_items?.quotations?.suppliers?.name ?? '',
-    unitPrice: Number(row.quotation_items?.unit_price ?? 0),
+    orderId: row.id,
+    orderNumber: row.order_number,
+    unitName: row.units?.name ?? '',
+    supplierNames: Array.from(
+      new Set(
+        row.order_items
+          .map((item) => item.suppliers?.name)
+          .filter((name): name is string => Boolean(name)),
+      ),
+    ),
+    expectedDeliveryDate: row.expected_delivery_date,
+    status: row.status as OrderStatus,
   }))
-}
-
-export async function fetchNextOrderNumberSuggestion(tenantId: string): Promise<string> {
-  const { count, error } = await supabase
-    .from('orders')
-    .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', tenantId)
-  if (error) throw error
-  return suggestOrderNumber((count ?? 0) + 1)
-}
-
-export interface CreateOrderInput extends CreateOrderValues {
-  tenantId: string
-  comparisonId: string
-  requestId: string
-  unitId: string
-}
-
-export async function createOrder(input: CreateOrderInput): Promise<string> {
-  const { data: order, error: orderError } = await supabase
-    .from('orders')
-    .insert({
-      tenant_id: input.tenantId,
-      comparison_id: input.comparisonId,
-      request_id: input.requestId,
-      unit_id: input.unitId,
-      order_number: input.orderNumber,
-      expected_delivery_date: input.expectedDeliveryDate || null,
-    })
-    .select('id')
-    .single()
-  if (orderError) throw orderError
-
-  const draftItems = await fetchComparisonOrderDraft(input.comparisonId)
-
-  const { error: itemsError } = await supabase.from('order_items').insert(
-    draftItems.map((item) => ({
-      tenant_id: input.tenantId,
-      order_id: order.id,
-      request_item_id: item.requestItemId,
-      material_id: item.materialId,
-      supplier_id: item.supplierId,
-      quantity: item.quantity,
-      unit_price: item.unitPrice,
-    })),
-  )
-  if (itemsError) throw itemsError
-
-  return order.id
 }

@@ -1,16 +1,15 @@
-import { Button, Card } from '../../components'
+import { Card, ComingSoonButton } from '../../components'
 import { formatCurrency } from '../../lib/formatters'
 import type { ReleasedComparisonRow } from './types'
 
 export interface AwaitingOrderListProps {
   rows: ReleasedComparisonRow[]
-  onGenerateOrder: (comparisonId: string) => void
 }
 
-export function AwaitingOrderList({ rows, onGenerateOrder }: AwaitingOrderListProps) {
+export function AwaitingOrderList({ rows }: AwaitingOrderListProps) {
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold text-ink">Comparações liberadas, aguardando pedido</h2>
+      <h3 className="text-sm font-semibold text-ink">Aguardando importação do pedido</h3>
       {rows.length === 0 ? (
         <p className="text-sm text-ink-muted">Nenhuma comparação liberada aguardando pedido.</p>
       ) : (
@@ -21,7 +20,7 @@ export function AwaitingOrderList({ rows, onGenerateOrder }: AwaitingOrderListPr
               <p className="text-xs text-ink-muted">{row.externalRef ?? '—'}</p>
             </div>
             <p className="text-sm font-medium text-ink">{formatCurrency(row.totalValue, 'BRL')}</p>
-            <Button onClick={() => onGenerateOrder(row.comparisonId)}>Gerar pedido</Button>
+            <ComingSoonButton label="Ver" />
           </Card>
         ))
       )}

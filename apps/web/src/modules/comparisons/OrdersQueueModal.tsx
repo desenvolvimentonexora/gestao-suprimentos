@@ -1,14 +1,9 @@
 import { useState } from 'react'
-import { Modal } from '../../components'
+import { Button, Modal } from '../../components'
 import { AwaitingOrderList } from './AwaitingOrderList'
-import { OrderGenerationForm } from './OrderGenerationForm'
-import {
-  useComparisonOrderDraft,
-  useCreateOrder,
-  useNextOrderNumberSuggestion,
-  useReleasedAwaitingOrder,
-} from './queries'
-import type { CreateOrderValues } from './types'
+import { ImportedOrdersList } from './ImportedOrdersList'
+import { OrderImportModal } from './OrderImportModal'
+import { useImportedOrders, useReleasedAwaitingOrder } from './queries'
 
 export interface OrdersQueueModalProps {
   isOpen: boolean
@@ -17,54 +12,23 @@ export interface OrdersQueueModalProps {
 }
 
 export function OrdersQueueModal({ isOpen, onClose, tenantId }: OrdersQueueModalProps) {
-  const [selectedComparisonId, setSelectedComparisonId] = useState<string | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
 
   const awaitingOrderQuery = useReleasedAwaitingOrder(isOpen)
-  const selectedComparison =
-    awaitingOrderQuery.data?.find((row) => row.comparisonId === selectedComparisonId) ?? null
-  const draftQuery = useComparisonOrderDraft(selectedComparisonId)
-  const suggestionQuery = useNextOrderNumberSuggestion(tenantId, Boolean(selectedComparisonId))
-  const createOrder = useCreateOrder(tenantId)
-
-  const isDraftReady = Boolean(draftQuery.data) && Boolean(suggestionQuery.data)
-
-  function handleClose() {
-    setSelectedComparisonId(null)
-    onClose()
-  }
-
-  function handleSubmit(values: CreateOrderValues) {
-    if (!selectedComparison) return
-    createOrder.mutate(
-      {
-        comparisonId: selectedComparison.comparisonId,
-        requestId: selectedComparison.requestId,
-        unitId: selectedComparison.unitId,
-        ...values,
-      },
-      { onSuccess: () => setSelectedComparisonId(null) },
-    )
-  }
+  const importedOrdersQuery = useImportedOrders(isOpen)
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={selectedComparison ? `Gerar pedido — ${selectedComparison.unitName}` : 'Fila de Pedidos'}
-    >
-      {!selectedComparison ? (
-        <AwaitingOrderList rows={awaitingOrderQuery.data ?? []} onGenerateOrder={setSelectedComparisonId} />
-      ) : isDraftReady ? (
-        <OrderGenerationForm
-          items={draftQuery.data ?? []}
-          suggestedOrderNumber={suggestionQuery.data ?? ''}
-          onBack={() => setSelectedComparisonId(null)}
-          onSubmit={handleSubmit}
-          isSubmitting={createOrder.isPending}
-        />
-      ) : (
-        <p className="text-sm text-ink-muted">Carregando…</p>
-      )}
+    <Modal isOpen={isOpen} onClose={onClose} title="Fila de Pedidos">
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-end">
+          <Button onClick={() => setImportOpen(true)}>Importar pedidos</Button>
+        </div>
+
+        <AwaitingOrderList rows={awaitingOrderQuery.data ?? []} />
+        <ImportedOrdersList rows={importedOrdersQuery.data ?? []} />
+      </div>
+
+      <OrderImportModal isOpen={importOpen} onClose={() => setImportOpen(false)} tenantId={tenantId} />
     </Modal>
   )
 }
