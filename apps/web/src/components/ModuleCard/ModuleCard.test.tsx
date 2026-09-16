@@ -53,4 +53,33 @@ describe('ModuleCard', () => {
       'true',
     )
   })
+
+  it('tem altura fixa igual nos três estados, para o grid ficar uniforme mesmo com descrições de tamanhos diferentes', () => {
+    const { unmount: unmountLink } = renderCard({ route: '/suprimentos' })
+    const linkHeight = screen.getByRole('link', { name: /Suprimentos/ }).className
+    unmountLink()
+
+    const { unmount: unmountButton } = renderCard({ status: 'beta' })
+    const buttonCardHeight = screen.getByRole('button', { name: /Suprimentos/ }).className
+    unmountButton()
+
+    renderCard({ status: 'em-breve' })
+    const emBreveHeight = screen.getByText('Suprimentos').closest('[aria-disabled]')!.className
+
+    expect(linkHeight).toMatch(/\bh-\d+\b/)
+    expect(buttonCardHeight).toMatch(/\bh-\d+\b/)
+    expect(emBreveHeight).toMatch(/\bh-\d+\b/)
+
+    const extractHeight = (className: string) => className.match(/\bh-\d+\b/)?.[0]
+    expect(extractHeight(linkHeight)).toBe(extractHeight(buttonCardHeight))
+    expect(extractHeight(buttonCardHeight)).toBe(extractHeight(emBreveHeight))
+  })
+
+  it('trunca descrições longas em vez de esticar o card', () => {
+    renderCard({
+      description:
+        'Uma descrição bem mais longa do que o normal, para verificar que o card não cresce além da altura fixa quando o texto não cabe.',
+    })
+    expect(screen.getByText(/Uma descrição bem mais longa/).className).toContain('line-clamp')
+  })
 })
