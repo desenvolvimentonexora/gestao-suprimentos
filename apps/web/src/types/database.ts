@@ -211,6 +211,7 @@ export type Database = {
           financial_charge_requested: boolean
           id: string
           payment_condition_note: string | null
+          payment_proof_confirmed_at: string | null
           rejection_reason: string | null
           released_at: string | null
           released_by: string | null
@@ -229,6 +230,7 @@ export type Database = {
           financial_charge_requested?: boolean
           id?: string
           payment_condition_note?: string | null
+          payment_proof_confirmed_at?: string | null
           rejection_reason?: string | null
           released_at?: string | null
           released_by?: string | null
@@ -247,6 +249,7 @@ export type Database = {
           financial_charge_requested?: boolean
           id?: string
           payment_condition_note?: string | null
+          payment_proof_confirmed_at?: string | null
           rejection_reason?: string | null
           released_at?: string | null
           released_by?: string | null
@@ -985,6 +988,7 @@ export type Database = {
           currency: string
           deleted_at: string | null
           id: string
+          modules: Json
           tenant_id: string
           theme: Json
           updated_at: string
@@ -997,6 +1001,7 @@ export type Database = {
           currency?: string
           deleted_at?: string | null
           id?: string
+          modules?: Json
           tenant_id: string
           theme?: Json
           updated_at?: string
@@ -1009,6 +1014,7 @@ export type Database = {
           currency?: string
           deleted_at?: string | null
           id?: string
+          modules?: Json
           tenant_id?: string
           theme?: Json
           updated_at?: string
@@ -1604,6 +1610,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_active: boolean
           organization_id: string | null
           tenant_id: string
           updated_at: string
@@ -1615,6 +1622,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_active?: boolean
           organization_id?: string | null
           tenant_id: string
           updated_at?: string
@@ -1626,6 +1634,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          is_active?: boolean
           organization_id?: string | null
           tenant_id?: string
           updated_at?: string
