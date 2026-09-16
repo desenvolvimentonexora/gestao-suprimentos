@@ -65,9 +65,17 @@ export interface SupplierOption {
 
 export interface PendingApprovalRow {
   comparisonId: string
+  requestId: string
   unitName: string
   externalRef: string | null
-  requestId: string
+  sequenceNumber: number | null
+  totalValue: number
+  itemCount: number
+  supplierCount: number
+  paymentConditionNote: string | null
+  note: string | null
+  submittedByName: string | null
+  submittedAt: string | null
 }
 
 export interface PendingReleaseRow {

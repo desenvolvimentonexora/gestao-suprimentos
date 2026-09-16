@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Pencil } from 'lucide-react'
+import { ClipboardCheck, Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Badge, Button, Card, ComingSoonButton, Modal } from '../../components'
 import { useUserPermissions } from '../../core/permissions'
@@ -107,6 +107,8 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
           isOpen={queueView === 'approvals'}
           onClose={() => setQueueView(null)}
           title="Fila de Aprovações"
+          icon={ClipboardCheck}
+          titleClassName="text-amber-800"
         >
           <PendingApprovalsSection />
         </Modal>

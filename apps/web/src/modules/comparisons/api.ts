@@ -301,18 +301,53 @@ export async function sendToApproval(comparisonId: string): Promise<void> {
 export async function fetchPendingApprovals(): Promise<PendingApprovalRow[]> {
   const { data, error } = await supabase
     .from('comparisons')
-    .select('id, requests(id, external_ref, units(name))')
+    .select('id, created_by, created_at, requests(id, external_ref, sequence_number, notes, units(name))')
     .eq('status', 'pending_approval')
     .is('deleted_at', null)
-
   if (error) throw error
 
-  return data.map((row) => ({
-    comparisonId: row.id,
-    requestId: row.requests?.id ?? '',
-    unitName: row.requests?.units?.name ?? '',
-    externalRef: row.requests?.external_ref ?? null,
-  }))
+  const comparisonIds = data.map((row) => row.id)
+
+  const { data: winnerRows, error: winnersError } = await supabase
+    .from('comparison_winners')
+    .select('comparison_id, request_items(quantity), quotation_items(unit_price, quotations(supplier_id, payment_terms))')
+    .in('comparison_id', comparisonIds.length > 0 ? comparisonIds : [''])
+  if (winnersError) throw winnersError
+
+  const linesByComparisonId = new Map<string, WinnerLine[]>()
+  const paymentTermsByComparisonId = new Map<string, string | null>()
+  for (const row of winnerRows) {
+    const list = linesByComparisonId.get(row.comparison_id) ?? []
+    list.push({
+      quantity: Number(row.request_items?.quantity ?? 0),
+      unitPrice: Number(row.quotation_items?.unit_price ?? 0),
+      supplierId: row.quotation_items?.quotations?.supplier_id ?? '',
+    })
+    linesByComparisonId.set(row.comparison_id, list)
+    if (!paymentTermsByComparisonId.has(row.comparison_id)) {
+      paymentTermsByComparisonId.set(row.comparison_id, row.quotation_items?.quotations?.payment_terms ?? null)
+    }
+  }
+
+  const namesByUserId = await fetchUserNames(data.map((row) => row.created_by))
+
+  return data.map((row) => {
+    const summary = summarizeWinners(linesByComparisonId.get(row.id) ?? [])
+    return {
+      comparisonId: row.id,
+      requestId: row.requests?.id ?? '',
+      unitName: row.requests?.units?.name ?? '',
+      externalRef: row.requests?.external_ref ?? null,
+      sequenceNumber: row.requests?.sequence_number ?? null,
+      totalValue: summary.totalValue,
+      itemCount: summary.itemCount,
+      supplierCount: summary.supplierCount,
+      paymentConditionNote: paymentTermsByComparisonId.get(row.id) ?? null,
+      note: row.requests?.notes ?? null,
+      submittedByName: row.created_by ? (namesByUserId.get(row.created_by) ?? null) : null,
+      submittedAt: row.created_at,
+    }
+  })
 }
 
 export interface DecideComparisonInput {
