@@ -47,6 +47,12 @@ export interface ExtractedQuoteItem {
   leadTimeDays: number | null
 }
 
+export interface ExtractedQuoteData {
+  items: ExtractedQuoteItem[]
+  freight: number | null
+  paymentTerms: string | null
+}
+
 export interface ExtractedItemReview extends ExtractedQuoteItem {
   requestItemId: string | null
   confidence: number

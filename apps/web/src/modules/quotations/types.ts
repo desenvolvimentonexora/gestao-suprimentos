@@ -13,6 +13,8 @@ export interface QuotationItemFormValues {
 
 export interface QuotationFormValues {
   supplierId: string
+  freight: string
+  paymentTerms: string
   items: QuotationItemFormValues[]
 }
 

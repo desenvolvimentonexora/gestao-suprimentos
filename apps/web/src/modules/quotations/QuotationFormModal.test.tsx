@@ -64,7 +64,34 @@ describe('QuotationFormModal', () => {
 
     expect(onSubmit).toHaveBeenCalledWith({
       supplierId: 's1',
+      freight: '',
+      paymentTerms: '',
       items: [{ requestItemId: 'i1', unitPrice: '25.50', leadTimeDays: '5' }],
+    })
+  })
+
+  it('mostra campos de frete e condição de pagamento no nível da cotação', () => {
+    render(<QuotationFormModal {...baseProps()} />)
+    expect(screen.getByLabelText(/frete/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/condição de pagamento/i)).toBeInTheDocument()
+  })
+
+  it('envia frete e condição de pagamento junto com os itens', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(<QuotationFormModal {...baseProps()} onSubmit={onSubmit} />)
+
+    await user.selectOptions(screen.getByLabelText('Fornecedor'), 's1')
+    await user.type(screen.getByLabelText(/frete/i), '80')
+    await user.type(screen.getByLabelText(/condição de pagamento/i), '30 DDL')
+    await user.type(screen.getByLabelText(/preço unitário/i), '25.50')
+    await user.click(screen.getByRole('button', { name: /registrar cotação/i }))
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      supplierId: 's1',
+      freight: '80',
+      paymentTerms: '30 DDL',
+      items: [{ requestItemId: 'i1', unitPrice: '25.50', leadTimeDays: '' }],
     })
   })
 })

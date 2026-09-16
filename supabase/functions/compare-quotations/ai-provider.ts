@@ -13,15 +13,23 @@ export interface ExtractedQuoteItem {
 
 export interface ExtractedQuoteData {
   items: ExtractedQuoteItem[]
+  freight: number | null
+  paymentTerms: string | null
 }
 
-const EXTRACTION_PROMPT = `Extraia os itens deste orçamento (PDF) em JSON. Para cada item, retorne:
+const EXTRACTION_PROMPT = `Extraia os dados deste orçamento (PDF) em JSON. Para cada item, retorne:
 - description: nome do material/insumo, como texto
 - quantity: quantidade, como número, ou null se não estiver informada
 - unitPrice: preço unitário, como número (sem símbolo de moeda)
 - leadTimeDays: prazo de entrega em dias, como número inteiro, ou null se não estiver informado
 
-Responda apenas com um JSON no formato {"items": [...]}, sem nenhum texto adicional antes ou depois.`
+Além dos itens, extraia também do documento como um todo (não por item):
+- freight: valor do frete, como número (sem símbolo de moeda), ou null se o documento não trouxer essa informação de forma clara
+- paymentTerms: condição de pagamento, como texto (ex.: "30 DDL", "à vista", "28 DDL - Boleto"), ou null se não estiver informada
+
+Não invente valores de frete ou condição de pagamento — se o PDF não trouxer essa informação de forma explícita, retorne null.
+
+Responda apenas com um JSON no formato {"items": [...], "freight": ..., "paymentTerms": ...}, sem nenhum texto adicional antes ou depois.`
 
 export function parseExtractionResponse(text: string): ExtractedQuoteData {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)

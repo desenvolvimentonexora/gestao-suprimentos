@@ -15,6 +15,8 @@ const itemSchema = z.object({
 
 const quotationFormSchema = z.object({
   supplierId: z.string().min(1, 'Selecione o fornecedor.'),
+  freight: z.string(),
+  paymentTerms: z.string(),
   items: z.array(itemSchema),
 })
 
@@ -45,6 +47,8 @@ export function QuotationFormModal({
     resolver: zodResolver(quotationFormSchema),
     defaultValues: {
       supplierId: '',
+      freight: '',
+      paymentTerms: '',
       items: requestItems.map((item) => ({ requestItemId: item.id, unitPrice: '', leadTimeDays: '' })),
     },
   })
@@ -73,6 +77,11 @@ export function QuotationFormModal({
             ))}
           </select>
           {errors.supplierId && <p className="text-xs text-accent">{errors.supplierId.message}</p>}
+        </div>
+
+        <div className="flex gap-2">
+          <Input label="Frete" {...register('freight')} />
+          <Input label="Condição de pagamento" {...register('paymentTerms')} />
         </div>
 
         <div className="flex flex-col gap-3 border-t border-line pt-3">

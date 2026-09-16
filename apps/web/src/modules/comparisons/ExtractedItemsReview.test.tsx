@@ -32,6 +32,8 @@ function baseProps() {
   return {
     items: initialItems,
     requestItems,
+    freight: null,
+    paymentTerms: null,
     onConfirm: vi.fn(),
     onCancel: vi.fn(),
     isSubmitting: false,
@@ -64,10 +66,13 @@ describe('ExtractedItemsReview', () => {
 
     await user.click(screen.getByRole('button', { name: /confirmar itens/i }))
 
-    expect(onConfirm).toHaveBeenCalledWith([
-      expect.objectContaining({ requestItemId: 'ri1', unitPrice: 28 }),
-      expect.objectContaining({ requestItemId: 'ri2' }),
-    ])
+    expect(onConfirm).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({ requestItemId: 'ri1', unitPrice: 28 }),
+        expect.objectContaining({ requestItemId: 'ri2' }),
+      ],
+      { freight: null, paymentTerms: null },
+    )
   })
 
   it('não confirma itens sem item do sistema selecionado', async () => {
@@ -87,5 +92,35 @@ describe('ExtractedItemsReview', () => {
     render(<ExtractedItemsReview {...baseProps()} onCancel={onCancel} />)
     await user.click(screen.getByRole('button', { name: /cancelar/i }))
     expect(onCancel).toHaveBeenCalled()
+  })
+
+  it('pré-preenche frete e condição de pagamento extraídos pela IA', () => {
+    render(<ExtractedItemsReview {...baseProps()} freight={150.75} paymentTerms="30 DDL" />)
+    expect(screen.getByLabelText(/frete/i)).toHaveValue(150.75)
+    expect(screen.getByLabelText(/condição de pagamento/i)).toHaveValue('30 DDL')
+  })
+
+  it('permite corrigir frete e pagamento antes de confirmar', async () => {
+    const user = userEvent.setup()
+    const onConfirm = vi.fn()
+    render(
+      <ExtractedItemsReview
+        {...baseProps()}
+        freight={150.75}
+        paymentTerms="30 DDL"
+        onConfirm={onConfirm}
+      />,
+    )
+
+    const itemSelects = screen.getAllByLabelText(/item do sistema/i)
+    await user.selectOptions(itemSelects[1]!, 'ri2')
+
+    await user.clear(screen.getByLabelText(/frete/i))
+    await user.type(screen.getByLabelText(/frete/i), '200')
+    await user.clear(screen.getByLabelText(/condição de pagamento/i))
+    await user.type(screen.getByLabelText(/condição de pagamento/i), 'à vista')
+    await user.click(screen.getByRole('button', { name: /confirmar itens/i }))
+
+    expect(onConfirm).toHaveBeenCalledWith(expect.anything(), { freight: 200, paymentTerms: 'à vista' })
   })
 })

@@ -110,6 +110,8 @@ export async function createQuotation(
       supplier_id: values.supplierId,
       status: 'received',
       submitted_at: new Date().toISOString(),
+      freight_amount: values.freight.trim() === '' ? null : Number(values.freight.replace(',', '.')),
+      payment_terms: values.paymentTerms.trim() === '' ? null : values.paymentTerms,
     })
     .select('id')
     .single()

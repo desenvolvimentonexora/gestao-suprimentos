@@ -2,22 +2,38 @@ import { useState } from 'react'
 import { Button } from '../../components'
 import type { ComparisonRequestItemRow, ExtractedItemReview } from './types'
 
+export interface ExtractedQuotationTerms {
+  freight: number | null
+  paymentTerms: string | null
+}
+
 export interface ExtractedItemsReviewProps {
   items: ExtractedItemReview[]
   requestItems: ComparisonRequestItemRow[]
-  onConfirm: (items: ExtractedItemReview[]) => void
+  freight: number | null
+  paymentTerms: string | null
+  onConfirm: (items: ExtractedItemReview[], terms: ExtractedQuotationTerms) => void
   onCancel: () => void
   isSubmitting: boolean
+}
+
+function parseNumberInput(value: string): number | null {
+  if (value.trim() === '') return null
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? null : parsed
 }
 
 export function ExtractedItemsReview({
   items,
   requestItems,
+  freight,
+  paymentTerms,
   onConfirm,
   onCancel,
   isSubmitting,
 }: ExtractedItemsReviewProps) {
   const [rows, setRows] = useState(items)
+  const [terms, setTerms] = useState<ExtractedQuotationTerms>({ freight, paymentTerms })
   const [error, setError] = useState<string | null>(null)
 
   function updateRow(index: number, updates: Partial<ExtractedItemReview>) {
@@ -30,7 +46,7 @@ export function ExtractedItemsReview({
       return
     }
     setError(null)
-    onConfirm(rows)
+    onConfirm(rows, terms)
   }
 
   return (
@@ -38,6 +54,39 @@ export function ExtractedItemsReview({
       <p className="text-sm text-ink-muted">
         Confira os itens extraídos do PDF. Corrija o item, o preço ou o prazo se a IA errou.
       </p>
+
+      <div className="flex gap-2 border-b border-line pb-3">
+        <div className="flex w-32 flex-col gap-1">
+          <label htmlFor="review-freight" className="text-xs text-ink-muted">
+            Frete
+          </label>
+          <input
+            id="review-freight"
+            type="number"
+            step="any"
+            value={terms.freight ?? ''}
+            onChange={(e) => setTerms((current) => ({ ...current, freight: parseNumberInput(e.target.value) }))}
+            className="rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+          />
+        </div>
+        <div className="flex flex-1 flex-col gap-1">
+          <label htmlFor="review-payment-terms" className="text-xs text-ink-muted">
+            Condição de pagamento
+          </label>
+          <input
+            id="review-payment-terms"
+            type="text"
+            value={terms.paymentTerms ?? ''}
+            onChange={(e) =>
+              setTerms((current) => ({
+                ...current,
+                paymentTerms: e.target.value.trim() === '' ? null : e.target.value,
+              }))
+            }
+            className="rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+          />
+        </div>
+      </div>
 
       {rows.map((row, index) => (
         <div key={index} className="flex items-end gap-2 border-b border-line pb-2">

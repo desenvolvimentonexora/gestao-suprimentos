@@ -86,11 +86,13 @@ export function useConfirmExtractedItems(tenantId: string) {
       comparisonId,
       quotationId,
       reviewedItems,
+      terms,
     }: {
       comparisonId: string
       quotationId: string
       reviewedItems: ExtractedItemReview[]
-    }) => confirmExtractedItems(tenantId, comparisonId, quotationId, reviewedItems),
+      terms: { freight: number | null; paymentTerms: string | null }
+    }) => confirmExtractedItems(tenantId, comparisonId, quotationId, reviewedItems, terms),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
     },

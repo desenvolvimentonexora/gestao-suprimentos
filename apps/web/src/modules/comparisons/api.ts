@@ -6,7 +6,7 @@ import type {
   ComparisonRequestItemRow,
   ComparisonStatus,
   ExtractedItemReview,
-  ExtractedQuoteItem,
+  ExtractedQuoteData,
   HistoryRow,
   OrderImportColumnMapping,
   OrderImportContext,
@@ -160,7 +160,7 @@ export async function uploadQuotationAttachment(
   return data.id
 }
 
-export async function runExtraction(attachmentId: string): Promise<{ items: ExtractedQuoteItem[] }> {
+export async function runExtraction(attachmentId: string): Promise<ExtractedQuoteData> {
   const { data, error } = await supabase.functions.invoke('compare-quotations', {
     body: { attachmentId },
   })
@@ -173,6 +173,7 @@ export async function confirmExtractedItems(
   comparisonId: string,
   quotationId: string,
   reviewedItems: ExtractedItemReview[],
+  terms: { freight: number | null; paymentTerms: string | null },
 ): Promise<void> {
   const matchedItems = reviewedItems.filter(
     (item): item is ExtractedItemReview & { requestItemId: string } => item.requestItemId !== null,
@@ -206,7 +207,12 @@ export async function confirmExtractedItems(
 
   const { error: quotationError } = await supabase
     .from('quotations')
-    .update({ status: 'received', submitted_at: new Date().toISOString() })
+    .update({
+      status: 'received',
+      submitted_at: new Date().toISOString(),
+      freight_amount: terms.freight,
+      payment_terms: terms.paymentTerms,
+    })
     .eq('id', quotationId)
   if (quotationError) throw quotationError
 }

@@ -23,7 +23,13 @@ export interface ImportQuotationPdfModalProps {
 type Step =
   | { name: 'pick-supplier' }
   | { name: 'extracting' }
-  | { name: 'review'; quotationId: string; items: ExtractedItemReview[] }
+  | {
+      name: 'review'
+      quotationId: string
+      items: ExtractedItemReview[]
+      freight: number | null
+      paymentTerms: string | null
+    }
   | { name: 'error'; message: string }
 
 export function ImportQuotationPdfModal({
@@ -59,7 +65,13 @@ export function ImportQuotationPdfModal({
       const attachmentId = await uploadAttachment.mutateAsync({ quotationId, file })
       const extracted = await runExtraction.mutateAsync(attachmentId)
       const reviewed = matchExtractedItems(extracted.items, requestItems)
-      setStep({ name: 'review', quotationId, items: reviewed })
+      setStep({
+        name: 'review',
+        quotationId,
+        items: reviewed,
+        freight: extracted.freight,
+        paymentTerms: extracted.paymentTerms,
+      })
     } catch (error) {
       setStep({
         name: 'error',
@@ -68,10 +80,13 @@ export function ImportQuotationPdfModal({
     }
   }
 
-  function handleConfirm(reviewedItems: ExtractedItemReview[]) {
+  function handleConfirm(
+    reviewedItems: ExtractedItemReview[],
+    terms: { freight: number | null; paymentTerms: string | null },
+  ) {
     if (step.name !== 'review') return
     confirmItems.mutate(
-      { comparisonId, quotationId: step.quotationId, reviewedItems },
+      { comparisonId, quotationId: step.quotationId, reviewedItems, terms },
       { onSuccess: handleClose },
     )
   }
@@ -124,6 +139,8 @@ export function ImportQuotationPdfModal({
         <ExtractedItemsReview
           items={step.items}
           requestItems={requestItems}
+          freight={step.freight}
+          paymentTerms={step.paymentTerms}
           onConfirm={handleConfirm}
           onCancel={handleClose}
           isSubmitting={confirmItems.isPending}
