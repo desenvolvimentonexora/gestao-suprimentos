@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatCurrency, formatDate, formatLongDate } from './formatters'
+import { formatCurrency, formatDate, formatDateTime, formatLongDate } from './formatters'
 
 describe('formatDate', () => {
   it('formata a data no padrão pt-BR (dd/mm/aaaa)', () => {
@@ -11,6 +11,14 @@ describe('formatLongDate', () => {
   it('formata a data por extenso em pt-BR', () => {
     expect(formatLongDate(new Date('2026-09-08T12:00:00Z'))).toMatch(
       /^[a-zç]+-feira, \d{1,2} de [a-zç]+ de \d{4}$/,
+    )
+  })
+})
+
+describe('formatDateTime', () => {
+  it('formata data e hora no padrão pt-BR (dd/mm/aaaa, hh:mm)', () => {
+    expect(formatDateTime(new Date('2026-09-08T12:05:00Z'))).toMatch(
+      /^\d{2}\/\d{2}\/\d{4}(,| às)? \d{2}:\d{2}$/,
     )
   })
 })

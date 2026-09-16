@@ -1,6 +1,15 @@
 import type { ButtonHTMLAttributes } from 'react'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'on-primary' | 'accent' | 'info' | 'danger'
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'on-primary'
+  | 'accent'
+  | 'info'
+  | 'danger'
+  | 'violet'
+  | 'warning'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -17,6 +26,12 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   info: 'bg-blue-800 text-white hover:opacity-90',
   // Ação destrutiva (excluir) — vermelho sempre, nunca a cor da marca.
   danger: 'bg-red-600 text-white hover:opacity-90',
+  // Ação de conferência/cobrança (confirmar comprovante, cobrar financeiro)
+  // — roxo, cor de identificação da fila, não a cor da marca.
+  violet: 'bg-violet-600 text-white hover:opacity-90',
+  // Ação de recusa dentro de um fluxo de decisão (não liberar) — laranja,
+  // distinto de danger (que é para exclusão irreversível).
+  warning: 'bg-orange-500 text-white hover:opacity-90',
 }
 
 export function Button({ variant = 'primary', className = '', ...props }: ButtonProps) {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Badge, Button, Card, ComingSoonButton, Modal } from '../../components'
 import { useUserPermissions } from '../../core/permissions'
@@ -32,7 +33,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
   const [queueView, setQueueView] = useState<QueueView>(null)
 
   const requestsQuery = useComparableRequests()
-  const getOrCreateDraftComparison = useGetOrCreateDraftComparison(tenantId)
+  const getOrCreateDraftComparison = useGetOrCreateDraftComparison(tenantId, userId)
   const setComparisonWinner = useSetComparisonWinner(tenantId)
   const updateQuotationTerms = useUpdateQuotationTerms()
   const sendToApproval = useSendToApproval()
@@ -112,7 +113,13 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
       )}
 
       {canApprove && (
-        <Modal isOpen={queueView === 'releases'} onClose={() => setQueueView(null)} title="Fila de Alterações">
+        <Modal
+          isOpen={queueView === 'releases'}
+          onClose={() => setQueueView(null)}
+          title="Fila de Alterações"
+          icon={Pencil}
+          titleClassName="text-blue-700"
+        >
           <PendingReleaseSection />
         </Modal>
       )}

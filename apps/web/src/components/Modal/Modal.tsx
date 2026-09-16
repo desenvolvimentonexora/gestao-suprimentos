@@ -1,14 +1,18 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
-import { X } from 'lucide-react'
+import { X, type LucideIcon } from 'lucide-react'
 
 export interface ModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
+  /** Ícone opcional ao lado do título — usado para diferenciar filas de trabalho (ex.: Fila de Alterações, Fila de Pedidos). */
+  icon?: LucideIcon
+  /** Classe de cor do título/ícone, sobrepõe o padrão text-ink. Cor de identificação da fila, não a cor da marca. */
+  titleClassName?: string
   children: ReactNode
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export function Modal({ isOpen, onClose, title, icon: Icon, titleClassName, children }: ModalProps) {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -37,7 +41,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         className="flex max-h-[90vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-xl bg-surface p-6 shadow-lg focus:outline-none"
       >
         <div className="flex items-center justify-between">
-          <h2 id={titleId} className="text-lg font-semibold text-ink">
+          <h2 id={titleId} className={`flex items-center gap-2 text-lg font-semibold ${titleClassName ?? 'text-ink'}`}>
+            {Icon && <Icon size={20} aria-hidden="true" />}
             {title}
           </h2>
           <button
