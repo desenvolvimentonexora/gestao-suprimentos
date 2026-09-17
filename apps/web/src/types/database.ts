@@ -762,6 +762,65 @@ export type Database = {
           },
         ]
       }
+      request_dispatch_recipients: {
+        Row: {
+          email: string
+          id: string
+          material_id: string
+          request_id: string
+          sent_at: string
+          supplier_id: string
+          tenant_id: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          material_id: string
+          request_id: string
+          sent_at?: string
+          supplier_id: string
+          tenant_id: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          material_id?: string
+          request_id?: string
+          sent_at?: string
+          supplier_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_dispatch_recipients_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_dispatch_recipients_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_dispatch_recipients_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_dispatch_recipients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_items: {
         Row: {
           authorized_at: string | null
@@ -895,6 +954,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          dispatch_blocked_reason: string | null
           external_ref: string | null
           id: string
           needed_by: string | null
@@ -914,6 +974,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          dispatch_blocked_reason?: string | null
           external_ref?: string | null
           id?: string
           needed_by?: string | null
@@ -933,6 +994,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          dispatch_blocked_reason?: string | null
           external_ref?: string | null
           id?: string
           needed_by?: string | null
@@ -1738,6 +1800,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      fn_mark_request_negotiating: {
+        Args: { p_request_id: string; p_reviewer_id: string }
+        Returns: undefined
+      }
       fn_next_tenant_sequence: {
         Args: { p_sequence_name: string; p_tenant_id: string }
         Returns: number
@@ -1784,6 +1850,7 @@ export type Database = {
         | "clarification_requested"
         | "extension_requested"
         | "released_to_dispatch"
+        | "dispatched_to_suppliers"
       request_status:
         | "draft"
         | "open"
@@ -1938,6 +2005,7 @@ export const Constants = {
         "clarification_requested",
         "extension_requested",
         "released_to_dispatch",
+        "dispatched_to_suppliers",
       ],
       request_status: [
         "draft",
