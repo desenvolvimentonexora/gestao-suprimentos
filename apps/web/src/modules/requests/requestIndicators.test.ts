@@ -43,6 +43,16 @@ describe('getRequestIndicators', () => {
   it('retorna zeros quando não há requisições', () => {
     expect(getRequestIndicators([])).toEqual({ ativas: 0, pendentes: 0, enviadas: 0, concluidas: 0 })
   })
+
+  it('conta released_to_dispatch como pendente — os outros status de análise nem chegam aqui (a página já filtra)', () => {
+    const requests: RequestRow[] = [makeRequest({ id: 'r1', status: 'released_to_dispatch' })]
+    expect(getRequestIndicators(requests)).toEqual({
+      ativas: 1,
+      pendentes: 1,
+      enviadas: 0,
+      concluidas: 0,
+    })
+  })
 })
 
 describe('isOverdue', () => {

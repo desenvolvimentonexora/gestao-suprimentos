@@ -13,6 +13,7 @@ import { usePendingWorkSummary } from '../modules/home/queries'
 import { SuprimentosPage } from '../modules/suprimentos/SuprimentosPage'
 import { AgendaFornecedoresPage } from '../modules/suppliers/AgendaFornecedoresPage'
 import { UnitsPage } from '../modules/units/UnitsPage'
+import { AnaliseSolicitacoesPage } from '../modules/requests/AnaliseSolicitacoesPage'
 import { DisparoSolicitacoesPage } from '../modules/requests/DisparoSolicitacoesPage'
 import { EmNegociacaoPage } from '../modules/quotations/EmNegociacaoPage'
 import { ComparisonPage } from '../modules/comparisons/ComparisonPage'
@@ -73,6 +74,10 @@ function AgendaFornecedoresRoute({ tenantId, userId }: { tenantId: string; userI
 
 function UnitsRoute({ tenantId }: { tenantId: string }) {
   return <UnitsPage tenantId={tenantId} />
+}
+
+function AnaliseSolicitacoesRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
+  return <AnaliseSolicitacoesPage tenantId={tenantId} userId={userId} />
 }
 
 function DisparoSolicitacoesRoute({ tenantId }: { tenantId: string }) {
@@ -195,6 +200,12 @@ export function AppRoot() {
             }
           />
           <Route path="/suprimentos/unidades" element={<UnitsRoute tenantId={tenant.tenantId} />} />
+          <Route
+            path="/suprimentos/analise-solicitacoes"
+            element={
+              <AnaliseSolicitacoesRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />
+            }
+          />
           <Route
             path="/suprimentos/disparo-solicitacoes"
             element={<DisparoSolicitacoesRoute tenantId={tenant.tenantId} />}

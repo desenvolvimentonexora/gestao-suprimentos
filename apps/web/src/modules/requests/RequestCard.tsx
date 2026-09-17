@@ -13,6 +13,10 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
   negotiating: 'Em negociação',
   quoted: 'Cotada',
   cancelled: 'Cancelada',
+  pending_review: 'Em análise',
+  clarification_requested: 'Aguardando esclarecimento',
+  extension_requested: 'Prorrogação solicitada',
+  released_to_dispatch: 'Liberada pro Disparo',
 }
 
 const DEADLINE_BADGE_CLASSES: Record<'restante' | 'atrasada', string> = {
@@ -102,7 +106,7 @@ export function RequestCard({
           >
             Editar
           </button>
-          {(request.status === 'draft' || request.status === 'open') && (
+          {request.status === 'released_to_dispatch' && (
             <Button variant="secondary" onClick={() => onDispatch(request.id)}>
               Disparar
             </Button>
