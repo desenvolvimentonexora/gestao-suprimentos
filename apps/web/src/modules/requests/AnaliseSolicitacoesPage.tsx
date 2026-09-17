@@ -12,9 +12,12 @@ import { ClarificationModal } from './ClarificationModal'
 import { ExtensionModal } from './ExtensionModal'
 import { filterAnalysisRequests } from './filterAnalysisRequests'
 import { ImportRequestsModal } from './ImportRequestsModal'
+import { RequestFormModal } from './RequestFormModal'
 import type { UrgencyTier } from './getUrgencyTier'
 import {
   useCancelRequest,
+  useCreateRequest,
+  useMaterialOptions,
   useReleaseRequestToDispatch,
   useRequestClarification,
   useRequestExtension,
@@ -23,7 +26,7 @@ import {
   useUnitOptions,
   useUpdateRequestNotes,
 } from './queries'
-import type { RequestRow } from './types'
+import type { RequestFormValues, RequestRow } from './types'
 
 export interface AnaliseSolicitacoesPageProps {
   tenantId: string
@@ -42,6 +45,7 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   const [clarificationRequestId, setClarificationRequestId] = useState<string | null>(null)
   const [extensionRequestId, setExtensionRequestId] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
+  const [formOpen, setFormOpen] = useState(false)
 
   const today = new Date()
   const queryClient = useQueryClient()
@@ -51,6 +55,7 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
 
   const requestsQuery = useRequests()
   const unitsQuery = useUnitOptions()
+  const materialsQuery = useMaterialOptions()
   const permissionsQuery = useUserPermissions(userId)
   const canAnalyze = (permissionsQuery.data ?? []).includes('requests.analyze')
 
@@ -60,6 +65,7 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   const requestClarification = useRequestClarification()
   const requestExtension = useRequestExtension()
   const releaseToDispatch = useReleaseRequestToDispatch()
+  const createRequest = useCreateRequest(tenantId)
 
   useEffect(() => {
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ['requests'] })
@@ -73,6 +79,7 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
 
   const requests = requestsQuery.data ?? []
   const units = unitsQuery.data ?? []
+  const materials = materialsQuery.data ?? []
   const analysisScoped = filterAnalysisRequests(requests, { search: '', unitId: null, tier: null, today })
   const indicators = getAnalysisIndicators(analysisScoped, today)
   const filteredRequests = filterAnalysisRequests(requests, {
@@ -92,6 +99,10 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
     if (window.confirm(`Excluir a ${requestLabel} de "${request.unitName}"?`)) {
       cancelRequest.mutate(request.id)
     }
+  }
+
+  function handleCreateSubmit(values: RequestFormValues) {
+    createRequest.mutate(values, { onSuccess: () => setFormOpen(false) })
   }
 
   return (
@@ -143,6 +154,7 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
               </option>
             ))}
           </select>
+          <Button onClick={() => setFormOpen(true)}>+ Nova solicitação</Button>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
@@ -206,6 +218,18 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
       )}
 
       <ImportRequestsModal isOpen={importOpen} onClose={() => setImportOpen(false)} tenantId={tenantId} />
+
+      {formOpen && (
+        <RequestFormModal
+          isOpen
+          onClose={() => setFormOpen(false)}
+          mode="create"
+          units={units}
+          materials={materials}
+          onSubmit={handleCreateSubmit}
+          isSubmitting={createRequest.isPending}
+        />
+      )}
     </div>
   )
 }
