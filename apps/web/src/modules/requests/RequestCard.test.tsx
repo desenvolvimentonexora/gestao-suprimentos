@@ -59,6 +59,7 @@ function baseProps() {
     onCancelRequest: vi.fn(),
     onNegotiateDirectly: vi.fn(),
     onUpdateNotes: vi.fn(),
+    onRetryDispatch: vi.fn(),
   }
 }
 
@@ -200,5 +201,43 @@ describe('RequestCard', () => {
     await user.click(button)
 
     expect(onNegotiateDirectly).toHaveBeenCalledWith('r1')
+  })
+
+  it('mostra o motivo do bloqueio e o botão de tentar de novo quando o despacho automático falhou', () => {
+    render(
+      <RequestCard
+        {...baseProps()}
+        request={{
+          ...baseRequest,
+          status: 'released_to_dispatch',
+          dispatchBlockedReason: 'Sem fornecedor cadastrado para: Cimento CP-32',
+        }}
+      />,
+    )
+    expect(screen.getByText('Sem fornecedor cadastrado para: Cimento CP-32')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /tentar disparo automático novamente/i })).toBeInTheDocument()
+  })
+
+  it('não mostra o banner de bloqueio quando não há motivo', () => {
+    render(<RequestCard {...baseProps()} request={{ ...baseRequest, dispatchBlockedReason: null }} />)
+    expect(screen.queryByRole('button', { name: /tentar disparo automático novamente/i })).not.toBeInTheDocument()
+  })
+
+  it('chama onRetryDispatch ao clicar em tentar disparo automático novamente', async () => {
+    const user = userEvent.setup()
+    const onRetryDispatch = vi.fn()
+    render(
+      <RequestCard
+        {...baseProps()}
+        onRetryDispatch={onRetryDispatch}
+        request={{
+          ...baseRequest,
+          status: 'released_to_dispatch',
+          dispatchBlockedReason: 'Sem fornecedor cadastrado para: Cimento CP-32',
+        }}
+      />,
+    )
+    await user.click(screen.getByRole('button', { name: /tentar disparo automático novamente/i }))
+    expect(onRetryDispatch).toHaveBeenCalledWith('r1')
   })
 })
