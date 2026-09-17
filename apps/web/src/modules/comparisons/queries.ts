@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   bulkImportOrders,
   confirmExtractedItems,
+  confirmPaymentProof,
   createPdfQuotation,
   decideComparison,
   fetchComparableRequests,
@@ -53,9 +54,9 @@ export function useHistory(enabled: boolean) {
   return useQuery({ queryKey: ['comparisons-history'], queryFn: fetchHistory, enabled })
 }
 
-export function useGetOrCreateDraftComparison(tenantId: string) {
+export function useGetOrCreateDraftComparison(tenantId: string, userId: string) {
   return useMutation({
-    mutationFn: (requestId: string) => getOrCreateDraftComparison(tenantId, requestId),
+    mutationFn: (requestId: string) => getOrCreateDraftComparison(tenantId, requestId, userId),
   })
 }
 
@@ -166,9 +167,23 @@ export function useReleaseComparison() {
 }
 
 export function useSetFinancialChargeRequested() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ comparisonId, value }: { comparisonId: string; value: boolean }) =>
       setFinancialChargeRequested(comparisonId, value),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-releases'] })
+    },
+  })
+}
+
+export function useConfirmPaymentProof() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (comparisonId: string) => confirmPaymentProof(comparisonId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-releases'] })
+    },
   })
 }
 

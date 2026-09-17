@@ -55,4 +55,14 @@ describe('Button', () => {
     render(<Button variant="danger">Excluir</Button>)
     expect(screen.getByRole('button', { name: 'Excluir' }).className).toContain('bg-red')
   })
+
+  it('aplica roxo preenchido no variant violet, para ações de conferência (não é cor de marca)', () => {
+    render(<Button variant="violet">Confirmar comprovante</Button>)
+    expect(screen.getByRole('button', { name: 'Confirmar comprovante' }).className).toContain('bg-violet')
+  })
+
+  it('aplica laranja preenchido no variant warning, para ações de recusa/alerta', () => {
+    render(<Button variant="warning">Não liberar</Button>)
+    expect(screen.getByRole('button', { name: 'Não liberar' }).className).toContain('bg-orange')
+  })
 })

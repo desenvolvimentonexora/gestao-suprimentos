@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Pencil } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
 import { Modal } from './Modal'
 
@@ -57,5 +58,24 @@ describe('Modal', () => {
       </Modal>,
     )
     expect(screen.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement)
+  })
+
+  it('mostra o ícone e a cor de título quando informados, sem afetar o nome acessível', () => {
+    render(
+      <Modal isOpen onClose={vi.fn()} title="Fila de Alterações" icon={Pencil} titleClassName="text-blue-700">
+        <p>Conteúdo</p>
+      </Modal>,
+    )
+    expect(screen.getByRole('dialog', { name: 'Fila de Alterações' })).toBeInTheDocument()
+    expect(screen.getByText('Fila de Alterações').className).toContain('text-blue-700')
+  })
+
+  it('sem ícone/cor informados, mantém o título no estilo padrão', () => {
+    render(
+      <Modal isOpen onClose={vi.fn()} title="Título">
+        <p>Conteúdo</p>
+      </Modal>,
+    )
+    expect(screen.getByText('Título').className).toContain('text-ink')
   })
 })

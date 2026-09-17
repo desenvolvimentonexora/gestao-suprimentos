@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase'
-import { getOrderTotal } from './getOrderTotal'
+import { summarizeWinners, type WinnerLine } from './summarizeWinners'
 import type {
   ComparableRequestRow,
   ComparisonQuotationRow,
@@ -19,6 +19,17 @@ import type {
 } from './types'
 
 const IMPORT_TYPE_ORDERS = 'orders'
+
+// created_by/approved_by/released_by são uuid soltos (sem FK para users,
+// diferente de negotiator_id) — resolvidos aqui manualmente em vez de via
+// embed do PostgREST.
+async function fetchUserNames(userIds: (string | null)[]): Promise<Map<string, string>> {
+  const uniqueIds = [...new Set(userIds.filter((id): id is string => Boolean(id)))]
+  if (uniqueIds.length === 0) return new Map()
+  const { data, error } = await supabase.from('users').select('id, full_name').in('id', uniqueIds)
+  if (error) throw error
+  return new Map(data.map((user) => [user.id, user.full_name]))
+}
 
 export async function fetchComparableRequests(): Promise<ComparableRequestRow[]> {
   const { data, error } = await supabase
@@ -105,7 +116,7 @@ export async function fetchSupplierOptions(): Promise<SupplierOption[]> {
   return data
 }
 
-export async function getOrCreateDraftComparison(tenantId: string, requestId: string): Promise<string> {
+export async function getOrCreateDraftComparison(tenantId: string, requestId: string, userId: string): Promise<string> {
   const { data: existing, error: existingError } = await supabase
     .from('comparisons')
     .select('id')
@@ -118,7 +129,7 @@ export async function getOrCreateDraftComparison(tenantId: string, requestId: st
 
   const { data: created, error: createError } = await supabase
     .from('comparisons')
-    .insert({ tenant_id: tenantId, request_id: requestId })
+    .insert({ tenant_id: tenantId, request_id: requestId, created_by: userId })
     .select('id')
     .single()
   if (createError) throw createError
@@ -290,18 +301,53 @@ export async function sendToApproval(comparisonId: string): Promise<void> {
 export async function fetchPendingApprovals(): Promise<PendingApprovalRow[]> {
   const { data, error } = await supabase
     .from('comparisons')
-    .select('id, requests(id, external_ref, units(name))')
+    .select('id, created_by, created_at, requests(id, external_ref, sequence_number, notes, units(name))')
     .eq('status', 'pending_approval')
     .is('deleted_at', null)
-
   if (error) throw error
 
-  return data.map((row) => ({
-    comparisonId: row.id,
-    requestId: row.requests?.id ?? '',
-    unitName: row.requests?.units?.name ?? '',
-    externalRef: row.requests?.external_ref ?? null,
-  }))
+  const comparisonIds = data.map((row) => row.id)
+
+  const { data: winnerRows, error: winnersError } = await supabase
+    .from('comparison_winners')
+    .select('comparison_id, request_items(quantity), quotation_items(unit_price, quotations(supplier_id, payment_terms))')
+    .in('comparison_id', comparisonIds.length > 0 ? comparisonIds : [''])
+  if (winnersError) throw winnersError
+
+  const linesByComparisonId = new Map<string, WinnerLine[]>()
+  const paymentTermsByComparisonId = new Map<string, string | null>()
+  for (const row of winnerRows) {
+    const list = linesByComparisonId.get(row.comparison_id) ?? []
+    list.push({
+      quantity: Number(row.request_items?.quantity ?? 0),
+      unitPrice: Number(row.quotation_items?.unit_price ?? 0),
+      supplierId: row.quotation_items?.quotations?.supplier_id ?? '',
+    })
+    linesByComparisonId.set(row.comparison_id, list)
+    if (!paymentTermsByComparisonId.has(row.comparison_id)) {
+      paymentTermsByComparisonId.set(row.comparison_id, row.quotation_items?.quotations?.payment_terms ?? null)
+    }
+  }
+
+  const namesByUserId = await fetchUserNames(data.map((row) => row.created_by))
+
+  return data.map((row) => {
+    const summary = summarizeWinners(linesByComparisonId.get(row.id) ?? [])
+    return {
+      comparisonId: row.id,
+      requestId: row.requests?.id ?? '',
+      unitName: row.requests?.units?.name ?? '',
+      externalRef: row.requests?.external_ref ?? null,
+      sequenceNumber: row.requests?.sequence_number ?? null,
+      totalValue: summary.totalValue,
+      itemCount: summary.itemCount,
+      supplierCount: summary.supplierCount,
+      paymentConditionNote: paymentTermsByComparisonId.get(row.id) ?? null,
+      note: row.requests?.notes ?? null,
+      submittedByName: row.created_by ? (namesByUserId.get(row.created_by) ?? null) : null,
+      submittedAt: row.created_at,
+    }
+  })
 }
 
 export interface DecideComparisonInput {
@@ -318,18 +364,67 @@ export async function decideComparison(input: DecideComparisonInput): Promise<vo
 export async function fetchPendingReleases(): Promise<PendingReleaseRow[]> {
   const { data, error } = await supabase
     .from('comparisons')
-    .select('id, requests(id, external_ref, units(name))')
+    .select(
+      'id, created_by, created_at, approved_by, approved_at, financial_charge_requested, payment_proof_confirmed_at, requests(id, external_ref, sequence_number, notes, units(name))',
+    )
     .eq('status', 'approved')
     .is('deleted_at', null)
-
   if (error) throw error
 
-  return data.map((row) => ({
-    comparisonId: row.id,
-    requestId: row.requests?.id ?? '',
-    unitName: row.requests?.units?.name ?? '',
-    externalRef: row.requests?.external_ref ?? null,
-  }))
+  const comparisonIds = data.map((row) => row.id)
+
+  const { data: winnerRows, error: winnersError } = await supabase
+    .from('comparison_winners')
+    .select('comparison_id, request_items(quantity), quotation_items(unit_price, quotations(supplier_id, payment_terms))')
+    .in('comparison_id', comparisonIds.length > 0 ? comparisonIds : [''])
+  if (winnersError) throw winnersError
+
+  const linesByComparisonId = new Map<string, WinnerLine[]>()
+  const paymentTermsByComparisonId = new Map<string, string | null>()
+  for (const row of winnerRows) {
+    const list = linesByComparisonId.get(row.comparison_id) ?? []
+    list.push({
+      quantity: Number(row.request_items?.quantity ?? 0),
+      unitPrice: Number(row.quotation_items?.unit_price ?? 0),
+      supplierId: row.quotation_items?.quotations?.supplier_id ?? '',
+    })
+    linesByComparisonId.set(row.comparison_id, list)
+    if (!paymentTermsByComparisonId.has(row.comparison_id)) {
+      paymentTermsByComparisonId.set(row.comparison_id, row.quotation_items?.quotations?.payment_terms ?? null)
+    }
+  }
+
+  const namesByUserId = await fetchUserNames(data.flatMap((row) => [row.created_by, row.approved_by]))
+
+  return data.map((row) => {
+    const summary = summarizeWinners(linesByComparisonId.get(row.id) ?? [])
+    return {
+      comparisonId: row.id,
+      requestId: row.requests?.id ?? '',
+      unitName: row.requests?.units?.name ?? '',
+      externalRef: row.requests?.external_ref ?? null,
+      sequenceNumber: row.requests?.sequence_number ?? null,
+      totalValue: summary.totalValue,
+      itemCount: summary.itemCount,
+      supplierCount: summary.supplierCount,
+      paymentConditionNote: paymentTermsByComparisonId.get(row.id) ?? null,
+      note: row.requests?.notes ?? null,
+      submittedByName: row.created_by ? (namesByUserId.get(row.created_by) ?? null) : null,
+      submittedAt: row.created_at,
+      approvedByName: row.approved_by ? (namesByUserId.get(row.approved_by) ?? null) : null,
+      approvedAt: row.approved_at,
+      financialChargeRequested: row.financial_charge_requested,
+      paymentProofConfirmedAt: row.payment_proof_confirmed_at,
+    }
+  })
+}
+
+export async function confirmPaymentProof(comparisonId: string): Promise<void> {
+  const { error } = await supabase
+    .from('comparisons')
+    .update({ payment_proof_confirmed_at: new Date().toISOString() })
+    .eq('id', comparisonId)
+  if (error) throw error
 }
 
 export interface ReleaseComparisonInput {
@@ -388,7 +483,9 @@ export async function fetchHistory(): Promise<HistoryRow[]> {
 export async function fetchReleasedAwaitingOrder(): Promise<ReleasedComparisonRow[]> {
   const { data: comparisons, error } = await supabase
     .from('comparisons')
-    .select('id, requests(id, external_ref, unit_id, units(name))')
+    .select(
+      'id, created_by, created_at, released_by, released_at, requests(id, external_ref, sequence_number, notes, unit_id, units(name))',
+    )
     .eq('status', 'released')
     .is('deleted_at', null)
   if (error) throw error
@@ -405,28 +502,42 @@ export async function fetchReleasedAwaitingOrder(): Promise<ReleasedComparisonRo
 
   const { data: winnerRows, error: winnersError } = await supabase
     .from('comparison_winners')
-    .select('comparison_id, request_items(quantity), quotation_items(unit_price)')
+    .select('comparison_id, request_items(quantity), quotation_items(unit_price, quotations(supplier_id))')
     .in('comparison_id', comparisonIds.length > 0 ? comparisonIds : [''])
   if (winnersError) throw winnersError
 
-  const itemsByComparisonId = new Map<string, { quantity: number; unitPrice: number }[]>()
+  const linesByComparisonId = new Map<string, WinnerLine[]>()
   for (const row of winnerRows) {
-    const list = itemsByComparisonId.get(row.comparison_id) ?? []
+    const list = linesByComparisonId.get(row.comparison_id) ?? []
     list.push({
       quantity: Number(row.request_items?.quantity ?? 0),
       unitPrice: Number(row.quotation_items?.unit_price ?? 0),
+      supplierId: row.quotation_items?.quotations?.supplier_id ?? '',
     })
-    itemsByComparisonId.set(row.comparison_id, list)
+    linesByComparisonId.set(row.comparison_id, list)
   }
 
-  return awaiting.map((comparison) => ({
-    comparisonId: comparison.id,
-    requestId: comparison.requests?.id ?? '',
-    unitId: comparison.requests?.unit_id ?? '',
-    unitName: comparison.requests?.units?.name ?? '',
-    externalRef: comparison.requests?.external_ref ?? null,
-    totalValue: getOrderTotal(itemsByComparisonId.get(comparison.id) ?? []),
-  }))
+  const namesByUserId = await fetchUserNames(awaiting.flatMap((row) => [row.created_by, row.released_by]))
+
+  return awaiting.map((comparison) => {
+    const summary = summarizeWinners(linesByComparisonId.get(comparison.id) ?? [])
+    return {
+      comparisonId: comparison.id,
+      requestId: comparison.requests?.id ?? '',
+      unitId: comparison.requests?.unit_id ?? '',
+      unitName: comparison.requests?.units?.name ?? '',
+      externalRef: comparison.requests?.external_ref ?? null,
+      sequenceNumber: comparison.requests?.sequence_number ?? null,
+      totalValue: summary.totalValue,
+      itemCount: summary.itemCount,
+      supplierCount: summary.supplierCount,
+      note: comparison.requests?.notes ?? null,
+      submittedByName: comparison.created_by ? (namesByUserId.get(comparison.created_by) ?? null) : null,
+      submittedAt: comparison.created_at,
+      releasedByName: comparison.released_by ? (namesByUserId.get(comparison.released_by) ?? null) : null,
+      releasedAt: comparison.released_at,
+    }
+  })
 }
 
 export async function fetchOrderImportMapping(): Promise<OrderImportColumnMapping | null> {
