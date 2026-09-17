@@ -769,6 +769,8 @@ export type Database = {
           deleted_at: string | null
           id: string
           material_id: string
+          motivo_pendencia: string | null
+          pendente: boolean
           quantity: number
           request_id: string
           status_code: string | null
@@ -781,6 +783,8 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           material_id: string
+          motivo_pendencia?: string | null
+          pendente?: boolean
           quantity: number
           request_id: string
           status_code?: string | null
@@ -793,6 +797,8 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           material_id?: string
+          motivo_pendencia?: string | null
+          pendente?: boolean
           quantity?: number
           request_id?: string
           status_code?: string | null
@@ -816,6 +822,67 @@ export type Database = {
           },
           {
             foreignKeyName: "request_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_reviews: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          item_snapshots: Json | null
+          message: string | null
+          request_id: string
+          requested_needed_by: string | null
+          reviewer_id: string | null
+          tenant_id: string
+          type: Database["public"]["Enums"]["request_review_type"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_snapshots?: Json | null
+          message?: string | null
+          request_id: string
+          requested_needed_by?: string | null
+          reviewer_id?: string | null
+          tenant_id: string
+          type: Database["public"]["Enums"]["request_review_type"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_snapshots?: Json | null
+          message?: string | null
+          request_id?: string
+          requested_needed_by?: string | null
+          reviewer_id?: string | null
+          tenant_id?: string
+          type?: Database["public"]["Enums"]["request_review_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_reviews_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_reviews_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1685,6 +1752,23 @@ export type Database = {
         }
         Returns: undefined
       }
+      fn_release_request_to_dispatch: {
+        Args: { p_request_id: string; p_reviewer_id: string }
+        Returns: undefined
+      }
+      fn_request_clarification: {
+        Args: { p_message: string; p_request_id: string; p_reviewer_id: string }
+        Returns: undefined
+      }
+      fn_request_extension: {
+        Args: {
+          p_new_needed_by: string
+          p_reason: string
+          p_request_id: string
+          p_reviewer_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       comparison_status:
@@ -1696,7 +1780,20 @@ export type Database = {
         | "released"
       order_status: "issued" | "cancelled"
       quotation_status: "pending" | "received" | "discarded"
-      request_status: "draft" | "open" | "negotiating" | "quoted" | "cancelled"
+      request_review_type:
+        | "clarification_requested"
+        | "extension_requested"
+        | "released_to_dispatch"
+      request_status:
+        | "draft"
+        | "open"
+        | "negotiating"
+        | "quoted"
+        | "cancelled"
+        | "pending_review"
+        | "clarification_requested"
+        | "extension_requested"
+        | "released_to_dispatch"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1837,7 +1934,22 @@ export const Constants = {
       ],
       order_status: ["issued", "cancelled"],
       quotation_status: ["pending", "received", "discarded"],
-      request_status: ["draft", "open", "negotiating", "quoted", "cancelled"],
+      request_review_type: [
+        "clarification_requested",
+        "extension_requested",
+        "released_to_dispatch",
+      ],
+      request_status: [
+        "draft",
+        "open",
+        "negotiating",
+        "quoted",
+        "cancelled",
+        "pending_review",
+        "clarification_requested",
+        "extension_requested",
+        "released_to_dispatch",
+      ],
     },
   },
 } as const

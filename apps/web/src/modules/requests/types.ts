@@ -1,4 +1,13 @@
-export type RequestStatus = 'draft' | 'open' | 'negotiating' | 'quoted' | 'cancelled'
+export type RequestStatus =
+  | 'draft'
+  | 'open'
+  | 'negotiating'
+  | 'quoted'
+  | 'cancelled'
+  | 'pending_review'
+  | 'clarification_requested'
+  | 'extension_requested'
+  | 'released_to_dispatch'
 
 export interface RequestItemRow {
   id: string
@@ -10,6 +19,8 @@ export interface RequestItemRow {
   unitOfMeasure: string | null
   statusCode: string | null
   authorizedAt: string | null
+  pendente: boolean
+  motivoPendencia: string | null
 }
 
 export interface RequestRow {

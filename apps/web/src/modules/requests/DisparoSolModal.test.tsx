@@ -40,6 +40,8 @@ const request: RequestRow = {
       unitOfMeasure: 'sc',
       statusCode: null,
       authorizedAt: null,
+      pendente: false,
+      motivoPendencia: null,
     },
   ],
 }

@@ -30,6 +30,8 @@ const baseRequest: RequestRow = {
       unitOfMeasure: 'saco',
       statusCode: 'OK',
       authorizedAt: '2026-09-11',
+      pendente: false,
+      motivoPendencia: null,
     },
     {
       id: 'i2',
@@ -41,6 +43,8 @@ const baseRequest: RequestRow = {
       unitOfMeasure: 'm³',
       statusCode: null,
       authorizedAt: null,
+      pendente: false,
+      motivoPendencia: null,
     },
   ],
 }

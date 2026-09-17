@@ -43,6 +43,21 @@ describe('getRequestIndicators', () => {
   it('retorna zeros quando não há requisições', () => {
     expect(getRequestIndicators([])).toEqual({ ativas: 0, pendentes: 0, enviadas: 0, concluidas: 0 })
   })
+
+  it('conta os status da Análise de Solicitações como pendentes (ainda não disparadas)', () => {
+    const requests: RequestRow[] = [
+      makeRequest({ id: 'r1', status: 'pending_review' }),
+      makeRequest({ id: 'r2', status: 'clarification_requested' }),
+      makeRequest({ id: 'r3', status: 'extension_requested' }),
+      makeRequest({ id: 'r4', status: 'released_to_dispatch' }),
+    ]
+    expect(getRequestIndicators(requests)).toEqual({
+      ativas: 4,
+      pendentes: 4,
+      enviadas: 0,
+      concluidas: 0,
+    })
+  })
 })
 
 describe('isOverdue', () => {

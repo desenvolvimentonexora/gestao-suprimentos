@@ -8,6 +8,10 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
   negotiating: 'Em negociação',
   quoted: 'Cotada',
   cancelled: 'Cancelada',
+  pending_review: 'Em análise',
+  clarification_requested: 'Aguardando esclarecimento',
+  extension_requested: 'Prorrogação solicitada',
+  released_to_dispatch: 'Liberada pro Disparo',
 }
 
 export interface RequestsTableProps {

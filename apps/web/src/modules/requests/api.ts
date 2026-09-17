@@ -15,7 +15,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, status, needed_by, external_ref, sequence_number, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, materials(name, code, description)), quotations(id, deleted_at)',
+      'id, status, needed_by, external_ref, sequence_number, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, pendente, motivo_pendencia, deleted_at, materials(name, code, description)), quotations(id, deleted_at)',
     )
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -49,6 +49,8 @@ export async function fetchRequests(): Promise<RequestRow[]> {
         unitOfMeasure: item.unit_of_measure,
         statusCode: item.status_code,
         authorizedAt: item.authorized_at,
+        pendente: item.pendente,
+        motivoPendencia: item.motivo_pendencia,
       })),
   }))
 }
@@ -210,4 +212,60 @@ export async function updateRequestStatus(requestId: string, status: RequestStat
 
 export async function cancelRequest(requestId: string): Promise<void> {
   await updateRequestStatus(requestId, 'cancelled')
+}
+
+export async function toggleItemPendency(
+  itemId: string,
+  pendente: boolean,
+  motivoPendencia: string | null,
+): Promise<void> {
+  const { error } = await supabase
+    .from('request_items')
+    .update({ pendente, motivo_pendencia: pendente ? motivoPendencia : null })
+    .eq('id', itemId)
+  if (error) throw error
+}
+
+// A Edge Function review-request devolve { error: "mensagem" } no corpo da
+// resposta quando a regra de negócio no banco recusa a ação (ex.: liberar
+// com pendência aberta). O supabase-js não expõe esse corpo em error.message
+// por padrão — precisa ler o Response guardado em error.context.
+async function parseReviewError(error: unknown): Promise<Error> {
+  if (error && typeof error === 'object' && 'context' in error) {
+    const context = (error as { context?: unknown }).context
+    if (context instanceof Response) {
+      try {
+        const body = (await context.clone().json()) as { error?: unknown }
+        if (typeof body.error === 'string') return new Error(body.error)
+      } catch {
+        // resposta sem corpo JSON, cai no fallback abaixo
+      }
+    }
+  }
+  return error instanceof Error ? error : new Error('Não foi possível concluir a ação. Tente novamente.')
+}
+
+export async function requestClarification(requestId: string, message: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('review-request', {
+    body: { requestId, action: 'request_clarification', message },
+  })
+  if (error) throw await parseReviewError(error)
+}
+
+export async function requestExtension(
+  requestId: string,
+  newNeededBy: string,
+  reason: string,
+): Promise<void> {
+  const { error } = await supabase.functions.invoke('review-request', {
+    body: { requestId, action: 'request_extension', newNeededBy, message: reason },
+  })
+  if (error) throw await parseReviewError(error)
+}
+
+export async function releaseRequestToDispatch(requestId: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('review-request', {
+    body: { requestId, action: 'release_to_dispatch' },
+  })
+  if (error) throw await parseReviewError(error)
 }

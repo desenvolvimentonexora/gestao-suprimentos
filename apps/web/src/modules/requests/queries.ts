@@ -9,7 +9,11 @@ import {
   fetchMaterialsWithSupplierCount,
   fetchRequests,
   fetchUnitOptions,
+  releaseRequestToDispatch,
+  requestClarification,
+  requestExtension,
   saveImportMapping,
+  toggleItemPendency,
   updateRequest,
   updateRequestNotes,
   updateRequestStatus,
@@ -115,6 +119,63 @@ export function useCancelRequest() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (requestId: string) => cancelRequest(requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useToggleItemPendency() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      itemId,
+      pendente,
+      motivoPendencia,
+    }: {
+      itemId: string
+      pendente: boolean
+      motivoPendencia: string | null
+    }) => toggleItemPendency(itemId, pendente, motivoPendencia),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useRequestClarification() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ requestId, message }: { requestId: string; message: string }) =>
+      requestClarification(requestId, message),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useRequestExtension() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      requestId,
+      newNeededBy,
+      reason,
+    }: {
+      requestId: string
+      newNeededBy: string
+      reason: string
+    }) => requestExtension(requestId, newNeededBy, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useReleaseRequestToDispatch() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (requestId: string) => releaseRequestToDispatch(requestId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },

@@ -33,6 +33,8 @@ function makeRequest(overrides: Partial<RequestRow>): RequestRow {
         unitOfMeasure: 'sc',
         statusCode: null,
         authorizedAt: null,
+        pendente: false,
+        motivoPendencia: null,
       },
     ],
     ...overrides,
@@ -85,7 +87,13 @@ describe('RequestsTable', () => {
   it('chama onDispatch ao clicar em disparar', async () => {
     const user = userEvent.setup()
     const onDispatch = vi.fn()
-    render(<RequestsTable {...baseProps()} onDispatch={onDispatch} />)
+    render(
+      <RequestsTable
+        {...baseProps()}
+        requests={[makeRequest({ status: 'released_to_dispatch' })]}
+        onDispatch={onDispatch}
+      />,
+    )
     await user.click(screen.getByRole('button', { name: /disparar/i }))
     expect(onDispatch).toHaveBeenCalledWith('r1')
   })
