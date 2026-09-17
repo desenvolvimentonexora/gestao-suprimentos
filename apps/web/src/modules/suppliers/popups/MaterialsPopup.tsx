@@ -29,7 +29,9 @@ export function MaterialsPopup({
     normalizedSearch.length > 0
       ? allMaterials.filter(
           (material) =>
-            !linkedIds.has(material.id) && material.name.toLowerCase().includes(normalizedSearch),
+            !linkedIds.has(material.id) &&
+            (material.name.toLowerCase().includes(normalizedSearch) ||
+              material.code?.toLowerCase().includes(normalizedSearch)),
         )
       : []
 
@@ -38,7 +40,10 @@ export function MaterialsPopup({
       <div className="flex flex-col gap-2">
         {links.map((link) => (
           <div key={link.materialId} className="flex items-center justify-between">
-            <span className="text-sm text-ink">{link.materialName}</span>
+            <span className="text-sm text-ink">
+              {link.materialCode && <span className="text-xs text-ink-muted">{link.materialCode} </span>}
+              {link.materialName}
+            </span>
             <button
               type="button"
               aria-label={`Remover ${link.materialName}`}
@@ -65,13 +70,14 @@ export function MaterialsPopup({
               <button
                 key={material.id}
                 type="button"
-                aria-label={`Adicionar ${material.name}`}
+                aria-label={`Adicionar ${material.name}${material.code ? ` (${material.code})` : ''}`}
                 onClick={() => {
                   onAddLink(material.id)
                   setSearch('')
                 }}
                 className="rounded px-2 py-1 text-left text-sm text-ink hover:bg-bg"
               >
+                {material.code && <span className="text-xs text-ink-muted">{material.code} </span>}
                 {material.name}
               </button>
             ))}

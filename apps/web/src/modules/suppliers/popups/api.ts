@@ -79,7 +79,7 @@ export async function fetchSupplierMaterialLinks(
 ): Promise<SupplierMaterialLinkRow[]> {
   const { data, error } = await supabase
     .from('supplier_materials')
-    .select('material_id, materials(name)')
+    .select('material_id, materials(name, code)')
     .eq('supplier_id', supplierId)
 
   if (error) throw error
@@ -87,6 +87,7 @@ export async function fetchSupplierMaterialLinks(
   return data.map((row) => ({
     materialId: row.material_id,
     materialName: row.materials?.name ?? '',
+    materialCode: row.materials?.code ?? null,
   }))
 }
 
