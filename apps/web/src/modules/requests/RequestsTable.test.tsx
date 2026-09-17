@@ -59,6 +59,7 @@ function baseProps() {
     onCancelRequest: vi.fn(),
     onNegotiateDirectly: vi.fn(),
     onUpdateNotes: vi.fn(),
+    onRetryDispatch: vi.fn(),
   }
 }
 
@@ -97,6 +98,22 @@ describe('RequestsTable', () => {
     )
     await user.click(screen.getByRole('button', { name: /disparar/i }))
     expect(onDispatch).toHaveBeenCalledWith('r1')
+  })
+
+  it('chama onRetryDispatch ao clicar em tentar disparo automático novamente', async () => {
+    const user = userEvent.setup()
+    const onRetryDispatch = vi.fn()
+    render(
+      <RequestsTable
+        {...baseProps()}
+        requests={[
+          makeRequest({ status: 'released_to_dispatch', dispatchBlockedReason: 'Sem fornecedor cadastrado para: Cimento' }),
+        ]}
+        onRetryDispatch={onRetryDispatch}
+      />,
+    )
+    await user.click(screen.getByRole('button', { name: /tentar disparo automático novamente/i }))
+    expect(onRetryDispatch).toHaveBeenCalledWith('r1')
   })
 
   it('marca visualmente uma requisição atrasada', () => {
