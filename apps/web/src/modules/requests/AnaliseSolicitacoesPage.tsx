@@ -8,9 +8,12 @@ import { subscribeToTableChanges } from '../../core/realtime'
 import { AnalysisIndicatorCards } from './AnalysisIndicatorCards'
 import { AnalysisRequestCard } from './AnalysisRequestCard'
 import { getAnalysisIndicators } from './analysisIndicators'
+import { buildExtensionMessage } from './buildExtensionMessage'
+import { openMailto } from './buildMailtoUrl'
 import { ClarificationModal } from './ClarificationModal'
 import { ExtensionModal } from './ExtensionModal'
 import { filterAnalysisRequests } from './filterAnalysisRequests'
+import { formatRequestNumber } from './formatRequestNumber'
 import { ImportRequestsModal } from './ImportRequestsModal'
 import { RequestFormModal } from './RequestFormModal'
 import type { UrgencyTier } from './getUrgencyTier'
@@ -192,7 +195,15 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
           onSubmit={(message) =>
             requestClarification.mutate(
               { requestId: clarificationRequest.id, message },
-              { onSuccess: () => setClarificationRequestId(null) },
+              {
+                onSuccess: () => {
+                  setClarificationRequestId(null)
+                  openMailto({
+                    subject: `Esclarecimento necessário — ${formatRequestNumber(clarificationRequest.externalRef, clarificationRequest.sequenceNumber)}`,
+                    body: message,
+                  })
+                },
+              },
             )
           }
           isSubmitting={requestClarification.isPending}
@@ -209,7 +220,19 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
           onSubmit={(values) =>
             requestExtension.mutate(
               { requestId: extensionRequest.id, newNeededBy: values.newNeededBy, reason: values.reason },
-              { onSuccess: () => setExtensionRequestId(null) },
+              {
+                onSuccess: () => {
+                  setExtensionRequestId(null)
+                  openMailto({
+                    subject: `Prorrogação de prazo — ${formatRequestNumber(extensionRequest.externalRef, extensionRequest.sequenceNumber)}`,
+                    body: buildExtensionMessage({
+                      currentNeededBy: extensionRequest.neededBy,
+                      newNeededBy: values.newNeededBy,
+                      reason: values.reason,
+                    }),
+                  })
+                },
+              },
             )
           }
           isSubmitting={requestExtension.isPending}
