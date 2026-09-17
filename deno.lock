@@ -1,6 +1,7 @@
 {
   "version": "5",
   "remote": {
+    "https://deno.land/std@0.173.0/encoding/base64.ts": "7de04c2f8aeeb41453b09b186480be90f2ff357613b988e99fabb91d2eeceba1",
     "https://deno.land/std@0.224.0/assert/_constants.ts": "a271e8ef5a573f1df8e822a6eb9d09df064ad66a4390f21b3e31f820a38e0975",
     "https://deno.land/std@0.224.0/assert/assert.ts": "09d30564c09de846855b7b071e62b5974b001bb72a4b797958fe0660e7849834",
     "https://deno.land/std@0.224.0/assert/assert_almost_equals.ts": "9e416114322012c9a21fa68e187637ce2d7df25bcbdbfd957cd639e65d3cf293",
@@ -34,6 +35,22 @@
     "https://deno.land/std@0.224.0/internal/diff.ts": "6234a4b493ebe65dc67a18a0eb97ef683626a1166a1906232ce186ae9f65f4e6",
     "https://deno.land/std@0.224.0/internal/format.ts": "0a98ee226fd3d43450245b1844b47003419d34d210fa989900861c79820d21c2",
     "https://deno.land/std@0.224.0/internal/mod.ts": "534125398c8e7426183e12dc255bb635d94e06d0f93c60a297723abe69d3b22e",
+    "https://deno.land/x/denomailer@1.6.0/client/basic/QUE.ts": "5af1dfcc5814bf4542f098908ac1fdd8a1a1c2b1597138a121c95eaa791315d0",
+    "https://deno.land/x/denomailer@1.6.0/client/basic/client.ts": "462e4db45ae218647812ceae720d55ea33e0e928f9138fee9da5913cbb1e20f9",
+    "https://deno.land/x/denomailer@1.6.0/client/basic/connection.ts": "68de68d7551d8303629905c2b7581cb09b45646e530ce93a5786ca1aba61055c",
+    "https://deno.land/x/denomailer@1.6.0/client/basic/transforms.ts": "e630a23d24e9b397e231ae8796c0a0080770ac6f5ab9bffc105d3717706e62c9",
+    "https://deno.land/x/denomailer@1.6.0/client/mod.ts": "8ec4c25d9586f83f8629768311a077eaf03b1490dcb872030ba2e27fadb674d8",
+    "https://deno.land/x/denomailer@1.6.0/client/pool.ts": "0466e69ca8959aa85501cc6b30d7f5fd8e43b0a6ac88ecc60dab71081e801bae",
+    "https://deno.land/x/denomailer@1.6.0/client/worker/worker.ts": "a4c3a3e2e1fde0967817ece7c345a565eb44a7312acf8d46ce620d4ff4443b31",
+    "https://deno.land/x/denomailer@1.6.0/config/client.ts": "302f5c18fbb5531b5615613084b86d44120acc210e072f4135e431fa27fc4526",
+    "https://deno.land/x/denomailer@1.6.0/config/mail/attachments.ts": "1f357bddc9d5e813c3f647498db81a165a1a8a7163116c58dc10cf01427fd81e",
+    "https://deno.land/x/denomailer@1.6.0/config/mail/content.ts": "3925d4c3baaabed4e08933159d34b1450e6426b35a5bc323a0666780bef20192",
+    "https://deno.land/x/denomailer@1.6.0/config/mail/email.ts": "bb0ca104bf9cb54af6613a04b3f8cb05290f4fb012e7113f1d050cab10226a7c",
+    "https://deno.land/x/denomailer@1.6.0/config/mail/encoding.ts": "0bc5983ada3b902333925cdca225f8ea5e28fffbc2f1bd2b0ccb9a423f6f7fcc",
+    "https://deno.land/x/denomailer@1.6.0/config/mail/headers.ts": "ce94874beb5a1a7248b5b91bf1ae3b3aed2d4c0541f3f448f2bbfad6c8f570ee",
+    "https://deno.land/x/denomailer@1.6.0/config/mail/mod.ts": "a7fafa3386a45a585d7983d816b09ddc28b2f2b84097a614f1e38685b1f62868",
+    "https://deno.land/x/denomailer@1.6.0/deps.ts": "12bef188bb2a490fedc82ac1889f3d438e8a15887c423b045fee532b31a43102",
+    "https://deno.land/x/denomailer@1.6.0/mod.ts": "71a197dff098194ab53691abd3c9d22a276ef04e1382eb85f5632dbcb5a83bf3",
     "https://esm.sh/@anthropic-ai/sdk@0.32.1": "43f5e6c693537da901fb26f7b36084f8081d66c3ef1223f8484d109ce4a25760",
     "https://esm.sh/@anthropic-ai/sdk@0.32.1/denonext/_shims/MultipartBody.mjs": "23ac1552eea88deb585b09ad5ee0f486685ab2c10579373d78f3bd2e429e3b8e",
     "https://esm.sh/@anthropic-ai/sdk@0.32.1/denonext/_shims/auto/runtime.mjs": "b76854845af8514b4e377204ad7a462d825560f4caf3665e74e265507e998a96",
@@ -60,7 +77,8 @@
     "https://esm.sh/@anthropic-ai/sdk@0.32.1/denonext/sdk.mjs": "43ac7b5ae75ca56fc9dcc5d4aa6167a45c8c6cd7fc23b83d45d48d4f248bd312",
     "https://esm.sh/@anthropic-ai/sdk@0.32.1/denonext/streaming.mjs": "10d69d2129a730f65c3a770a07fab81e9bb2c77d0f276b226e7f08961876c272",
     "https://esm.sh/@anthropic-ai/sdk@0.32.1/denonext/uploads.mjs": "9b801f8226e21fdacd344f004c79bd5b328d402f67b03b2d77568663870f6a12",
-    "https://esm.sh/@anthropic-ai/sdk@0.32.1/denonext/version.mjs": "3fdf75e395135f55c0c4157b22ce5a15d2bd01dd4568210f68a060975aff87e2"
+    "https://esm.sh/@anthropic-ai/sdk@0.32.1/denonext/version.mjs": "3fdf75e395135f55c0c4157b22ce5a15d2bd01dd4568210f68a060975aff87e2",
+    "https://esm.sh/@supabase/supabase-js@2.45.4": "1108d69216995335d057dbd15907caaf514a4d1ef082f097050573b9d589a57c"
   },
   "workspace": {
     "packageJson": {
