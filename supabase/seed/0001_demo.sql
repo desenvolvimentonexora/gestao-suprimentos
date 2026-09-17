@@ -55,6 +55,7 @@ values (
   -- suprimentosRegistry) — ativos por padrão, conforme Fase 5 Administração.
   jsonb_build_array(
     'agenda-fornecedores',
+    'analise-solicitacoes',
     'disparo-solicitacoes',
     'em-negociacao',
     'equalizacao-orcamentos',
