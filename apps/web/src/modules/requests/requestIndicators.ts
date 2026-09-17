@@ -7,14 +7,10 @@ export interface RequestIndicators {
   concluidas: number
 }
 
-const NOT_YET_DISPATCHED_STATUSES: RequestRow['status'][] = [
-  'draft',
-  'open',
-  'pending_review',
-  'clarification_requested',
-  'extension_requested',
-  'released_to_dispatch',
-]
+// SOLs em análise (pending_review/clarification_requested/extension_requested)
+// nunca chegam aqui — a página de Disparo já as filtra fora antes de calcular
+// os indicadores, então "pendentes" só cobre o que realmente aparece na tela.
+const NOT_YET_DISPATCHED_STATUSES: RequestRow['status'][] = ['draft', 'open', 'released_to_dispatch']
 
 export function getRequestIndicators(requests: RequestRow[]): RequestIndicators {
   const pendentes = requests.filter((r) => NOT_YET_DISPATCHED_STATUSES.includes(r.status)).length

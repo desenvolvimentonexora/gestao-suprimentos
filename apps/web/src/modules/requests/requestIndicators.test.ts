@@ -44,16 +44,11 @@ describe('getRequestIndicators', () => {
     expect(getRequestIndicators([])).toEqual({ ativas: 0, pendentes: 0, enviadas: 0, concluidas: 0 })
   })
 
-  it('conta os status da Análise de Solicitações como pendentes (ainda não disparadas)', () => {
-    const requests: RequestRow[] = [
-      makeRequest({ id: 'r1', status: 'pending_review' }),
-      makeRequest({ id: 'r2', status: 'clarification_requested' }),
-      makeRequest({ id: 'r3', status: 'extension_requested' }),
-      makeRequest({ id: 'r4', status: 'released_to_dispatch' }),
-    ]
+  it('conta released_to_dispatch como pendente — os outros status de análise nem chegam aqui (a página já filtra)', () => {
+    const requests: RequestRow[] = [makeRequest({ id: 'r1', status: 'released_to_dispatch' })]
     expect(getRequestIndicators(requests)).toEqual({
-      ativas: 4,
-      pendentes: 4,
+      ativas: 1,
+      pendentes: 1,
       enviadas: 0,
       concluidas: 0,
     })

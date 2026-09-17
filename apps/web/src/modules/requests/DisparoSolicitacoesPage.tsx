@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ComingSoonButton } from '../../components'
 import { DisparoSolModal } from './DisparoSolModal'
+import { ANALYSIS_STATUSES } from './filterAnalysisRequests'
 import { filterRequests } from './filterRequests'
 import { ImportRequestsModal } from './ImportRequestsModal'
 import { IndicatorCards } from './IndicatorCards'
@@ -51,7 +52,15 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const units = unitsQuery.data ?? []
   const materials = materialsQuery.data ?? []
   const materialsWithSupplierCount = materialsWithSupplierCountQuery.data ?? []
-  const filteredRequests = filterRequests(requests, { search, status: statusFilter, unitId: unitFilter })
+  // SOLs em análise (aguardando triagem, esclarecimento ou prorrogação) só
+  // aparecem no Disparo depois de liberadas — antes disso, ficam só na
+  // tela de Análise de Solicitações.
+  const dispatchableRequests = requests.filter((request) => !ANALYSIS_STATUSES.includes(request.status))
+  const filteredRequests = filterRequests(dispatchableRequests, {
+    search,
+    status: statusFilter,
+    unitId: unitFilter,
+  })
   const editingRequest =
     formState?.mode === 'edit' ? requests.find((request) => request.id === formState.requestId) : undefined
   const dispatchingRequest = requests.find((request) => request.id === dispatchRequestId)
@@ -86,7 +95,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
           </div>
 
           <div className="mt-6">
-            <IndicatorCards indicators={getRequestIndicators(requests)} />
+            <IndicatorCards indicators={getRequestIndicators(dispatchableRequests)} />
           </div>
         </div>
       </div>

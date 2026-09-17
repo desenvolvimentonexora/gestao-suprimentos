@@ -14,6 +14,17 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
   released_to_dispatch: 'Liberada pro Disparo',
 }
 
+// SOLs em análise não aparecem nesta tela (a página já as filtra fora antes
+// de chegar aqui), então não faz sentido oferecê-las como opção de filtro.
+const DISPATCH_STATUS_FILTER_OPTIONS: RequestStatus[] = [
+  'draft',
+  'open',
+  'released_to_dispatch',
+  'negotiating',
+  'quoted',
+  'cancelled',
+]
+
 export interface RequestsTableProps {
   requests: RequestRow[]
   units: UnitOption[]
@@ -73,7 +84,7 @@ export function RequestsTable({
             className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
           >
             <option value="">Todos os status</option>
-            {(Object.keys(STATUS_LABELS) as RequestStatus[]).map((status) => (
+            {DISPATCH_STATUS_FILTER_OPTIONS.map((status) => (
               <option key={status} value={status}>
                 {STATUS_LABELS[status]}
               </option>
