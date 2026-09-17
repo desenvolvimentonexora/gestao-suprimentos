@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Button, ComingSoonButton } from '../../components'
+import { Button, ComingSoonButton, Toast, type ToastVariant } from '../../components'
 import { loadSettings } from '../../core/config'
 import { useUserPermissions } from '../../core/permissions'
 import { subscribeToTableChanges } from '../../core/realtime'
@@ -49,9 +49,16 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   const [extensionRequestId, setExtensionRequestId] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
+  const [toast, setToast] = useState<{ variant: ToastVariant; message: string } | null>(null)
 
   const today = new Date()
   const queryClient = useQueryClient()
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(null), 6000)
+    return () => clearTimeout(timer)
+  }, [toast])
 
   const settingsQuery = useQuery({ queryKey: ['settings', tenantId], queryFn: () => loadSettings(tenantId) })
   const requestLabel = settingsQuery.data?.vocabulary.request ?? 'SOL'
@@ -110,6 +117,12 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
 
   return (
     <div className="min-h-screen bg-bg">
+      {toast && (
+        <div className="fixed right-4 top-4 z-50 w-full max-w-sm">
+          <Toast variant={toast.variant} message={toast.message} onDismiss={() => setToast(null)} />
+        </div>
+      )}
+
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-6xl">
           <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
@@ -179,7 +192,14 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
                 onDeleteRequest={handleDeleteRequest}
                 onOpenClarificationModal={setClarificationRequestId}
                 onOpenExtensionModal={setExtensionRequestId}
-                onReleaseToDispatch={(requestId) => releaseToDispatch.mutate(requestId)}
+                onReleaseToDispatch={(requestId) =>
+                  releaseToDispatch.mutate(requestId, {
+                    onSuccess: () =>
+                      setToast({ variant: 'success', message: 'SOL liberada pro Disparo.' }),
+                    onError: (error) =>
+                      setToast({ variant: 'error', message: errorMessage(error) ?? 'Não foi possível liberar.' }),
+                  })
+                }
               />
             ))
           )}
@@ -198,6 +218,11 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
               {
                 onSuccess: () => {
                   setClarificationRequestId(null)
+                  setToast({
+                    variant: 'success',
+                    message:
+                      'Esclarecimento registrado. Abrindo seu e-mail com o texto pronto — se nada abrir, seu navegador não tem um cliente de e-mail padrão configurado; copie o texto e envie manualmente.',
+                  })
                   openMailto({
                     subject: `Esclarecimento necessário — ${formatRequestNumber(clarificationRequest.externalRef, clarificationRequest.sequenceNumber)}`,
                     body: message,
@@ -223,6 +248,11 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
               {
                 onSuccess: () => {
                   setExtensionRequestId(null)
+                  setToast({
+                    variant: 'success',
+                    message:
+                      'Prorrogação registrada. Abrindo seu e-mail com o texto pronto — se nada abrir, seu navegador não tem um cliente de e-mail padrão configurado; copie o texto e envie manualmente.',
+                  })
                   openMailto({
                     subject: `Prorrogação de prazo — ${formatRequestNumber(extensionRequest.externalRef, extensionRequest.sequenceNumber)}`,
                     body: buildExtensionMessage({

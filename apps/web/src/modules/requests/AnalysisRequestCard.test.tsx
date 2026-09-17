@@ -121,12 +121,14 @@ describe('AnalysisRequestCard', () => {
     expect(screen.getByRole('button', { name: 'Solicitar esclarecimento' })).toBeEnabled()
   })
 
-  it('"Solicitar esclarecimento" fica desabilitado sem nenhum item pendente', async () => {
+  it('"Solicitar esclarecimento" fica desabilitado sem nenhum item pendente, com o motivo explicado no title', async () => {
     const user = userEvent.setup()
     render(<AnalysisRequestCard {...baseProps()} request={makeRequest({})} />)
     await user.click(screen.getByText('SOL 1097'))
 
-    expect(screen.getByRole('button', { name: 'Solicitar esclarecimento' })).toBeDisabled()
+    const clarificationButton = screen.getByRole('button', { name: 'Solicitar esclarecimento' })
+    expect(clarificationButton).toBeDisabled()
+    expect(clarificationButton).toHaveAttribute('title', 'Sinalize ao menos um item pendente para habilitar')
     expect(screen.getByRole('button', { name: 'Liberar pro Disparo' })).toBeEnabled()
   })
 

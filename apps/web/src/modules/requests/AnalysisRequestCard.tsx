@@ -208,6 +208,7 @@ export function AnalysisRequestCard({
             <Button
               variant="secondary"
               disabled={!hasOpenPendency || !canAnalyze}
+              title={!hasOpenPendency ? 'Sinalize ao menos um item pendente para habilitar' : undefined}
               onClick={() => onOpenClarificationModal(request.id)}
             >
               Solicitar esclarecimento
