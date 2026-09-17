@@ -156,6 +156,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
                 setToast({ variant: 'error', message: errorMessage(error) ?? 'Não foi possível tentar de novo.' }),
             })
           }
+          isRetryingDispatch={(requestId) => retryDispatch.isPending && retryDispatch.variables === requestId}
         />
       </div>
 

@@ -60,6 +60,7 @@ function baseProps() {
     onNegotiateDirectly: vi.fn(),
     onUpdateNotes: vi.fn(),
     onRetryDispatch: vi.fn(),
+    isRetryingDispatch: () => false,
   }
 }
 

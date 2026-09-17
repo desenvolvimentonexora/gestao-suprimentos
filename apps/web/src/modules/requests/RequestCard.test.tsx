@@ -60,6 +60,7 @@ function baseProps() {
     onNegotiateDirectly: vi.fn(),
     onUpdateNotes: vi.fn(),
     onRetryDispatch: vi.fn(),
+    isRetryingDispatch: false,
   }
 }
 
@@ -239,5 +240,21 @@ describe('RequestCard', () => {
     )
     await user.click(screen.getByRole('button', { name: /tentar disparo automático novamente/i }))
     expect(onRetryDispatch).toHaveBeenCalledWith('r1')
+  })
+
+  it('desabilita o botão de retry e muda o texto enquanto uma tentativa está em andamento', () => {
+    render(
+      <RequestCard
+        {...baseProps()}
+        isRetryingDispatch
+        request={{
+          ...baseRequest,
+          status: 'released_to_dispatch',
+          dispatchBlockedReason: 'Sem fornecedor cadastrado para: Cimento CP-32',
+        }}
+      />,
+    )
+    const button = screen.getByRole('button', { name: /tentando de novo/i })
+    expect(button).toBeDisabled()
   })
 })

@@ -41,6 +41,7 @@ export interface RequestCardProps {
   onNegotiateDirectly: (requestId: string) => void
   onUpdateNotes: (requestId: string, notes: string) => void
   onRetryDispatch: (requestId: string) => void
+  isRetryingDispatch: boolean
 }
 
 export function RequestCard({
@@ -52,6 +53,7 @@ export function RequestCard({
   onNegotiateDirectly,
   onUpdateNotes,
   onRetryDispatch,
+  isRetryingDispatch,
 }: RequestCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [notesDraft, setNotesDraft] = useState(request.notes ?? '')
@@ -129,8 +131,8 @@ export function RequestCard({
       {request.dispatchBlockedReason && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
           <span>{request.dispatchBlockedReason}</span>
-          <Button variant="secondary" onClick={() => onRetryDispatch(request.id)}>
-            Tentar disparo automático novamente
+          <Button variant="secondary" onClick={() => onRetryDispatch(request.id)} disabled={isRetryingDispatch}>
+            {isRetryingDispatch ? 'Tentando de novo...' : 'Tentar disparo automático novamente'}
           </Button>
         </div>
       )}

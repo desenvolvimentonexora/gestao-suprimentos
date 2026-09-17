@@ -88,6 +88,17 @@ async function fetchSuppliersForMaterial(
     .filter((row): row is SupplierEmailOption => Boolean(row.email))
 }
 
+async function fetchUnitLabel(adminClient: SupabaseClient, tenantId: string): Promise<string> {
+  const { data, error } = await adminClient
+    .from('settings')
+    .select('vocabulary')
+    .eq('tenant_id', tenantId)
+    .single()
+  if (error) throw error
+  const vocabulary = data.vocabulary as { unit?: string } | null
+  return vocabulary?.unit ?? 'Obra'
+}
+
 async function sendDispatchEmails(
   emails: { to: string; subject: string; body: string }[],
 ): Promise<{ sentCount: number; failedAt: number | null }> {
@@ -107,7 +118,8 @@ async function sendDispatchEmails(
       const email = emails[i]
       try {
         await client.send({ from: gmailUser, to: email.to, subject: email.subject, content: email.body })
-      } catch {
+      } catch (error) {
+        console.error(`Falha ao enviar e-mail de disparo pra ${email.to}:`, error)
         return { sentCount: i, failedAt: i }
       }
     }
@@ -123,12 +135,15 @@ async function attemptAutoDispatch(
   reviewerId: string,
 ): Promise<{ dispatched: boolean }> {
   const request = await fetchRequestForDispatch(adminClient, requestId)
+  const unitLabel = await fetchUnitLabel(adminClient, request.tenantId)
 
   const uniqueMaterialIds = [...new Set(request.items.map((item) => item.materialId))]
-  const suppliersByMaterialId = new Map<string, SupplierEmailOption[]>()
-  for (const materialId of uniqueMaterialIds) {
-    suppliersByMaterialId.set(materialId, await fetchSuppliersForMaterial(adminClient, materialId))
-  }
+  const supplierListsByMaterial = await Promise.all(
+    uniqueMaterialIds.map((materialId) => fetchSuppliersForMaterial(adminClient, materialId)),
+  )
+  const suppliersByMaterialId = new Map(
+    uniqueMaterialIds.map((materialId, index) => [materialId, supplierListsByMaterial[index]]),
+  )
 
   const groupResult = groupItemsBySupplier(request.items, suppliersByMaterialId)
   if (!groupResult.ok) {
@@ -142,6 +157,7 @@ async function attemptAutoDispatch(
   const emails = groupResult.groups.map((group) =>
     buildDispatchEmail(group, {
       requestNumber: request.requestNumber,
+      unitLabel,
       unitName: request.unitName,
       neededBy: request.neededBy,
     }),
@@ -229,8 +245,26 @@ Deno.serve(async (req) => {
         if (releaseError) return jsonResponse({ error: releaseError.message }, 500)
       }
 
-      const { dispatched } = await attemptAutoDispatch(adminClient, requestId, userId)
-      return jsonResponse({ ok: true, dispatched }, 200)
+      const { data: currentRequest, error: statusError } = await adminClient
+        .from('requests')
+        .select('status')
+        .eq('id', requestId)
+        .is('deleted_at', null)
+        .single()
+      if (statusError) return jsonResponse({ error: statusError.message }, 500)
+      if (currentRequest.status !== 'released_to_dispatch') {
+        return jsonResponse({ error: 'A requisição não está liberada pro Disparo.' }, 400)
+      }
+
+      try {
+        const { dispatched } = await attemptAutoDispatch(adminClient, requestId, userId)
+        return jsonResponse({ ok: true, dispatched }, 200)
+      } catch (error) {
+        // A liberação (se solicitada) já foi confirmada nesse ponto — uma falha
+        // aqui é só do despacho automático, não deve virar "não foi possível liberar".
+        console.error('attemptAutoDispatch falhou:', error)
+        return jsonResponse({ ok: true, dispatched: false }, 200)
+      }
     }
 
     const rpcCall =

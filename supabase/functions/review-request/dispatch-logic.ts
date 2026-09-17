@@ -78,6 +78,7 @@ export function formatRequestNumber(externalRef: string | null, sequenceNumber: 
 
 export interface DispatchEmailContext {
   requestNumber: string
+  unitLabel: string
   unitName: string
   neededBy: string | null
 }
@@ -101,7 +102,7 @@ export function buildDispatchEmail(group: SupplierEmailGroup, context: DispatchE
   const body = [
     `Olá, ${group.supplierName}.`,
     '',
-    `Pedimos uma cotação para os itens abaixo, referente à ${context.requestNumber} (obra ${context.unitName}):`,
+    `Pedimos uma cotação para os itens abaixo, referente à ${context.requestNumber} (${context.unitLabel}: ${context.unitName}):`,
     '',
     itemLines,
     '',

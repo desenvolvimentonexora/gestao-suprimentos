@@ -108,7 +108,7 @@ Deno.test('formatRequestNumber cai pra "SOL {sequência}" sem número externo', 
 Deno.test('buildDispatchEmail lista só os insumos do grupo, com quantidade e unidade', () => {
   const email = buildDispatchEmail(
     { supplierId: 'sup-a', supplierName: 'Fornecedor A', email: 'fornecedora@example.com', items: [cimento] },
-    { requestNumber: '1243', unitName: 'Depósito Simões Filho', neededBy: '2026-09-20' },
+    { requestNumber: '1243', unitLabel: 'Obra', unitName: 'Depósito Simões Filho', neededBy: '2026-09-20' },
   )
   assertEquals(email.to, 'fornecedora@example.com')
   assertEquals(email.subject, 'Cotação — 1243')
@@ -120,7 +120,7 @@ Deno.test('buildDispatchEmail lista só os insumos do grupo, com quantidade e un
 Deno.test('buildDispatchEmail usa "a definir" quando não há prazo', () => {
   const email = buildDispatchEmail(
     { supplierId: 'sup-a', supplierName: 'Fornecedor A', email: 'fornecedora@example.com', items: [cimento] },
-    { requestNumber: '1243', unitName: 'Depósito Simões Filho', neededBy: null },
+    { requestNumber: '1243', unitLabel: 'Obra', unitName: 'Depósito Simões Filho', neededBy: null },
   )
   assertEquals(email.body.includes('a definir'), true)
 })
