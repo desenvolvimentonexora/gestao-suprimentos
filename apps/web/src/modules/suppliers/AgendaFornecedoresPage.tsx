@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useSettings } from '../../core/config'
 import { CategoryColumn } from './CategoryColumn'
 import { MaterialColumn } from './MaterialColumn'
 import { SupplierColumn } from './SupplierColumn'
@@ -40,6 +41,10 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [quoteRequestOpen, setQuoteRequestOpen] = useState(false)
   const [formState, setFormState] = useState<SupplierFormState | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
+
+  const settingsQuery = useSettings(tenantId)
+  const supplierLabel = settingsQuery.data?.vocabulary.supplier
+  const materialLabel = settingsQuery.data?.vocabulary.material?.toLowerCase()
 
   const categoriesQuery = useCategories()
   const materialsQuery = useMaterials()
@@ -111,6 +116,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
               setPage(0)
             }}
             onOpenReport={() => setReportOpen(true)}
+            materialLabel={materialLabel}
           />
         </div>
 
@@ -118,6 +124,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
           <SupplierColumn
             materialName={selectedMaterial?.name ?? null}
             materialIcon={selectedMaterial?.icon ?? null}
+            supplierLabel={supplierLabel}
             suppliers={supplierRows}
             totalCount={suppliersQuery.data?.total ?? 0}
             page={page}

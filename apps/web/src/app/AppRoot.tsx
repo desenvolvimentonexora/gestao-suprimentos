@@ -4,7 +4,7 @@ import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate } from 'rea
 import type { Session } from '@supabase/supabase-js'
 import { Spinner } from '../components'
 import { fetchCurrentUserProfile, getSession, onAuthStateChange, signOut } from '../core/auth'
-import { loadSettings, type Brand } from '../core/config'
+import { useSettings, type Brand } from '../core/config'
 import { applyTheme } from '../core/theme'
 import { getTenant } from '../core/tenant'
 import { useUserPermissions } from '../core/permissions'
@@ -16,6 +16,7 @@ import { UnitsPage } from '../modules/units/UnitsPage'
 import { DisparoSolicitacoesPage } from '../modules/requests/DisparoSolicitacoesPage'
 import { EmNegociacaoPage } from '../modules/quotations/EmNegociacaoPage'
 import { ComparisonPage } from '../modules/comparisons/ComparisonPage'
+import { AdminPage } from '../modules/admin/AdminPage'
 import { AppShell } from './AppShell'
 import { LoginPage } from './LoginPage'
 
@@ -43,6 +44,11 @@ function RequireSession({ session, children }: { session: Session | null; childr
   return <>{children}</>
 }
 
+function RequireAdmin({ isAdmin, children }: { isAdmin: boolean; children: ReactNode }) {
+  if (!isAdmin) return <Navigate to="/" replace />
+  return <>{children}</>
+}
+
 function LoginRoute({ brand }: { brand: Brand }) {
   const navigate = useNavigate()
   return <LoginPage brand={brand} onLoginSuccess={() => navigate('/', { replace: true })} />
@@ -56,9 +62,9 @@ function HomeRoute({ fullName, userId }: { fullName: string; userId: string }) {
   return <HomePage fullName={fullName} onSignOut={handleSignOut} pendingWork={pendingWorkQuery.data} />
 }
 
-function SuprimentosRoute({ fullName }: { fullName: string }) {
+function SuprimentosRoute({ fullName, tenantId }: { fullName: string; tenantId: string }) {
   const handleSignOut = useSignOutHandler()
-  return <SuprimentosPage fullName={fullName} onSignOut={handleSignOut} />
+  return <SuprimentosPage fullName={fullName} onSignOut={handleSignOut} tenantId={tenantId} />
 }
 
 function AgendaFornecedoresRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
@@ -81,11 +87,23 @@ function ComparisonRoute({ tenantId, userId }: { tenantId: string; userId: strin
   return <ComparisonPage tenantId={tenantId} userId={userId} />
 }
 
-function ProtectedLayout({ tenantName, userName }: { tenantName: string; userName: string }) {
+function AdminRoute({ tenantId }: { tenantId: string }) {
+  return <AdminPage tenantId={tenantId} />
+}
+
+function ProtectedLayout({
+  tenantName,
+  userName,
+  isAdmin,
+}: {
+  tenantName: string
+  userName: string
+  isAdmin: boolean
+}) {
   const handleSignOut = useSignOutHandler()
 
   return (
-    <AppShell tenantName={tenantName} userName={userName} onSignOut={handleSignOut}>
+    <AppShell tenantName={tenantName} userName={userName} isAdmin={isAdmin} onSignOut={handleSignOut}>
       <Outlet />
     </AppShell>
   )
@@ -103,11 +121,7 @@ export function AppRoot() {
   const tenantQuery = useQuery({ queryKey: ['tenant'], queryFn: getTenant })
   const tenant = tenantQuery.data
 
-  const settingsQuery = useQuery({
-    queryKey: ['settings', tenant?.tenantId],
-    queryFn: () => loadSettings(tenant!.tenantId),
-    enabled: Boolean(tenant),
-  })
+  const settingsQuery = useSettings(tenant?.tenantId)
 
   useEffect(() => {
     if (settingsQuery.data) applyTheme(settingsQuery.data.theme)
@@ -120,6 +134,9 @@ export function AppRoot() {
     queryFn: () => fetchCurrentUserProfile(session!.user.id),
     enabled: Boolean(session),
   })
+
+  const permissionsQuery = useUserPermissions(session?.user.id ?? null)
+  const isAdmin = (permissionsQuery.data ?? []).includes('admin.full_access')
 
   if (
     tenantQuery.isPending ||
@@ -160,14 +177,14 @@ export function AppRoot() {
           path="/suprimentos"
           element={
             <RequireSession session={session ?? null}>
-              <SuprimentosRoute fullName={userName} />
+              <SuprimentosRoute fullName={userName} tenantId={tenant.tenantId} />
             </RequireSession>
           }
         />
         <Route
           element={
             <RequireSession session={session ?? null}>
-              <ProtectedLayout tenantName={tenant.name} userName={userName} />
+              <ProtectedLayout tenantName={tenant.name} userName={userName} isAdmin={isAdmin} />
             </RequireSession>
           }
         >
@@ -190,6 +207,14 @@ export function AppRoot() {
             path="/suprimentos/equalizacao"
             element={
               <ComparisonRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin isAdmin={isAdmin}>
+                <AdminRoute tenantId={tenant.tenantId} />
+              </RequireAdmin>
             }
           />
         </Route>

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ChevronDown, Search } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export interface AppShellProps {
   tenantName: string
   userName: string
+  isAdmin?: boolean
   onSignOut: () => void
   children: ReactNode
 }
@@ -16,7 +18,7 @@ function isTypingTarget(element: Element | null): boolean {
   )
 }
 
-export function AppShell({ tenantName, userName, onSignOut, children }: AppShellProps) {
+export function AppShell({ tenantName, userName, isAdmin = false, onSignOut, children }: AppShellProps) {
   const searchRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -76,6 +78,16 @@ export function AppShell({ tenantName, userName, onSignOut, children }: AppShell
               role="menu"
               className="absolute right-0 z-10 mt-2 min-w-[140px] rounded border border-line bg-surface py-1 shadow-sm"
             >
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  role="menuitem"
+                  onClick={() => setMenuOpen(false)}
+                  className="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-bg"
+                >
+                  Administração
+                </Link>
+              )}
               <button
                 type="button"
                 role="menuitem"

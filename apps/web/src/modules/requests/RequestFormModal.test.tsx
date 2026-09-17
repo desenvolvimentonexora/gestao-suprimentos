@@ -37,6 +37,16 @@ describe('RequestFormModal', () => {
     expect(screen.getByText('Editar requisição')).toBeInTheDocument()
   })
 
+  it('usa "Unidade" como rótulo padrão do campo de unidade', () => {
+    render(<RequestFormModal {...baseProps()} />)
+    expect(screen.getByLabelText('Unidade')).toBeInTheDocument()
+  })
+
+  it('usa o rótulo de vocabulário do cliente para o campo de unidade, quando informado', () => {
+    render(<RequestFormModal {...baseProps()} unitLabel="Obra" />)
+    expect(screen.getByLabelText('Obra')).toBeInTheDocument()
+  })
+
   it('começa com um item vazio para preencher', () => {
     render(<RequestFormModal {...baseProps()} />)
     expect(screen.getAllByLabelText(/material/i)).toHaveLength(1)

@@ -8,6 +8,7 @@ describe('parseSettings', () => {
       brand: { name: 'Nexora', tagline: 'Sistema de Gestão Integrado' },
       vocabulary: { unit: 'Obra' },
       currency: 'BRL',
+      modules: ['agenda-fornecedores'],
     }
 
     expect(parseSettings(row)).toEqual({
@@ -15,7 +16,14 @@ describe('parseSettings', () => {
       brand: { name: 'Nexora', tagline: 'Sistema de Gestão Integrado' },
       vocabulary: { unit: 'Obra' },
       currency: 'BRL',
+      modules: ['agenda-fornecedores'],
     })
+  })
+
+  it('assume lista vazia de módulos quando a coluna não vem preenchida', () => {
+    const row = { theme: {}, brand: {}, vocabulary: {}, currency: 'BRL' }
+
+    expect(parseSettings(row).modules).toEqual([])
   })
 
   it('lança InvalidSettingsError quando a moeda não tem 3 letras', () => {

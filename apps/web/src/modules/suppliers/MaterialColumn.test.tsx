@@ -63,6 +63,11 @@ describe('MaterialColumn', () => {
     expect(row?.textContent).not.toContain('null')
   })
 
+  it('usa o rótulo de vocabulário do cliente na busca, quando informado', () => {
+    render(<MaterialColumn {...baseProps()} materialLabel="insumo" />)
+    expect(screen.getByPlaceholderText('Buscar insumo')).toBeInTheDocument()
+  })
+
   it('filtra pela busca de material digitada', async () => {
     render(<MaterialColumn {...baseProps()} />)
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ComingSoonButton } from '../../components'
+import { useSettings } from '../../core/config'
 import { DisparoSolModal } from './DisparoSolModal'
 import { filterRequests } from './filterRequests'
 import { ImportRequestsModal } from './ImportRequestsModal'
@@ -35,6 +36,9 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   >(null)
   const [importOpen, setImportOpen] = useState(false)
   const [dispatchRequestId, setDispatchRequestId] = useState<string | null>(null)
+
+  const settingsQuery = useSettings(tenantId)
+  const unitLabel = settingsQuery.data?.vocabulary.unit
 
   const requestsQuery = useRequests()
   const unitsQuery = useUnitOptions()
@@ -121,6 +125,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
           mode={formState.mode}
           units={units}
           materials={materials}
+          unitLabel={unitLabel}
           initialValues={
             editingRequest
               ? {

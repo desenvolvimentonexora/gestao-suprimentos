@@ -26,6 +26,8 @@ export interface MaterialColumnProps {
   supplierSearch: string
   onSupplierSearchChange: (value: string) => void
   onOpenReport: () => void
+  /** Vocabulário do cliente para esta entidade (settings.vocabulary.material) — "material" se não vier. */
+  materialLabel?: string
 }
 
 interface MaterialFormValues {
@@ -122,6 +124,7 @@ export function MaterialColumn({
   supplierSearch,
   onSupplierSearchChange,
   onOpenReport,
+  materialLabel = 'material',
 }: MaterialColumnProps) {
   const [materialSearch, setMaterialSearch] = useState('')
   const [showNewForm, setShowNewForm] = useState(false)
@@ -136,7 +139,7 @@ export function MaterialColumn({
     <div className="flex flex-col gap-3">
       <input
         type="search"
-        placeholder="Buscar material"
+        placeholder={`Buscar ${materialLabel}`}
         value={materialSearch}
         onChange={(e) => setMaterialSearch(e.target.value)}
         className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"

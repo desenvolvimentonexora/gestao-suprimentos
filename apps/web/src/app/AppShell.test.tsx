@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { AppShell } from './AppShell'
 
 describe('AppShell', () => {
@@ -63,5 +64,33 @@ describe('AppShell', () => {
     )
 
     expect(screen.getByText('Construtora Beta').closest('header')?.className).toContain('bg-primary-dark')
+  })
+
+  it('não mostra o item Administração para quem não é admin', async () => {
+    render(
+      <MemoryRouter>
+        <AppShell tenantName="Construtora Beta" userName="Marcelo" onSignOut={vi.fn()}>
+          <p>Conteúdo</p>
+        </AppShell>
+      </MemoryRouter>,
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
+
+    expect(screen.queryByRole('menuitem', { name: 'Administração' })).not.toBeInTheDocument()
+  })
+
+  it('mostra o item Administração no menu para admins', async () => {
+    render(
+      <MemoryRouter>
+        <AppShell tenantName="Construtora Beta" userName="Marcelo" isAdmin onSignOut={vi.fn()}>
+          <p>Conteúdo</p>
+        </AppShell>
+      </MemoryRouter>,
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
+
+    expect(screen.getByRole('menuitem', { name: 'Administração' })).toHaveAttribute('href', '/admin')
   })
 })

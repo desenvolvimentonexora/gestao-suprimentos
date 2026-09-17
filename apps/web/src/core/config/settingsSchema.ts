@@ -32,6 +32,7 @@ export const settingsSchema = z.object({
   brand: brandSchema,
   vocabulary: vocabularySchema,
   currency: z.string().length(3),
+  modules: z.array(z.string()).default([]),
 })
 
 export type Theme = z.infer<typeof themeSchema>
