@@ -12,6 +12,7 @@ import {
   releaseRequestToDispatch,
   requestClarification,
   requestExtension,
+  retryDispatch,
   saveImportMapping,
   toggleItemPendency,
   updateRequest,
@@ -176,6 +177,16 @@ export function useReleaseRequestToDispatch() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (requestId: string) => releaseRequestToDispatch(requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useRetryDispatch() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (requestId: string) => retryDispatch(requestId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },

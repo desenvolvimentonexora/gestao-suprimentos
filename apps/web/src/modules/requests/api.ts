@@ -15,7 +15,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, status, needed_by, external_ref, sequence_number, created_at, subject_category, notes, negotiating_started_at, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, pendente, motivo_pendencia, deleted_at, materials(name, code, description)), quotations(id, deleted_at)',
+      'id, status, needed_by, external_ref, sequence_number, created_at, subject_category, notes, negotiating_started_at, dispatch_blocked_reason, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, pendente, motivo_pendencia, deleted_at, materials(name, code, description)), quotations(id, deleted_at)',
     )
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -36,6 +36,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
     negotiatorId: row.negotiator?.id ?? null,
     negotiatorName: row.negotiator?.full_name ?? null,
     negotiatingStartedAt: row.negotiating_started_at,
+    dispatchBlockedReason: row.dispatch_blocked_reason,
     quotationsCount: row.quotations.filter((quotation) => !quotation.deleted_at).length,
     items: row.request_items
       .filter((item) => !item.deleted_at)
@@ -263,9 +264,18 @@ export async function requestExtension(
   if (error) throw await parseReviewError(error)
 }
 
-export async function releaseRequestToDispatch(requestId: string): Promise<void> {
-  const { error } = await supabase.functions.invoke('review-request', {
+export async function releaseRequestToDispatch(requestId: string): Promise<{ dispatched: boolean }> {
+  const { data, error } = await supabase.functions.invoke('review-request', {
     body: { requestId, action: 'release_to_dispatch' },
   })
   if (error) throw await parseReviewError(error)
+  return { dispatched: Boolean((data as { dispatched?: boolean } | null)?.dispatched) }
+}
+
+export async function retryDispatch(requestId: string): Promise<{ dispatched: boolean }> {
+  const { data, error } = await supabase.functions.invoke('review-request', {
+    body: { requestId, action: 'retry_dispatch' },
+  })
+  if (error) throw await parseReviewError(error)
+  return { dispatched: Boolean((data as { dispatched?: boolean } | null)?.dispatched) }
 }
