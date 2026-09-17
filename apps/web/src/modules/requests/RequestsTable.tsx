@@ -41,6 +41,8 @@ export interface RequestsTableProps {
   onCancelRequest: (requestId: string) => void
   onNegotiateDirectly: (requestId: string) => void
   onUpdateNotes: (requestId: string, notes: string) => void
+  onRetryDispatch: (requestId: string) => void
+  isRetryingDispatch: (requestId: string) => boolean
 }
 
 export function RequestsTable({
@@ -59,6 +61,8 @@ export function RequestsTable({
   onCancelRequest,
   onNegotiateDirectly,
   onUpdateNotes,
+  onRetryDispatch,
+  isRetryingDispatch,
 }: RequestsTableProps) {
   function handleCancel(request: RequestRow) {
     if (window.confirm(`Cancelar a requisição de "${request.unitName}"?`)) {
@@ -123,6 +127,8 @@ export function RequestsTable({
               onCancelRequest={handleCancel}
               onNegotiateDirectly={onNegotiateDirectly}
               onUpdateNotes={onUpdateNotes}
+              onRetryDispatch={onRetryDispatch}
+              isRetryingDispatch={isRetryingDispatch(request.id)}
             />
           ))}
         </div>

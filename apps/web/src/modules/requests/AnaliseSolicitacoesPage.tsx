@@ -194,8 +194,13 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
                 onOpenExtensionModal={setExtensionRequestId}
                 onReleaseToDispatch={(requestId) =>
                   releaseToDispatch.mutate(requestId, {
-                    onSuccess: () =>
-                      setToast({ variant: 'success', message: 'SOL liberada pro Disparo.' }),
+                    onSuccess: ({ dispatched }) =>
+                      setToast({
+                        variant: 'success',
+                        message: dispatched
+                          ? 'SOL despachada automaticamente — já está em Em Negociação.'
+                          : 'SOL liberada pro Disparo.',
+                      }),
                     onError: (error) =>
                       setToast({ variant: 'error', message: errorMessage(error) ?? 'Não foi possível liberar.' }),
                   })

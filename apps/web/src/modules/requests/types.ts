@@ -38,6 +38,7 @@ export interface RequestRow {
   negotiatorName: string | null
   negotiatingStartedAt: string | null
   quotationsCount: number
+  dispatchBlockedReason: string | null
   items: RequestItemRow[]
 }
 

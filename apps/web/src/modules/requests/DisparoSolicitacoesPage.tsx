@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, ComingSoonButton } from '../../components'
+import { Button, ComingSoonButton, Toast, type ToastVariant } from '../../components'
 import { useSettings } from '../../core/config'
 import { DisparoSolModal } from './DisparoSolModal'
 import { ANALYSIS_STATUSES } from './filterAnalysisRequests'
@@ -17,6 +17,7 @@ import {
   useMaterialOptions,
   useMaterialsWithSupplierCount,
   useRequests,
+  useRetryDispatch,
   useUnitOptions,
   useUpdateRequest,
   useUpdateRequestNotes,
@@ -28,6 +29,11 @@ export interface DisparoSolicitacoesPageProps {
   tenantId: string
 }
 
+function errorMessage(error: unknown): string | null {
+  if (!error) return null
+  return error instanceof Error ? error.message : 'Não foi possível concluir a ação. Tente novamente.'
+}
+
 export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPageProps) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<RequestStatus | null>(null)
@@ -37,6 +43,13 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   >(null)
   const [importOpen, setImportOpen] = useState(false)
   const [dispatchRequestId, setDispatchRequestId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ variant: ToastVariant; message: string } | null>(null)
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(null), 6000)
+    return () => clearTimeout(timer)
+  }, [toast])
 
   const settingsQuery = useSettings(tenantId)
   const unitLabel = settingsQuery.data?.vocabulary.unit
@@ -51,6 +64,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const cancelRequest = useCancelRequest()
   const updateRequestStatus = useUpdateRequestStatus()
   const updateRequestNotes = useUpdateRequestNotes()
+  const retryDispatch = useRetryDispatch()
 
   const requests = requestsQuery.data ?? []
   const units = unitsQuery.data ?? []
@@ -82,6 +96,12 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
 
   return (
     <div className="min-h-screen bg-bg">
+      {toast && (
+        <div className="fixed right-4 top-4 z-50 w-full max-w-sm">
+          <Toast variant={toast.variant} message={toast.message} onDismiss={() => setToast(null)} />
+        </div>
+      )}
+
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-6xl">
           <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
@@ -123,6 +143,20 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
             updateRequestStatus.mutate({ requestId, status: 'negotiating' })
           }
           onUpdateNotes={(requestId, notes) => updateRequestNotes.mutate({ requestId, notes })}
+          onRetryDispatch={(requestId) =>
+            retryDispatch.mutate(requestId, {
+              onSuccess: ({ dispatched }) =>
+                setToast({
+                  variant: 'success',
+                  message: dispatched
+                    ? 'SOL despachada automaticamente — já está em Em Negociação.'
+                    : 'Ainda não deu — o motivo do bloqueio foi atualizado.',
+                }),
+              onError: (error) =>
+                setToast({ variant: 'error', message: errorMessage(error) ?? 'Não foi possível tentar de novo.' }),
+            })
+          }
+          isRetryingDispatch={(requestId) => retryDispatch.isPending && retryDispatch.variables === requestId}
         />
       </div>
 

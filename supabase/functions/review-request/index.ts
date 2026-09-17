@@ -1,7 +1,18 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
+import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
+import { userHasPermission } from '../_shared/checkPermission.ts'
+import {
+  buildBlockedReason,
+  buildDispatchEmail,
+  buildSendFailureReason,
+  formatRequestNumber,
+  groupItemsBySupplier,
+  type DispatchRequestItem,
+  type SupplierEmailOption,
+} from './dispatch-logic.ts'
 
-type ReviewAction = 'request_clarification' | 'request_extension' | 'release_to_dispatch'
+type ReviewAction = 'request_clarification' | 'request_extension' | 'release_to_dispatch' | 'retry_dispatch'
 
 interface ReviewBody {
   requestId: string
@@ -10,12 +21,178 @@ interface ReviewBody {
   newNeededBy?: string
 }
 
-interface PermissionRow {
-  roles: {
-    role_permissions: {
-      permissions: { key: string } | null
+interface RequestForDispatch {
+  tenantId: string
+  requestNumber: string
+  unitName: string
+  neededBy: string | null
+  items: DispatchRequestItem[]
+}
+
+async function fetchRequestForDispatch(
+  adminClient: SupabaseClient,
+  requestId: string,
+): Promise<RequestForDispatch> {
+  const { data, error } = await adminClient
+    .from('requests')
+    .select(
+      'tenant_id, external_ref, sequence_number, needed_by, units(name), request_items(material_id, quantity, unit_of_measure, deleted_at, materials(name))',
+    )
+    .eq('id', requestId)
+    .single()
+  if (error) throw error
+
+  const items = (
+    data.request_items as unknown as {
+      material_id: string
+      quantity: number
+      unit_of_measure: string | null
+      deleted_at: string | null
+      materials: { name: string } | null
     }[]
-  } | null
+  )
+    .filter((item) => !item.deleted_at)
+    .map((item) => ({
+      materialId: item.material_id,
+      materialName: item.materials?.name ?? '',
+      quantity: item.quantity,
+      unitOfMeasure: item.unit_of_measure,
+    }))
+
+  return {
+    tenantId: data.tenant_id,
+    requestNumber: formatRequestNumber(data.external_ref, data.sequence_number),
+    unitName: (data.units as unknown as { name: string } | null)?.name ?? '',
+    neededBy: data.needed_by,
+    items,
+  }
+}
+
+async function fetchSuppliersForMaterial(
+  adminClient: SupabaseClient,
+  materialId: string,
+): Promise<SupplierEmailOption[]> {
+  const { data, error } = await adminClient
+    .from('suppliers')
+    .select('id, name, supplier_contacts(email), supplier_materials!inner(material_id)')
+    .eq('supplier_materials.material_id', materialId)
+    .is('deleted_at', null)
+  if (error) throw error
+
+  return (data as { id: string; name: string; supplier_contacts: { email: string | null }[] }[])
+    .map((row) => ({
+      supplierId: row.id,
+      supplierName: row.name,
+      email: row.supplier_contacts[0]?.email ?? null,
+    }))
+    .filter((row): row is SupplierEmailOption => Boolean(row.email))
+}
+
+async function fetchUnitLabel(adminClient: SupabaseClient, tenantId: string): Promise<string> {
+  const { data, error } = await adminClient
+    .from('settings')
+    .select('vocabulary')
+    .eq('tenant_id', tenantId)
+    .single()
+  if (error) throw error
+  const vocabulary = data.vocabulary as { unit?: string } | null
+  return vocabulary?.unit ?? 'Obra'
+}
+
+async function sendDispatchEmails(
+  emails: { to: string; subject: string; body: string }[],
+): Promise<{ sentCount: number; failedAt: number | null }> {
+  const gmailUser = Deno.env.get('GMAIL_USER')!
+  const gmailAppPassword = Deno.env.get('GMAIL_APP_PASSWORD')!
+  const client = new SMTPClient({
+    connection: {
+      hostname: 'smtp.gmail.com',
+      port: 465,
+      tls: true,
+      auth: { username: gmailUser, password: gmailAppPassword },
+    },
+  })
+
+  try {
+    for (let i = 0; i < emails.length; i++) {
+      const email = emails[i]
+      try {
+        await client.send({ from: gmailUser, to: email.to, subject: email.subject, content: email.body })
+      } catch (error) {
+        console.error(`Falha ao enviar e-mail de disparo pra ${email.to}:`, error)
+        return { sentCount: i, failedAt: i }
+      }
+    }
+    return { sentCount: emails.length, failedAt: null }
+  } finally {
+    await client.close()
+  }
+}
+
+async function attemptAutoDispatch(
+  adminClient: SupabaseClient,
+  requestId: string,
+  reviewerId: string,
+): Promise<{ dispatched: boolean }> {
+  const request = await fetchRequestForDispatch(adminClient, requestId)
+  const unitLabel = await fetchUnitLabel(adminClient, request.tenantId)
+
+  const uniqueMaterialIds = [...new Set(request.items.map((item) => item.materialId))]
+  const supplierListsByMaterial = await Promise.all(
+    uniqueMaterialIds.map((materialId) => fetchSuppliersForMaterial(adminClient, materialId)),
+  )
+  const suppliersByMaterialId = new Map(
+    uniqueMaterialIds.map((materialId, index) => [materialId, supplierListsByMaterial[index]]),
+  )
+
+  const groupResult = groupItemsBySupplier(request.items, suppliersByMaterialId)
+  if (!groupResult.ok) {
+    await adminClient
+      .from('requests')
+      .update({ dispatch_blocked_reason: buildBlockedReason(groupResult.missingMaterialNames) })
+      .eq('id', requestId)
+    return { dispatched: false }
+  }
+
+  const emails = groupResult.groups.map((group) =>
+    buildDispatchEmail(group, {
+      requestNumber: request.requestNumber,
+      unitLabel,
+      unitName: request.unitName,
+      neededBy: request.neededBy,
+    }),
+  )
+  const { failedAt } = await sendDispatchEmails(emails)
+
+  if (failedAt !== null) {
+    const failedGroup = groupResult.groups[failedAt]
+    const alreadySent = groupResult.groups.slice(0, failedAt).map((group) => group.supplierName)
+    await adminClient
+      .from('requests')
+      .update({ dispatch_blocked_reason: buildSendFailureReason(failedGroup.supplierName, alreadySent) })
+      .eq('id', requestId)
+    return { dispatched: false }
+  }
+
+  const recipients = groupResult.groups.flatMap((group) =>
+    group.items.map((item) => ({
+      tenant_id: request.tenantId,
+      request_id: requestId,
+      supplier_id: group.supplierId,
+      material_id: item.materialId,
+      email: group.email,
+    })),
+  )
+  const { error: recipientsError } = await adminClient.from('request_dispatch_recipients').insert(recipients)
+  if (recipientsError) throw recipientsError
+
+  const { error: negotiatingError } = await adminClient.rpc('fn_mark_request_negotiating', {
+    p_request_id: requestId,
+    p_reviewer_id: reviewerId,
+  })
+  if (negotiatingError) throw negotiatingError
+
+  return { dispatched: true }
 }
 
 Deno.serve(async (req) => {
@@ -30,10 +207,13 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as Partial<ReviewBody>
     const { requestId, action, message, newNeededBy } = body
 
-    if (
-      !requestId ||
-      (action !== 'request_clarification' && action !== 'request_extension' && action !== 'release_to_dispatch')
-    ) {
+    const validActions: ReviewAction[] = [
+      'request_clarification',
+      'request_extension',
+      'release_to_dispatch',
+      'retry_dispatch',
+    ]
+    if (!requestId || !action || !validActions.includes(action)) {
       return jsonResponse({ error: 'Parâmetros inválidos.' }, 400)
     }
     if (action === 'request_extension' && !newNeededBy) {
@@ -50,23 +230,42 @@ Deno.serve(async (req) => {
     if (userError || !userData.user) return jsonResponse({ error: 'Não autenticado.' }, 401)
     const userId = userData.user.id
 
-    const { data: roleRows, error: permError } = await callerClient
-      .from('user_roles')
-      .select('roles(role_permissions(permissions(key)))')
-      .eq('user_id', userId)
-      .returns<PermissionRow[]>()
-
-    if (permError) return jsonResponse({ error: 'Falha ao verificar permissão.' }, 500)
-
-    const hasAnalyzePermission = (roleRows ?? []).some((row) =>
-      (row.roles?.role_permissions ?? []).some(
-        (rolePermission) => rolePermission.permissions?.key === 'requests.analyze',
-      ),
-    )
+    const hasAnalyzePermission = await userHasPermission(callerClient, userId, 'requests.analyze')
     if (!hasAnalyzePermission) return jsonResponse({ error: 'Sem permissão para analisar solicitações.' }, 403)
 
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const adminClient = createClient(supabaseUrl, serviceRoleKey)
+
+    if (action === 'release_to_dispatch' || action === 'retry_dispatch') {
+      if (action === 'release_to_dispatch') {
+        const { error: releaseError } = await adminClient.rpc('fn_release_request_to_dispatch', {
+          p_request_id: requestId,
+          p_reviewer_id: userId,
+        })
+        if (releaseError) return jsonResponse({ error: releaseError.message }, 500)
+      }
+
+      const { data: currentRequest, error: statusError } = await adminClient
+        .from('requests')
+        .select('status')
+        .eq('id', requestId)
+        .is('deleted_at', null)
+        .single()
+      if (statusError) return jsonResponse({ error: statusError.message }, 500)
+      if (currentRequest.status !== 'released_to_dispatch') {
+        return jsonResponse({ error: 'A requisição não está liberada pro Disparo.' }, 400)
+      }
+
+      try {
+        const { dispatched } = await attemptAutoDispatch(adminClient, requestId, userId)
+        return jsonResponse({ ok: true, dispatched }, 200)
+      } catch (error) {
+        // A liberação (se solicitada) já foi confirmada nesse ponto — uma falha
+        // aqui é só do despacho automático, não deve virar "não foi possível liberar".
+        console.error('attemptAutoDispatch falhou:', error)
+        return jsonResponse({ ok: true, dispatched: false }, 200)
+      }
+    }
 
     const rpcCall =
       action === 'request_clarification'
@@ -75,17 +274,12 @@ Deno.serve(async (req) => {
             p_reviewer_id: userId,
             p_message: message ?? null,
           })
-        : action === 'request_extension'
-          ? adminClient.rpc('fn_request_extension', {
-              p_request_id: requestId,
-              p_reviewer_id: userId,
-              p_new_needed_by: newNeededBy,
-              p_reason: message ?? null,
-            })
-          : adminClient.rpc('fn_release_request_to_dispatch', {
-              p_request_id: requestId,
-              p_reviewer_id: userId,
-            })
+        : adminClient.rpc('fn_request_extension', {
+            p_request_id: requestId,
+            p_reviewer_id: userId,
+            p_new_needed_by: newNeededBy,
+            p_reason: message ?? null,
+          })
 
     const { error: rpcError } = await rpcCall
     if (rpcError) return jsonResponse({ error: rpcError.message }, 500)

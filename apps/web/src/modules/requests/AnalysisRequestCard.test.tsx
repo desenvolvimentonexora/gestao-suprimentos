@@ -36,6 +36,7 @@ function makeRequest(overrides: Partial<RequestRow>): RequestRow {
     negotiatorId: null,
     negotiatorName: null,
     negotiatingStartedAt: null,
+    dispatchBlockedReason: null,
     quotationsCount: 0,
     items: [makeItem({})],
     ...overrides,
