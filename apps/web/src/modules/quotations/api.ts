@@ -7,6 +7,8 @@ import type {
   SupplierOption,
 } from './types'
 
+const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
+
 export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
@@ -150,7 +152,7 @@ export async function fetchQuotationAttachmentUrl(quotationId: string): Promise<
 
   const { data: signed, error: signError } = await supabase.storage
     .from('quotation-attachments')
-    .createSignedUrl(attachment.storage_path, 60)
+    .createSignedUrl(attachment.storage_path, SIGNED_URL_EXPIRES_IN_SECONDS)
   if (signError) throw signError
   return signed.signedUrl
 }

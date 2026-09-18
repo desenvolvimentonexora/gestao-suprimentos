@@ -127,27 +127,30 @@ async function recordIngestion(
   detail: string | null,
   extra?: IngestionExtra,
 ): Promise<void> {
-  await adminClient.from('email_ingestions').insert({
-    tenant_id: TENANT_ID,
-    gmail_message_id: messageId,
-    from_email: fromEmail,
-    subject,
-    request_id: extra?.requestId ?? null,
-    supplier_id: extra?.supplierId ?? null,
-    quotation_id: extra?.quotationId ?? null,
-    status,
-    detail,
-  })
+  await adminClient.from('email_ingestions').upsert(
+    {
+      tenant_id: TENANT_ID,
+      gmail_message_id: messageId,
+      from_email: fromEmail,
+      subject,
+      request_id: extra?.requestId ?? null,
+      supplier_id: extra?.supplierId ?? null,
+      quotation_id: extra?.quotationId ?? null,
+      status,
+      detail,
+    },
+    { onConflict: 'tenant_id,gmail_message_id' },
+  )
 }
 
 async function processMessage(adminClient: SupabaseClient, accessToken: string, messageId: string): Promise<void> {
   const { data: existing } = await adminClient
     .from('email_ingestions')
-    .select('id')
+    .select('id, status')
     .eq('tenant_id', TENANT_ID)
     .eq('gmail_message_id', messageId)
     .maybeSingle()
-  if (existing) return
+  if (existing?.status === 'matched') return
 
   const message = await getMessage(accessToken, messageId)
   const fromEmail = extractSenderEmail(findHeader(message, 'From') ?? '')
@@ -176,13 +179,12 @@ async function processMessage(adminClient: SupabaseClient, accessToken: string, 
     return
   }
 
-  const { data: recipientRow } = await adminClient
+  const { data: recipientRows } = await adminClient
     .from('request_dispatch_recipients')
-    .select('supplier_id')
+    .select('supplier_id, email')
     .eq('request_id', requestRow.id)
-    .ilike('email', fromEmail)
-    .limit(1)
-    .maybeSingle()
+
+  const recipientRow = (recipientRows ?? []).find((row) => row.email.toLowerCase() === fromEmail) ?? null
 
   if (!recipientRow) {
     await recordIngestion(
@@ -280,9 +282,15 @@ async function processMessage(adminClient: SupabaseClient, accessToken: string, 
 
     const extracted = await extractQuoteDataFromPdf(pdfBase64)
     const reviewedItems = matchExtractedItems(extracted.items, requestItems)
-    const matchedItems = reviewedItems.filter(
-      (item): item is MatchedQuoteItem & { requestItemId: string } => item.requestItemId !== null,
-    )
+    const matchedByRequestItemId = new Map<string, MatchedQuoteItem & { requestItemId: string }>()
+    for (const item of reviewedItems) {
+      if (item.requestItemId === null) continue
+      const current = matchedByRequestItemId.get(item.requestItemId)
+      if (!current || item.confidence > current.confidence) {
+        matchedByRequestItemId.set(item.requestItemId, { ...item, requestItemId: item.requestItemId })
+      }
+    }
+    const matchedItems = [...matchedByRequestItemId.values()]
 
     const { data: insertedItems, error: quotationItemsError } = await adminClient
       .from('quotation_items')

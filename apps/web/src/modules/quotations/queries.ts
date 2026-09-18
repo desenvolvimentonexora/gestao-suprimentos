@@ -84,7 +84,12 @@ export function useViewQuotationPdf() {
     onSuccess: (url) => {
       if (url) {
         window.open(url, '_blank', 'noopener,noreferrer')
+      } else {
+        window.alert('Nenhum PDF encontrado para esta cotação.')
       }
+    },
+    onError: (error) => {
+      window.alert(error instanceof Error ? error.message : 'Não foi possível abrir o PDF. Tente novamente.')
     },
   })
 }
