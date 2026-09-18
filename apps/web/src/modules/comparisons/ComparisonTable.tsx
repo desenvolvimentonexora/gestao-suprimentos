@@ -82,7 +82,7 @@ export function ComparisonTable({
         <table className="w-full border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-line text-ink-muted">
-              <th rowSpan={2} className="py-2 pr-4 font-medium">
+              <th rowSpan={2} className="bg-blue-700 py-2 pr-4 pl-3 font-medium text-white">
                 Descrição
               </th>
               <th rowSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2 font-medium`}>
@@ -120,9 +120,9 @@ export function ComparisonTable({
                   </th>
                 )
               })}
-              <th rowSpan={2} className={`${COLUMN_DIVIDER} py-2 px-3 font-medium`}>
+              <th rowSpan={2} className={`${COLUMN_DIVIDER} bg-emerald-700 py-2 px-3 font-medium text-white`}>
                 <span className="flex items-center gap-1">
-                  <Flag size={14} className="text-primary" aria-hidden="true" />
+                  <Flag size={14} aria-hidden="true" />
                   Melhor Forn.
                 </span>
               </th>

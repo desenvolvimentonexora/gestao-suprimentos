@@ -44,6 +44,16 @@ function baseProps() {
 }
 
 describe('ComparisonTable', () => {
+  it('preenche o cabeçalho de Descrição em azul e o de Melhor Forn. em verde, sempre, com texto branco', () => {
+    render(<ComparisonTable {...baseProps()} />)
+    const descricaoHeader = screen.getByText('Descrição').closest('th')
+    const melhorForHeader = screen.getByText('Melhor Forn.').closest('th')
+    expect(descricaoHeader!.className).toContain('bg-blue-700')
+    expect(descricaoHeader!.className).toContain('text-white')
+    expect(melhorForHeader!.className).toContain('bg-emerald-700')
+    expect(melhorForHeader!.className).toContain('text-white')
+  })
+
   it('mostra Descrição, Und. e Qtde. como colunas separadas', () => {
     render(<ComparisonTable {...baseProps()} />)
     expect(screen.getByText('Descrição')).toBeInTheDocument()
