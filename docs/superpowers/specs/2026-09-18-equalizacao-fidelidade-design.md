@@ -30,22 +30,34 @@ tocar em extração por IA, aprovação em duas etapas, ou cor por negociador.
 
 ## 1. Dois estados da mesma tela
 
-`ComparisonPage` ganha uma condição derivada, sem novo estado do React (é
-puramente uma função do dado já carregado):
+**Correção importante feita durante a leitura do código (antes deste ponto
+a spec assumia uma condição errada):** `fetchComparableRequests` já filtra
+fora qualquer requisição sem nenhuma cotação com `status === 'received'`
+(`api.ts`, `.filter((row) => row.quotations.length > 0)`, mais o filtro de
+status dentro do map). Ou seja, **toda** requisição que aparece na lista à
+esquerda desta tela já chega com pelo menos 1 cotação — uma condição como
+`quotations.length > 0` nunca seria falsa aqui, então não serve pra
+distinguir "setup" de "calculada".
+
+O sinal correto — e que já existe no código, só não está sendo usado assim
+— é simplesmente **ter ou não uma requisição selecionada**:
 
 ```ts
-const isCalculated = selectedRequest !== null && selectedRequest.quotations.length > 0
+const isCalculated = selectedRequest !== null
 ```
 
-- **Setup** (`!isCalculated`): mostra exatamente o que já existe hoje acima
-  da tabela — os 3 cards de tipo de equalização, o checkbox "Anexar foto...",
-  a lista de requisições à esquerda, e `SourceCards` (que já é o mecanismo de
-  adicionar cotação/fonte). A `ComparisonTable` não renderiza.
-- **Calculada** (`isCalculated`): o bloco de setup (cards de tipo, checkbox)
-  some. Entram, nessa ordem: cabeçalho de identificação (seção 2 abaixo),
-  toolbar de ações existente (Imprimir/Excel/Pedido/Editar/Enviar p/
-  Aprovação/Nova — já implementada, só reposicionada), `SourceCards` (ainda
-  necessário para adicionar mais cotações a uma comparação em andamento) e
+- **Setup** (`!isCalculated`, nada selecionado): mostra os 3 cards de tipo
+  de equalização + o checkbox "Anexar foto..." (hoje sempre visíveis, viram
+  condicionados a `!selectedRequest`) + a lista de requisições à esquerda +
+  o prompt "Selecione uma requisição para comparar." no lugar do painel
+  direito. Nada de `SourceCards`/`ComparisonTable` aqui.
+- **Calculada** (`isCalculated`, uma requisição selecionada — e por
+  construção do dado, ela já tem cotação): os cards de tipo + checkbox
+  somem. Entram, nessa ordem, no painel direito: cabeçalho de identificação
+  (seção 2 abaixo), toolbar de ações existente (Imprimir/Excel/Pedido/
+  Editar/Enviar p/ Aprovação/Nova — já implementada, só reposicionada),
+  `SourceCards` (continua útil pra adicionar mais cotações a uma comparação
+  em andamento — os slots vazios "+ Fornecedor N" continuam ali) e
   `ComparisonTable`.
 
 **Ambiguidade resolvida:** o pedido original cita, na descrição do estado
