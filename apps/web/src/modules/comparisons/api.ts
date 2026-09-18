@@ -35,7 +35,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, units(name), external_ref, request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, status, deleted_at, freight_amount, payment_terms, delivery_days, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
+      'id, units(name), external_ref, sequence_number, request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, status, deleted_at, freight_amount, payment_terms, delivery_days, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
@@ -45,12 +45,14 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const requestIds = data.map((row) => row.id)
   const { data: comparisonsData, error: comparisonsError } = await supabase
     .from('comparisons')
-    .select('id, request_id, status, winning_quotation_id')
+    .select('id, request_id, status, winning_quotation_id, created_by, created_at, notes')
     .in('request_id', requestIds.length > 0 ? requestIds : [''])
     .is('deleted_at', null)
     .in('status', ['draft', 'pending_approval'])
 
   if (comparisonsError) throw comparisonsError
+
+  const namesByUserId = await fetchUserNames(comparisonsData.map((comparison) => comparison.created_by))
 
   const comparisonByRequestId = new Map(
     comparisonsData.map((comparison) => [
@@ -59,6 +61,9 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
         id: comparison.id,
         status: comparison.status as ComparisonStatus,
         winningQuotationId: comparison.winning_quotation_id,
+        createdByName: comparison.created_by ? (namesByUserId.get(comparison.created_by) ?? null) : null,
+        createdAt: comparison.created_at,
+        notes: comparison.notes,
       },
     ]),
   )
@@ -96,9 +101,13 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
         requestId: row.id,
         unitName: row.units?.name ?? '',
         externalRef: row.external_ref,
+        sequenceNumber: row.sequence_number,
         comparisonId: comparison?.id ?? null,
         comparisonStatus: comparison?.status ?? null,
         winningQuotationId: comparison?.winningQuotationId ?? null,
+        createdByName: comparison?.createdByName ?? null,
+        createdAt: comparison?.createdAt ?? null,
+        notes: comparison?.notes ?? null,
         requestItems,
         quotations,
       }
@@ -243,6 +252,14 @@ export async function updateQuotationTerms(quotationId: string, terms: Quotation
       delivery_days: terms.deliveryDays,
     })
     .eq('id', quotationId)
+  if (error) throw error
+}
+
+export async function updateComparisonNotes(comparisonId: string, notes: string): Promise<void> {
+  const { error } = await supabase
+    .from('comparisons')
+    .update({ notes: notes.trim() === '' ? null : notes })
+    .eq('id', comparisonId)
   if (error) throw error
 }
 
