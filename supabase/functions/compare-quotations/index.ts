@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 import { encodeBase64 } from 'https://deno.land/std@0.224.0/encoding/base64.ts'
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
-import { extractQuoteDataFromPdf } from './ai-provider.ts'
+import { extractQuoteDataFromPdf } from '../_shared/ai-provider.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
