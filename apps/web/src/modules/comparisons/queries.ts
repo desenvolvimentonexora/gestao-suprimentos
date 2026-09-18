@@ -20,6 +20,7 @@ import {
   sendToApproval,
   setComparisonWinner,
   setFinancialChargeRequested,
+  updateComparisonNotes,
   updateQuotationTerms,
   uploadQuotationAttachment,
   type DecideComparisonInput,
@@ -123,6 +124,17 @@ export function useUpdateQuotationTerms() {
   return useMutation({
     mutationFn: ({ quotationId, terms }: { quotationId: string; terms: QuotationTermsInput }) =>
       updateQuotationTerms(quotationId, terms),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
+    },
+  })
+}
+
+export function useUpdateComparisonNotes() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ comparisonId, notes }: { comparisonId: string; notes: string }) =>
+      updateComparisonNotes(comparisonId, notes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
     },
