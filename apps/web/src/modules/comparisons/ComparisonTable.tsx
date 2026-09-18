@@ -82,7 +82,7 @@ export function ComparisonTable({
         <table className="w-full border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-line text-ink-muted">
-              <th rowSpan={2} className="bg-blue-700 py-2 pr-4 pl-3 font-medium text-white">
+              <th rowSpan={2} className="bg-blue-900 py-2 pr-4 pl-3 font-medium text-white">
                 Descrição
               </th>
               <th rowSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2 font-medium`}>

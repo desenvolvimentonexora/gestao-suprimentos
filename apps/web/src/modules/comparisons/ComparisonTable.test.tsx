@@ -48,7 +48,7 @@ describe('ComparisonTable', () => {
     render(<ComparisonTable {...baseProps()} />)
     const descricaoHeader = screen.getByText('Descrição').closest('th')
     const melhorForHeader = screen.getByText('Melhor Forn.').closest('th')
-    expect(descricaoHeader!.className).toContain('bg-blue-700')
+    expect(descricaoHeader!.className).toContain('bg-blue-900')
     expect(descricaoHeader!.className).toContain('text-white')
     expect(melhorForHeader!.className).toContain('bg-emerald-700')
     expect(melhorForHeader!.className).toContain('text-white')
