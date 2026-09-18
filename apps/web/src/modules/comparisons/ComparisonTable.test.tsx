@@ -65,6 +65,19 @@ describe('ComparisonTable', () => {
     expect(totalHeaders.length).toBeGreaterThanOrEqual(3)
   })
 
+  it('preenche o cabeçalho da coluna do fornecedor com cor sólida do tema e texto branco', () => {
+    render(<ComparisonTable {...baseProps()} />)
+    const header = screen.getByText('Sika').closest('th')
+    expect(header).not.toBeNull()
+    expect(header!.className).toContain('text-white')
+  })
+
+  it('usa um tom mais claro da mesma cor do fornecedor na subcoluna V.Unit./Total', () => {
+    render(<ComparisonTable {...baseProps()} />)
+    const vUnitHeaders = screen.getAllByText('V.Unit.')
+    expect(vUnitHeaders[0]!.className).toMatch(/bg-\w+-100/)
+  })
+
   it('uma linha por item, com nome do fornecedor na coluna certa', () => {
     render(<ComparisonTable {...baseProps()} />)
     expect(screen.getByText('Sika')).toBeInTheDocument()

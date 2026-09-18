@@ -19,4 +19,10 @@ describe('getSupplierColor', () => {
     expect(color.header).toContain('border-')
     expect(color.tag).toContain('bg-')
   })
+
+  it('expõe uma variante de cabeçalho de tabela com preenchimento sólido e texto branco', () => {
+    const color = getSupplierColor('supplier-sika')
+    expect(color.tableHeader).toContain('bg-')
+    expect(color.tableHeader).toContain('text-white')
+  })
 })

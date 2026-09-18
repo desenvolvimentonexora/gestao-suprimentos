@@ -98,11 +98,11 @@ export function ComparisonTable({
                   <th
                     key={quotation.quotationId}
                     colSpan={2}
-                    className={`${COLUMN_DIVIDER} px-3 py-2 font-medium ${isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.header}`}
+                    className={`${COLUMN_DIVIDER} px-3 py-2 font-medium ${isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.tableHeader}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-1">
-                        <Flag size={14} className="text-primary" aria-hidden="true" />
+                        <Flag size={14} aria-hidden="true" />
                         {quotation.supplierName}
                       </span>
                       <button
@@ -127,13 +127,18 @@ export function ComparisonTable({
                 </span>
               </th>
             </tr>
-            <tr className="border-b border-line text-ink-muted">
-              {quotations.map((quotation) => (
-                <Fragment key={quotation.quotationId}>
-                  <th className={`${COLUMN_DIVIDER} px-3 py-1 text-xs font-medium`}>V.Unit.</th>
-                  <th className="px-3 py-1 text-xs font-medium">Total</th>
-                </Fragment>
-              ))}
+            <tr className="border-b border-line">
+              {quotations.map((quotation) => {
+                const isExcluded = excludedQuotationIds.includes(quotation.quotationId)
+                const color = getSupplierColor(quotation.quotationId)
+                const tagClasses = isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.tag
+                return (
+                  <Fragment key={quotation.quotationId}>
+                    <th className={`${COLUMN_DIVIDER} px-3 py-1 text-xs font-medium ${tagClasses}`}>V.Unit.</th>
+                    <th className={`px-3 py-1 text-xs font-medium ${tagClasses}`}>Total</th>
+                  </Fragment>
+                )
+              })}
             </tr>
           </thead>
           <tbody>
