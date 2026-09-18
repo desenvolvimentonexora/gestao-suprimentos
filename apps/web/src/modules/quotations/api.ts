@@ -136,3 +136,21 @@ export async function discardQuotation(quotationId: string): Promise<void> {
     .eq('id', quotationId)
   if (error) throw error
 }
+
+export async function fetchQuotationAttachmentUrl(quotationId: string): Promise<string | null> {
+  const { data: attachment, error: attachmentError } = await supabase
+    .from('quotation_attachments')
+    .select('storage_path')
+    .eq('quotation_id', quotationId)
+    .order('uploaded_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (attachmentError) throw attachmentError
+  if (!attachment) return null
+
+  const { data: signed, error: signError } = await supabase.storage
+    .from('quotation-attachments')
+    .createSignedUrl(attachment.storage_path, 60)
+  if (signError) throw signError
+  return signed.signedUrl
+}

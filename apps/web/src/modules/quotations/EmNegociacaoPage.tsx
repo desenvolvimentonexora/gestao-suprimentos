@@ -17,6 +17,7 @@ import {
   useSupplierOptions,
   useUpdateNegotiationNotes,
   useUpdateNegotiator,
+  useViewQuotationPdf,
 } from './queries'
 import type { QuotationFormValues } from './types'
 
@@ -39,6 +40,7 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
   const updateNegotiator = useUpdateNegotiator()
   const updateNotes = useUpdateNegotiationNotes()
   const sendBackToDispatch = useSendBackToDispatch()
+  const viewQuotationPdf = useViewQuotationPdf()
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -135,6 +137,7 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
               }
               onRegisterQuotation={setActiveRequestId}
               onDiscardQuotation={(quotationId) => discardQuotation.mutate(quotationId)}
+              onViewPdf={(quotationId) => viewQuotationPdf.mutate(quotationId)}
               onUpdateNotes={(requestId, notes) => updateNotes.mutate({ requestId, notes })}
               onSendBackToDispatch={(requestId) => sendBackToDispatch.mutate(requestId)}
               onFinalizeNegotiation={() => navigate('/suprimentos/equalizacao')}
