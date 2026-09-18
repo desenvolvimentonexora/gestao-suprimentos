@@ -269,6 +269,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
 
                 {resolvedComparisonId && (
                   <ComparisonNotes
+                    key={resolvedComparisonId}
                     notes={selectedRequest.notes}
                     onUpdateNotes={(notes) =>
                       updateComparisonNotes.mutate({ comparisonId: resolvedComparisonId, notes })

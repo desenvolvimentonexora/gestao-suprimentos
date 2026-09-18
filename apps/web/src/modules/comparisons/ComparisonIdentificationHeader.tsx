@@ -1,3 +1,4 @@
+import { formatDate } from '../../lib/formatters'
 import { formatSolNumber } from './formatSolNumber'
 
 export interface ComparisonIdentificationHeaderProps {
@@ -8,10 +9,6 @@ export interface ComparisonIdentificationHeaderProps {
   unitName: string
   createdByName: string | null
   createdAt: string | null
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('pt-BR').format(new Date(value))
 }
 
 export function ComparisonIdentificationHeader({
@@ -41,7 +38,7 @@ export function ComparisonIdentificationHeader({
 
       <div className="flex flex-col items-end text-right text-xs text-ink-muted">
         <span>EQUALIZADO POR {createdByName ?? '—'}</span>
-        {createdAt && <span>{formatDate(createdAt)}</span>}
+        {createdAt && <span>{formatDate(new Date(createdAt))}</span>}
       </div>
     </div>
   )

@@ -268,7 +268,7 @@ export function ComparisonTable({
       </div>
 
       {combinedBestPrice !== null && (
-        <div className="rounded bg-gradient-to-r from-primary-dark to-primary px-4 py-3 text-base font-semibold text-on-primary">
+        <div className="rounded bg-primary px-4 py-3 text-base font-semibold text-on-primary">
           🏆 Melhor preço combinado: {currencyFormatter.format(combinedBestPrice)}
         </div>
       )}

@@ -170,7 +170,7 @@ describe('ComparisonTable', () => {
     render(<ComparisonTable {...baseProps()} />)
     const banner = screen.getByText(/melhor preço combinado/i).closest('div')
     expect(banner).toHaveTextContent('R$ 1.100,00')
-    expect(banner!.className).toContain('bg-gradient-to-r')
+    expect(banner!.className).toContain('bg-primary')
     expect(banner!.className).toContain('text-on-primary')
   })
 
