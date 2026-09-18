@@ -96,6 +96,16 @@ recolhe ela.
   comparar.") deixa de fazer sentido — sem nada expandido, a lista de cards
   recolhidos já comunica isso sozinha. Removido.
 
+**Correção 3 (pedida depois da segunda implementação):** o título do card,
+fechado ou aberto, passa a ser o próprio `ComparisonIdentificationHeader`
+(seção 2) — não um resumo à parte ("Nome da unidade / número · N cotações").
+O `<button>` de abrir/fechar envolve o `ComparisonIdentificationHeader`
+diretamente; a área expandida não repete o cabeçalho, só mostra a partir da
+toolbar de ações pra baixo. Como o cabeçalho já mostra o nome da unidade na
+coluna central, o `<h2>` redundante que existia na toolbar (repetindo o
+mesmo nome) saiu também. O badge "Aguardando aprovação" continua, fora do
+cabeçalho (informação que ele não cobre).
+
 ## 2. Cabeçalho de identificação (novo componente `ComparisonIdentificationHeader.tsx`)
 
 Só aparece no estado calculado, dentro da área `--color-bg` (não na faixa de
