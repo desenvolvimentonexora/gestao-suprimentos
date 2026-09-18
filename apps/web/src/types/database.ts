@@ -210,6 +210,7 @@ export type Database = {
           deleted_at: string | null
           financial_charge_requested: boolean
           id: string
+          notes: string | null
           payment_condition_note: string | null
           payment_proof_confirmed_at: string | null
           rejection_reason: string | null
@@ -229,6 +230,7 @@ export type Database = {
           deleted_at?: string | null
           financial_charge_requested?: boolean
           id?: string
+          notes?: string | null
           payment_condition_note?: string | null
           payment_proof_confirmed_at?: string | null
           rejection_reason?: string | null
@@ -248,6 +250,7 @@ export type Database = {
           deleted_at?: string | null
           financial_charge_requested?: boolean
           id?: string
+          notes?: string | null
           payment_condition_note?: string | null
           payment_proof_confirmed_at?: string | null
           rejection_reason?: string | null
