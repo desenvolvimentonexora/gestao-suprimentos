@@ -17,7 +17,9 @@ export function ComparisonNotes({ notes, onUpdateNotes }: ComparisonNotesProps) 
         id="comparison-notes"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => onUpdateNotes(draft)}
+        onBlur={() => {
+          if (draft !== (notes ?? '')) onUpdateNotes(draft)
+        }}
         rows={3}
         className="rounded border border-line bg-bg px-3 py-2 text-sm text-ink"
       />

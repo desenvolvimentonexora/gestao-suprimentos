@@ -242,6 +242,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                         isEditable={isEditable}
                         onWinnerChange={(quotationId) => {
                           if (!comparisonId) return
+                          if (!isEditable) return
                           const quotation = request.quotations.find((q) => q.quotationId === quotationId) ?? null
                           setComparisonWinner.mutate({
                             comparisonId,

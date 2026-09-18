@@ -108,10 +108,11 @@ export function ComparisonTable({
                       <button
                         type="button"
                         onClick={() => toggleExcluded(quotation.quotationId)}
+                        disabled={!isEditable}
                         aria-label={
                           isExcluded ? `Reincluir ${quotation.supplierName}` : `Excluir ${quotation.supplierName}`
                         }
-                        className="rounded px-1 text-ink-muted hover:bg-white/50"
+                        className="rounded px-1 text-ink-muted hover:bg-white/50 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         ×
                       </button>

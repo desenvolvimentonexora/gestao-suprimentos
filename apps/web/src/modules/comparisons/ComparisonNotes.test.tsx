@@ -24,4 +24,15 @@ describe('ComparisonNotes', () => {
 
     expect(onUpdateNotes).toHaveBeenCalledWith('Pedido de complemento')
   })
+
+  it('não chama onUpdateNotes ao sair do campo sem ter mudado o texto', async () => {
+    const user = userEvent.setup()
+    const onUpdateNotes = vi.fn()
+    render(<ComparisonNotes notes="Texto original" onUpdateNotes={onUpdateNotes} />)
+
+    await user.click(screen.getByLabelText('Observações'))
+    await user.tab()
+
+    expect(onUpdateNotes).not.toHaveBeenCalled()
+  })
 })

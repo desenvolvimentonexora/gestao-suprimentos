@@ -167,6 +167,11 @@ describe('ComparisonTable', () => {
     expect(onWinnerChange).toHaveBeenLastCalledWith('q1')
   })
 
+  it('desabilita o botão de excluir fornecedor quando isEditable é false', () => {
+    render(<ComparisonTable {...baseProps()} isEditable={false} />)
+    expect(screen.getByRole('button', { name: /excluir votorantim/i })).toBeDisabled()
+  })
+
   it('mostra a faixa de melhor preço combinado com o total do vencedor, com destaque forte do tema', () => {
     render(<ComparisonTable {...baseProps()} />)
     const banner = screen.getByText(/melhor preço combinado/i).closest('div')
