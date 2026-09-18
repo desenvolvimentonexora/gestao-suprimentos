@@ -1344,27 +1344,347 @@ git commit -m "feat(comparisons): estados setup/calculada, contadores de fila e 
 
 ---
 
-### Task 9: Manual verification
+### Task 9: Accordion interaction — replace the two-column layout
+
+**Files:**
+- Modify: `apps/web/src/modules/comparisons/ComparisonPage.tsx`
+
+Correction requested after the first round of implementation: instead of a `280px` sidebar list + a separate result panel next to it, each request in the list is itself the expand/collapse trigger — clicking it expands the identification header + toolbar + `SourceCards` + `ComparisonTable` + `ComparisonNotes` directly below that row, pushing the rows below it down. Only one request expanded at a time. No animation (explicit user choice — simplicity over visual effort at this prototype stage): the expanded block just mounts/unmounts, no CSS height transition.
+
+No test file exists for this page (same as Task 8) — verified manually in Task 10.
+
+- [ ] **Step 1: Replace the whole file**
+
+```typescript
+import { useEffect, useState } from 'react'
+import { ClipboardCheck, Pencil } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Badge, Button, Card, ComingSoonButton, Modal } from '../../components'
+import { useSettings } from '../../core/config'
+import { useUserPermissions } from '../../core/permissions'
+import { ComparisonIdentificationHeader } from './ComparisonIdentificationHeader'
+import { ComparisonNotes } from './ComparisonNotes'
+import { ComparisonTable } from './ComparisonTable'
+import { HistoryList } from './HistoryList'
+import { ImportQuotationPdfModal } from './ImportQuotationPdfModal'
+import { OrdersQueueModal } from './OrdersQueueModal'
+import { PendingApprovalsSection } from './PendingApprovalsSection'
+import { PendingReleaseSection } from './PendingReleaseSection'
+import { SourceCards } from './SourceCards'
+import {
+  useComparableRequests,
+  useGetOrCreateDraftComparison,
+  useHistory,
+  usePendingApprovals,
+  usePendingReleases,
+  useReleasedAwaitingOrder,
+  useSendToApproval,
+  useSetComparisonWinner,
+  useUpdateComparisonNotes,
+  useUpdateQuotationTerms,
+} from './queries'
+
+type QueueView = 'approvals' | 'releases' | 'orders' | 'history' | null
+
+export interface ComparisonPageProps {
+  tenantId: string
+  userId: string
+}
+
+function queueLabel(label: string, count: number | undefined): string {
+  return count === undefined ? label : `${label} (${count})`
+}
+
+export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
+  const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null)
+  const [createdComparisonIds, setCreatedComparisonIds] = useState<Record<string, string>>({})
+  const [importOpen, setImportOpen] = useState(false)
+  const [queueView, setQueueView] = useState<QueueView>(null)
+
+  const settingsQuery = useSettings(tenantId)
+  const requestsQuery = useComparableRequests()
+  const getOrCreateDraftComparison = useGetOrCreateDraftComparison(tenantId, userId)
+  const setComparisonWinner = useSetComparisonWinner(tenantId)
+  const updateQuotationTerms = useUpdateQuotationTerms()
+  const updateComparisonNotes = useUpdateComparisonNotes()
+  const sendToApproval = useSendToApproval()
+  const permissionsQuery = useUserPermissions(userId)
+  const canApprove = (permissionsQuery.data ?? []).includes('comparisons.approve')
+  const pendingApprovalsQuery = usePendingApprovals(canApprove)
+  const pendingReleasesQuery = usePendingReleases(canApprove)
+  const releasedAwaitingOrderQuery = useReleasedAwaitingOrder(true)
+  const historyQuery = useHistory(true)
+
+  const requests = requestsQuery.data ?? []
+  const expandedRequest = requests.find((request) => request.requestId === expandedRequestId) ?? null
+
+  useEffect(() => {
+    if (!expandedRequest || expandedRequest.comparisonId || createdComparisonIds[expandedRequest.requestId]) {
+      return
+    }
+    getOrCreateDraftComparison.mutate(expandedRequest.requestId, {
+      onSuccess: (comparisonId) =>
+        setCreatedComparisonIds((current) => ({ ...current, [expandedRequest.requestId]: comparisonId })),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só deve rodar quando a requisição expandida muda, não a cada render do mutation
+  }, [expandedRequest?.requestId, expandedRequest?.comparisonId])
+
+  return (
+    <div className="min-h-screen bg-bg">
+      <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
+        <div className="mx-auto max-w-6xl">
+          <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
+            ← Suprimentos
+          </Link>
+          <h1 className="mt-4 text-2xl font-semibold text-on-primary">Nova Equalização</h1>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {canApprove && (
+              <Button
+                variant={queueView === 'approvals' ? 'primary' : 'on-primary'}
+                onClick={() => setQueueView(queueView === 'approvals' ? null : 'approvals')}
+              >
+                {queueLabel('Fila de Aprovações', pendingApprovalsQuery.data?.length)}
+              </Button>
+            )}
+            {canApprove && (
+              <Button
+                variant={queueView === 'releases' ? 'primary' : 'on-primary'}
+                onClick={() => setQueueView(queueView === 'releases' ? null : 'releases')}
+              >
+                {queueLabel('Fila de Alterações', pendingReleasesQuery.data?.length)}
+              </Button>
+            )}
+            <Button
+              variant={queueView === 'orders' ? 'primary' : 'on-primary'}
+              onClick={() => setQueueView(queueView === 'orders' ? null : 'orders')}
+            >
+              {queueLabel('Fila de Pedidos', releasedAwaitingOrderQuery.data?.length)}
+            </Button>
+            <Button
+              variant={queueView === 'history' ? 'primary' : 'on-primary'}
+              onClick={() => setQueueView(queueView === 'history' ? null : 'history')}
+            >
+              {queueLabel('Histórico', historyQuery.data?.length)}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {canApprove && (
+        <Modal
+          isOpen={queueView === 'approvals'}
+          onClose={() => setQueueView(null)}
+          title="Fila de Aprovações"
+          icon={ClipboardCheck}
+          titleClassName="text-amber-800"
+        >
+          <PendingApprovalsSection />
+        </Modal>
+      )}
+
+      {canApprove && (
+        <Modal
+          isOpen={queueView === 'releases'}
+          onClose={() => setQueueView(null)}
+          title="Fila de Alterações"
+          icon={Pencil}
+          titleClassName="text-blue-700"
+        >
+          <PendingReleaseSection />
+        </Modal>
+      )}
+
+      <OrdersQueueModal isOpen={queueView === 'orders'} onClose={() => setQueueView(null)} tenantId={tenantId} />
+
+      <Modal isOpen={queueView === 'history'} onClose={() => setQueueView(null)} title="Histórico">
+        <HistoryList rows={historyQuery.data ?? []} />
+      </Modal>
+
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        {!expandedRequestId && (
+          <>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Card className="border-primary">
+                <p className="text-sm font-medium text-ink">Equalização Padrão</p>
+                <p className="text-xs text-ink-muted">Compare cotações item a item.</p>
+              </Card>
+              <Card className="opacity-50">
+                <p className="text-sm font-medium text-ink">Detalhada (Itens A)</p>
+                <p className="text-xs text-ink-muted">Em breve — depende de classificação por curva ABC.</p>
+              </Card>
+              <Card className="opacity-50">
+                <p className="text-sm font-medium text-ink">Pela Concorrência</p>
+                <p className="text-xs text-ink-muted">Em breve — módulo futuro do roadmap.</p>
+              </Card>
+            </div>
+
+            <label className="mt-3 flex items-center gap-2 text-sm text-ink-muted opacity-50">
+              <input type="checkbox" disabled />
+              Anexar foto do produto por fornecedor (Decoração)
+            </label>
+          </>
+        )}
+
+        <div className="mt-6 flex flex-col gap-3">
+          {requests.length === 0 ? (
+            <p className="text-sm text-ink-muted">Nenhuma requisição com cotações para comparar no momento.</p>
+          ) : (
+            requests.map((request) => {
+              const isExpanded = expandedRequestId === request.requestId
+              const comparisonId = request.comparisonId ?? createdComparisonIds[request.requestId] ?? null
+              const requestHasWinner = Boolean(request.winningQuotationId)
+
+              return (
+                <div key={request.requestId} className="rounded border border-line bg-surface">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExpandedRequestId((current) => (current === request.requestId ? null : request.requestId))
+                    }
+                    className="flex w-full flex-wrap items-center justify-between gap-2 px-4 py-3 text-left"
+                  >
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium text-ink">{request.unitName}</span>
+                      <span className="text-xs text-ink-muted">
+                        {request.externalRef ?? '—'} · {request.quotations.length} cotações
+                      </span>
+                    </div>
+                    {request.comparisonStatus === 'pending_approval' && <Badge>Aguardando aprovação</Badge>}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="flex flex-col gap-4 border-t border-line p-4">
+                      <ComparisonIdentificationHeader
+                        logoUrl={settingsQuery.data?.brand.logoUrl}
+                        brandName={settingsQuery.data?.brand.name}
+                        externalRef={request.externalRef}
+                        sequenceNumber={request.sequenceNumber}
+                        unitName={request.unitName}
+                        createdByName={request.createdByName}
+                        createdAt={request.createdAt}
+                      />
+
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h2 className="text-lg font-semibold text-ink">{request.unitName}</h2>
+                        <div className="flex flex-wrap gap-2">
+                          <ComingSoonButton label="Imprimir" variant="secondary" />
+                          <ComingSoonButton label="Excel" variant="secondary" />
+                          <ComingSoonButton label="Pedido" variant="secondary" />
+                          <ComingSoonButton label="Editar" variant="secondary" />
+                          <Button
+                            variant="accent"
+                            disabled={
+                              !(
+                                Boolean(comparisonId) &&
+                                requestHasWinner &&
+                                request.comparisonStatus !== 'pending_approval'
+                              )
+                            }
+                            onClick={() => {
+                              if (!comparisonId) return
+                              sendToApproval.mutate(comparisonId)
+                            }}
+                          >
+                            Enviar p/ Aprovação
+                          </Button>
+                          <ComingSoonButton label="Nova" variant="secondary" />
+                        </div>
+                      </div>
+
+                      <SourceCards
+                        itemCount={request.requestItems.length}
+                        quotations={request.quotations}
+                        onAddQuotation={() => setImportOpen(true)}
+                      />
+
+                      <ComparisonTable
+                        requestItems={request.requestItems}
+                        quotations={request.quotations}
+                        onWinnerChange={(quotationId) => {
+                          if (!comparisonId) return
+                          const quotation = request.quotations.find((q) => q.quotationId === quotationId) ?? null
+                          setComparisonWinner.mutate({
+                            comparisonId,
+                            quotation,
+                            requestItems: request.requestItems,
+                          })
+                        }}
+                        onUpdateQuotationTerms={(quotationId, terms) => {
+                          updateQuotationTerms.mutate({ quotationId, terms })
+                        }}
+                      />
+
+                      {comparisonId && (
+                        <ComparisonNotes
+                          key={comparisonId}
+                          notes={request.notes}
+                          onUpdateNotes={(notes) => updateComparisonNotes.mutate({ comparisonId, notes })}
+                        />
+                      )}
+
+                      {comparisonId && (
+                        <ImportQuotationPdfModal
+                          isOpen={importOpen}
+                          onClose={() => setImportOpen(false)}
+                          tenantId={tenantId}
+                          requestId={request.requestId}
+                          comparisonId={comparisonId}
+                          requestItems={request.requestItems}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+- [ ] **Step 2: Run lint, typecheck and tests**
+
+Run: `npm run lint && npm run typecheck && npm run test`
+Expected: all PASS.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add apps/web/src/modules/comparisons/ComparisonPage.tsx
+git commit -m "feat(comparisons): lista de requisições vira acordeão em vez de painel de duas colunas"
+```
+
+---
+
+### Task 10: Manual verification
 
 **Files:** none — manual check against the running app.
 
 - [ ] **Step 1: Setup state**
 
-Run `npm run dev`, go to Suprimentos → Equalização de Orçamentos. With no requisição selected: confirm the 3 type cards + the "Anexar foto" checkbox show, and the queue buttons at top show counts (e.g. "Fila de Pedidos (N)") if there's any data.
+Run `npm run dev`, go to Suprimentos → Equalização de Orçamentos. With nothing expanded: confirm the 3 type cards + the "Anexar foto" checkbox show, and the queue buttons at top show counts (e.g. "Fila de Pedidos (N)") if there's any data.
 
-- [ ] **Step 2: Calculada state**
+- [ ] **Step 2: Accordion expand/collapse**
 
-Select a requisição from the left list. Confirm: type cards + checkbox disappear; the identification header shows (logo if configured, "SOLICITAÇÃO Nº ...", "EQUALIZAÇÃO DE ORÇAMENTOS" + unit name, "EQUALIZADO POR ..." + date); the table shows Descrição/Und./Qtde. as separate columns and V.Unit./Total per supplier; footer rows read Frete → Total → Pagamento → Entrega; the melhor-preço banner is a solid degradê stripe; an Observações textarea appears below the table and persists text across a page reload (saves on blur).
+Click a requisição row. Confirm: type cards + checkbox disappear (nothing else is expanded); the identification header shows (logo if configured, "SOLICITAÇÃO Nº ...", "EQUALIZAÇÃO DE ORÇAMENTOS" + unit name, "EQUALIZADO POR ..." + date) directly below that row, not in a separate side panel; the table shows Descrição/Und./Qtde. as separate columns and V.Unit./Total per supplier; footer rows read Frete → Total → Pagamento → Entrega; the melhor-preço banner is a solid theme-colored stripe (no gradient); an Observações textarea appears below the table and persists text across a page reload (saves on blur). Click a second requisição row — the first one collapses, only the second is expanded. Click the second row's header again — it collapses, nothing expanded, type cards reappear.
 
-- [ ] **Step 3: Responsive check**
+- [ ] **Step 3: Notes don't leak between requests**
 
-Resize to ~360px width — the table should scroll horizontally (`overflow-x-auto`), not overflow the page; the identification header should wrap its three blocks instead of overflowing.
+Expand a requisição, type something in Observações, blur (don't wait for it to save if you don't want to keep it). Collapse it and expand a different requisição — its Observações field should show that different requisição's own saved text (or empty), never the first one's leftover draft.
+
+- [ ] **Step 4: Responsive check**
+
+Resize to ~360px width — the table should scroll horizontally (`overflow-x-auto`), not overflow the page; the identification header should wrap its three blocks instead of overflowing; the accordion row header should wrap instead of overflowing.
 
 ---
 
 ## Self-Review
 
-**Spec coverage:** section 1 (two states) → Task 8; section 2 (identification header) → Tasks 2, 3, 6, 8; section 3 (queue counts) → Task 8; section 4 (table restructure) → Task 7; section 5 (observações) → Tasks 1, 3, 4, 5, 8; section 6 (melhor preço banner) → Task 7.
+**Spec coverage:** section 1 (two states) → Task 8; section 1's accordion correction → Task 9; section 2 (identification header) → Tasks 2, 3, 6, 8, 9; section 3 (queue counts) → Task 8; section 4 (table restructure) → Task 7; section 5 (observações) → Tasks 1, 3, 4, 5, 8, 9; section 6 (melhor preço banner) → Task 7.
 
 **Placeholder scan:** no TBDs — every step has real code or an exact command with expected output.
 
