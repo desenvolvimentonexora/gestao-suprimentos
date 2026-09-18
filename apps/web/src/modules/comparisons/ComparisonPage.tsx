@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { ClipboardCheck, Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Badge, Button, Card, ComingSoonButton, Modal } from '../../components'
+import { useSettings } from '../../core/config'
 import { useUserPermissions } from '../../core/permissions'
+import { ComparisonIdentificationHeader } from './ComparisonIdentificationHeader'
+import { ComparisonNotes } from './ComparisonNotes'
 import { ComparisonTable } from './ComparisonTable'
 import { HistoryList } from './HistoryList'
 import { ImportQuotationPdfModal } from './ImportQuotationPdfModal'
@@ -14,8 +17,12 @@ import {
   useComparableRequests,
   useGetOrCreateDraftComparison,
   useHistory,
+  usePendingApprovals,
+  usePendingReleases,
+  useReleasedAwaitingOrder,
   useSendToApproval,
   useSetComparisonWinner,
+  useUpdateComparisonNotes,
   useUpdateQuotationTerms,
 } from './queries'
 
@@ -26,39 +33,43 @@ export interface ComparisonPageProps {
   userId: string
 }
 
+function queueLabel(label: string, count: number | undefined): string {
+  return count === undefined ? label : `${label} (${count})`
+}
+
 export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
-  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
+  const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null)
   const [createdComparisonIds, setCreatedComparisonIds] = useState<Record<string, string>>({})
   const [importOpen, setImportOpen] = useState(false)
   const [queueView, setQueueView] = useState<QueueView>(null)
 
+  const settingsQuery = useSettings(tenantId)
   const requestsQuery = useComparableRequests()
   const getOrCreateDraftComparison = useGetOrCreateDraftComparison(tenantId, userId)
   const setComparisonWinner = useSetComparisonWinner(tenantId)
   const updateQuotationTerms = useUpdateQuotationTerms()
+  const updateComparisonNotes = useUpdateComparisonNotes()
   const sendToApproval = useSendToApproval()
   const permissionsQuery = useUserPermissions(userId)
   const canApprove = (permissionsQuery.data ?? []).includes('comparisons.approve')
-  const historyQuery = useHistory(queueView === 'history')
+  const pendingApprovalsQuery = usePendingApprovals(canApprove)
+  const pendingReleasesQuery = usePendingReleases(canApprove)
+  const releasedAwaitingOrderQuery = useReleasedAwaitingOrder(true)
+  const historyQuery = useHistory(true)
 
   const requests = requestsQuery.data ?? []
-  const selectedRequest = requests.find((request) => request.requestId === selectedRequestId) ?? null
-  const resolvedComparisonId =
-    selectedRequest?.comparisonId ??
-    (selectedRequest ? (createdComparisonIds[selectedRequest.requestId] ?? null) : null)
+  const expandedRequest = requests.find((request) => request.requestId === expandedRequestId) ?? null
 
   useEffect(() => {
-    if (!selectedRequest || selectedRequest.comparisonId || createdComparisonIds[selectedRequest.requestId]) {
+    if (!expandedRequest || expandedRequest.comparisonId || createdComparisonIds[expandedRequest.requestId]) {
       return
     }
-    getOrCreateDraftComparison.mutate(selectedRequest.requestId, {
+    getOrCreateDraftComparison.mutate(expandedRequest.requestId, {
       onSuccess: (comparisonId) =>
-        setCreatedComparisonIds((current) => ({ ...current, [selectedRequest.requestId]: comparisonId })),
+        setCreatedComparisonIds((current) => ({ ...current, [expandedRequest.requestId]: comparisonId })),
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- só deve rodar quando a requisição selecionada muda, não a cada render do mutation
-  }, [selectedRequest?.requestId, selectedRequest?.comparisonId])
-
-  const hasWinner = Boolean(selectedRequest?.winningQuotationId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só deve rodar quando a requisição expandida muda, não a cada render do mutation
+  }, [expandedRequest?.requestId, expandedRequest?.comparisonId])
 
   return (
     <div className="min-h-screen bg-bg">
@@ -75,7 +86,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                 variant={queueView === 'approvals' ? 'primary' : 'on-primary'}
                 onClick={() => setQueueView(queueView === 'approvals' ? null : 'approvals')}
               >
-                Fila de Aprovações
+                {queueLabel('Fila de Aprovações', pendingApprovalsQuery.data?.length)}
               </Button>
             )}
             {canApprove && (
@@ -83,20 +94,20 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                 variant={queueView === 'releases' ? 'primary' : 'on-primary'}
                 onClick={() => setQueueView(queueView === 'releases' ? null : 'releases')}
               >
-                Fila de Alterações
+                {queueLabel('Fila de Alterações', pendingReleasesQuery.data?.length)}
               </Button>
             )}
             <Button
               variant={queueView === 'orders' ? 'primary' : 'on-primary'}
               onClick={() => setQueueView(queueView === 'orders' ? null : 'orders')}
             >
-              Fila de Pedidos
+              {queueLabel('Fila de Pedidos', releasedAwaitingOrderQuery.data?.length)}
             </Button>
             <Button
               variant={queueView === 'history' ? 'primary' : 'on-primary'}
               onClick={() => setQueueView(queueView === 'history' ? null : 'history')}
             >
-              Histórico
+              {queueLabel('Histórico', historyQuery.data?.length)}
             </Button>
           </div>
         </div>
@@ -133,126 +144,142 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
       </Modal>
 
       <div className="mx-auto max-w-6xl px-6 py-8">
-      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card className="border-primary">
-          <p className="text-sm font-medium text-ink">Equalização Padrão</p>
-          <p className="text-xs text-ink-muted">Compare cotações item a item.</p>
-        </Card>
-        <Card className="opacity-50">
-          <p className="text-sm font-medium text-ink">Detalhada (Itens A)</p>
-          <p className="text-xs text-ink-muted">Em breve — depende de classificação por curva ABC.</p>
-        </Card>
-        <Card className="opacity-50">
-          <p className="text-sm font-medium text-ink">Pela Concorrência</p>
-          <p className="text-xs text-ink-muted">Em breve — módulo futuro do roadmap.</p>
-        </Card>
-      </div>
-
-      <label className="mt-3 flex items-center gap-2 text-sm text-ink-muted opacity-50">
-        <input type="checkbox" disabled />
-        Anexar foto do produto por fornecedor (Decoração)
-      </label>
-
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
-        <div className="flex flex-col gap-2">
-          {requests.length === 0 ? (
-            <p className="text-sm text-ink-muted">
-              Nenhuma requisição com cotações para comparar no momento.
-            </p>
-          ) : (
-            requests.map((request) => (
-              <button
-                key={request.requestId}
-                type="button"
-                onClick={() => setSelectedRequestId(request.requestId)}
-                className={`flex flex-col items-start rounded border px-3 py-2 text-left text-sm ${
-                  selectedRequestId === request.requestId
-                    ? 'border-primary bg-bg'
-                    : 'border-line bg-surface hover:bg-bg'
-                }`}
-              >
-                <span className="font-medium text-ink">{request.unitName}</span>
-                <span className="text-xs text-ink-muted">
-                  {request.externalRef ?? '—'} · {request.quotations.length} cotações
-                </span>
-                {request.comparisonStatus === 'pending_approval' && (
-                  <Badge className="mt-1">Aguardando aprovação</Badge>
-                )}
-              </button>
-            ))
-          )}
-        </div>
-
-        <div>
-          {!selectedRequest ? (
-            <p className="text-sm text-ink-muted">Selecione uma requisição para comparar.</p>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-semibold text-ink">{selectedRequest.unitName}</h2>
-                <div className="flex flex-wrap gap-2">
-                  <ComingSoonButton label="Imprimir" variant="secondary" />
-                  <ComingSoonButton label="Excel" variant="secondary" />
-                  <ComingSoonButton label="Pedido" variant="secondary" />
-                  <ComingSoonButton label="Editar" variant="secondary" />
-                  <Button
-                    variant="accent"
-                    disabled={
-                      !(
-                        Boolean(resolvedComparisonId) &&
-                        hasWinner &&
-                        selectedRequest.comparisonStatus !== 'pending_approval'
-                      )
-                    }
-                    onClick={() => {
-                      if (!resolvedComparisonId) return
-                      sendToApproval.mutate(resolvedComparisonId)
-                    }}
-                  >
-                    Enviar p/ Aprovação
-                  </Button>
-                  <ComingSoonButton label="Nova" variant="secondary" />
-                </div>
-              </div>
-
-              <SourceCards
-                itemCount={selectedRequest.requestItems.length}
-                quotations={selectedRequest.quotations}
-                onAddQuotation={() => setImportOpen(true)}
-              />
-
-              <ComparisonTable
-                requestItems={selectedRequest.requestItems}
-                quotations={selectedRequest.quotations}
-                onWinnerChange={(quotationId) => {
-                  if (!resolvedComparisonId) return
-                  const quotation =
-                    selectedRequest.quotations.find((q) => q.quotationId === quotationId) ?? null
-                  setComparisonWinner.mutate({
-                    comparisonId: resolvedComparisonId,
-                    quotation,
-                    requestItems: selectedRequest.requestItems,
-                  })
-                }}
-                onUpdateQuotationTerms={(quotationId, terms) => {
-                  updateQuotationTerms.mutate({ quotationId, terms })
-                }}
-              />
-
-              {resolvedComparisonId && (
-                <ImportQuotationPdfModal
-                  isOpen={importOpen}
-                  onClose={() => setImportOpen(false)}
-                  tenantId={tenantId}
-                  requestId={selectedRequest.requestId}
-                  comparisonId={resolvedComparisonId}
-                  requestItems={selectedRequest.requestItems}
-                />
-              )}
+        {!expandedRequestId && (
+          <>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Card className="border-primary">
+                <p className="text-sm font-medium text-ink">Equalização Padrão</p>
+                <p className="text-xs text-ink-muted">Compare cotações item a item.</p>
+              </Card>
+              <Card className="opacity-50">
+                <p className="text-sm font-medium text-ink">Detalhada (Itens A)</p>
+                <p className="text-xs text-ink-muted">Em breve — depende de classificação por curva ABC.</p>
+              </Card>
+              <Card className="opacity-50">
+                <p className="text-sm font-medium text-ink">Pela Concorrência</p>
+                <p className="text-xs text-ink-muted">Em breve — módulo futuro do roadmap.</p>
+              </Card>
             </div>
+
+            <label className="mt-3 flex items-center gap-2 text-sm text-ink-muted opacity-50">
+              <input type="checkbox" disabled />
+              Anexar foto do produto por fornecedor (Decoração)
+            </label>
+          </>
+        )}
+
+        <div className="mt-6 flex flex-col gap-3">
+          {requests.length === 0 ? (
+            <p className="text-sm text-ink-muted">Nenhuma requisição com cotações para comparar no momento.</p>
+          ) : (
+            requests.map((request) => {
+              const isExpanded = expandedRequestId === request.requestId
+              const comparisonId = request.comparisonId ?? createdComparisonIds[request.requestId] ?? null
+              const requestHasWinner = Boolean(request.winningQuotationId)
+              const isEditable = request.comparisonStatus !== 'pending_approval'
+
+              return (
+                <div key={request.requestId} className="overflow-hidden rounded border border-line">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExpandedRequestId((current) => (current === request.requestId ? null : request.requestId))
+                    }
+                    className="block w-full text-left"
+                  >
+                    <ComparisonIdentificationHeader
+                      logoUrl={settingsQuery.data?.brand.logoUrl}
+                      brandName={settingsQuery.data?.brand.name}
+                      externalRef={request.externalRef}
+                      sequenceNumber={request.sequenceNumber}
+                      unitName={request.unitName}
+                      createdByName={request.createdByName}
+                      createdAt={request.createdAt}
+                    />
+                  </button>
+
+                  {request.comparisonStatus === 'pending_approval' && (
+                    <div className="bg-surface px-4 pb-2">
+                      <Badge>Aguardando aprovação</Badge>
+                    </div>
+                  )}
+
+                  {isExpanded && (
+                    <div className="flex flex-col gap-4 border-t border-line bg-bg p-4">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <ComingSoonButton label="Imprimir" variant="secondary" />
+                        <ComingSoonButton label="Excel" variant="secondary" />
+                        <ComingSoonButton label="Pedido" variant="secondary" />
+                        <ComingSoonButton label="Editar" variant="secondary" disabled={!isEditable} />
+                        <Button
+                          variant="accent"
+                          disabled={
+                            !(
+                              Boolean(comparisonId) &&
+                              requestHasWinner &&
+                              request.comparisonStatus !== 'pending_approval'
+                            )
+                          }
+                          onClick={() => {
+                            if (!comparisonId) return
+                            sendToApproval.mutate(comparisonId)
+                          }}
+                        >
+                          Enviar p/ Aprovação
+                        </Button>
+                        <ComingSoonButton label="Nova" variant="secondary" />
+                      </div>
+
+                      <SourceCards
+                        itemCount={request.requestItems.length}
+                        quotations={request.quotations}
+                        onAddQuotation={() => setImportOpen(true)}
+                      />
+
+                      <ComparisonTable
+                        requestItems={request.requestItems}
+                        quotations={request.quotations}
+                        isEditable={isEditable}
+                        onWinnerChange={(quotationId) => {
+                          if (!comparisonId) return
+                          if (!isEditable) return
+                          const quotation = request.quotations.find((q) => q.quotationId === quotationId) ?? null
+                          setComparisonWinner.mutate({
+                            comparisonId,
+                            quotation,
+                            requestItems: request.requestItems,
+                          })
+                        }}
+                        onUpdateQuotationTerms={(quotationId, terms) => {
+                          updateQuotationTerms.mutate({ quotationId, terms })
+                        }}
+                      />
+
+                      {comparisonId && (
+                        <ComparisonNotes
+                          key={comparisonId}
+                          notes={request.notes}
+                          onUpdateNotes={(notes) => updateComparisonNotes.mutate({ comparisonId, notes })}
+                        />
+                      )}
+
+                      {comparisonId && (
+                        <ImportQuotationPdfModal
+                          isOpen={importOpen}
+                          onClose={() => setImportOpen(false)}
+                          tenantId={tenantId}
+                          requestId={request.requestId}
+                          comparisonId={comparisonId}
+                          requestItems={request.requestItems}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })
           )}
         </div>
-      </div>
       </div>
     </div>
   )

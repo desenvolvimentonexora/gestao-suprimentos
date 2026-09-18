@@ -21,4 +21,9 @@ describe('ComingSoonButton', () => {
     render(<ComingSoonButton label="Copiar" className="text-slate-500" />)
     expect(screen.getByRole('button', { name: 'Copiar' }).className).toContain('text-slate-500')
   })
+
+  it('fica desabilitado quando disabled é passado', () => {
+    render(<ComingSoonButton label="Editar" disabled />)
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeDisabled()
+  })
 })

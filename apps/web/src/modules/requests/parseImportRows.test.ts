@@ -7,6 +7,7 @@ const mapping: ImportColumnMapping = {
   material: 'Insumo',
   materialCode: '',
   quantity: 'Qtd',
+  unitOfMeasure: '',
   neededBy: 'Prazo',
   externalRef: 'SOL',
 }
@@ -101,5 +102,20 @@ describe('parseImportRows', () => {
     })
 
     expect(receivedArgs).toEqual({ name: 'Cimento', code: '' })
+  })
+
+  it('lê a unidade de medida da coluna mapeada, quando mapeada', () => {
+    const mappingWithUnit: ImportColumnMapping = { ...mapping, unitOfMeasure: 'Und' }
+    const rows = [{ Obra: 'UP Graça', Insumo: 'Cimento', Qtd: '10', Und: 'sc' }]
+    const result = parseImportRows(rows, mappingWithUnit, lookup({ 'up graça': 'u1' }, { cimento: 'm1' }))
+
+    expect(result.successes).toEqual([
+      {
+        unitId: 'u1',
+        neededBy: '',
+        externalRef: '',
+        items: [{ materialId: 'm1', quantity: 10, unitOfMeasure: 'sc' }],
+      },
+    ])
   })
 })

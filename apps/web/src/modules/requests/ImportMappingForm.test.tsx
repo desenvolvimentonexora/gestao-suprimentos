@@ -22,6 +22,7 @@ describe('ImportMappingForm', () => {
           material: 'Insumo',
           materialCode: '',
           quantity: 'Qtd',
+          unitOfMeasure: '',
           neededBy: 'Prazo',
           externalRef: 'SOL',
         }}
@@ -36,6 +37,11 @@ describe('ImportMappingForm', () => {
   it('mostra o campo opcional de código do insumo', () => {
     render(<ImportMappingForm columns={columns} onConfirm={vi.fn()} onCancel={vi.fn()} />)
     expect(screen.getByLabelText('Código do insumo')).toBeInTheDocument()
+  })
+
+  it('mostra o campo opcional de unidade de medida', () => {
+    render(<ImportMappingForm columns={columns} onConfirm={vi.fn()} onCancel={vi.fn()} />)
+    expect(screen.getByLabelText('Unidade de medida')).toBeInTheDocument()
   })
 
   it('exige que os campos obrigatórios sejam mapeados', async () => {
@@ -64,6 +70,7 @@ describe('ImportMappingForm', () => {
       material: 'Insumo',
       materialCode: '',
       quantity: 'Qtd',
+      unitOfMeasure: '',
       neededBy: '',
       externalRef: '',
     })

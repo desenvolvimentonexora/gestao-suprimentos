@@ -26,6 +26,7 @@ export function parseImportRows(
     const quantityRaw = readCell(row, mapping.quantity)
     const neededBy = readCell(row, mapping.neededBy)
     const externalRef = readCell(row, mapping.externalRef)
+    const unitOfMeasure = readCell(row, mapping.unitOfMeasure)
 
     const unitId = lookup.findUnitId(unitName)
     if (!unitId) {
@@ -49,7 +50,7 @@ export function parseImportRows(
       unitId,
       neededBy,
       externalRef,
-      items: [{ materialId, quantity, unitOfMeasure: '' }],
+      items: [{ materialId, quantity, unitOfMeasure }],
     })
   })
 

@@ -78,6 +78,7 @@ export interface ImportColumnMapping {
   material: string
   materialCode: string
   quantity: string
+  unitOfMeasure: string
   neededBy: string
   externalRef: string
 }

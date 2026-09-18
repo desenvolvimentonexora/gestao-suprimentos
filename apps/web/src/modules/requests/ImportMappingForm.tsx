@@ -9,6 +9,7 @@ const mappingSchema = z.object({
   material: z.string().min(1, 'Selecione a coluna correspondente.'),
   materialCode: z.string(),
   quantity: z.string().min(1, 'Selecione a coluna correspondente.'),
+  unitOfMeasure: z.string(),
   neededBy: z.string(),
   externalRef: z.string(),
 })
@@ -25,6 +26,7 @@ const FIELDS: { name: keyof ImportColumnMapping; label: string; required: boolea
   { name: 'material', label: 'Material', required: true },
   { name: 'materialCode', label: 'Código do insumo', required: false },
   { name: 'quantity', label: 'Quantidade', required: true },
+  { name: 'unitOfMeasure', label: 'Unidade de medida', required: false },
   { name: 'neededBy', label: 'Prazo', required: false },
   { name: 'externalRef', label: 'N° externo', required: false },
 ]
@@ -41,6 +43,7 @@ export function ImportMappingForm({ columns, initialMapping, onConfirm, onCancel
       material: '',
       materialCode: '',
       quantity: '',
+      unitOfMeasure: '',
       neededBy: '',
       externalRef: '',
     },
