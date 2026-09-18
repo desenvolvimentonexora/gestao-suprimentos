@@ -71,9 +71,30 @@ no estado calculado se refere à barra de botões que já existe hoje ao lado
 do nome da unidade (Imprimir/Excel/.../Nova). Se a intenção era outra,
 ajustar antes da implementação.
 
-A lista de requisições à esquerda (coluna `280px`) continua visível em
-ambos os estados — trocar de requisição muda `selectedRequestId` e
-recalcula `isCalculated` para a nova seleção.
+**Correção 2 (pedida depois da primeira implementação):** o layout de duas
+colunas lado a lado (lista `280px` à esquerda + painel de resultado à
+direita) não é o padrão certo. A interação correta é **acordeão**: cada
+requisição da lista é ela mesma o gatilho — ao clicar, o próprio card se
+expande verticalmente no lugar (empurrando os cards abaixo), revelando
+cabeçalho de identificação + toolbar + `SourceCards` + `ComparisonTable` +
+Observações dentro da área expandida, em vez de abrir um painel separado ao
+lado. Só uma requisição fica expandida por vez — expandir uma recolhe
+qualquer outra que estivesse aberta; clicar de novo na que já está expandida
+recolhe ela.
+
+- Estado local único `expandedRequestId: string | null` (substitui o antigo
+  `selectedRequestId` — mesmo papel, nome mais fiel ao comportamento).
+- Sem biblioteca de UI pronta (regra 2 do CLAUDE.md). Sem animação de altura
+  — a área expandida só aparece/desaparece (`{isExpanded && (...)}`), sem
+  transição CSS. Decisão do usuário: simplicidade em vez de esforço visual
+  extra numa fase de protótipo.
+- O bloco de setup (3 cards de tipo + checkbox) muda sua condição de
+  `!selectedRequest` para `!expandedRequestId` — mesmo comportamento,
+  variável renomeada.
+- Efeito colateral bom: como cada linha da lista já é author da própria
+  área expandida, o "prompt" antigo ("Selecione uma requisição para
+  comparar.") deixa de fazer sentido — sem nada expandido, a lista de cards
+  recolhidos já comunica isso sozinha. Removido.
 
 ## 2. Cabeçalho de identificação (novo componente `ComparisonIdentificationHeader.tsx`)
 
