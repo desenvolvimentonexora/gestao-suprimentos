@@ -33,9 +33,13 @@ export interface ComparableRequestRow {
   requestId: string
   unitName: string
   externalRef: string | null
+  sequenceNumber: number | null
   comparisonId: string | null
   comparisonStatus: ComparisonStatus | null
   winningQuotationId: string | null
+  createdByName: string | null
+  createdAt: string | null
+  notes: string | null
   requestItems: ComparisonRequestItemRow[]
   quotations: ComparisonQuotationRow[]
 }
