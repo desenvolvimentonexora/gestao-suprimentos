@@ -178,60 +178,55 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
               const requestHasWinner = Boolean(request.winningQuotationId)
 
               return (
-                <div key={request.requestId} className="rounded border border-line bg-surface">
+                <div key={request.requestId} className="overflow-hidden rounded border border-line">
                   <button
                     type="button"
                     onClick={() =>
                       setExpandedRequestId((current) => (current === request.requestId ? null : request.requestId))
                     }
-                    className="flex w-full flex-wrap items-center justify-between gap-2 px-4 py-3 text-left"
+                    className="block w-full text-left"
                   >
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium text-ink">{request.unitName}</span>
-                      <span className="text-xs text-ink-muted">
-                        {request.externalRef ?? '—'} · {request.quotations.length} cotações
-                      </span>
-                    </div>
-                    {request.comparisonStatus === 'pending_approval' && <Badge>Aguardando aprovação</Badge>}
+                    <ComparisonIdentificationHeader
+                      logoUrl={settingsQuery.data?.brand.logoUrl}
+                      brandName={settingsQuery.data?.brand.name}
+                      externalRef={request.externalRef}
+                      sequenceNumber={request.sequenceNumber}
+                      unitName={request.unitName}
+                      createdByName={request.createdByName}
+                      createdAt={request.createdAt}
+                    />
                   </button>
 
-                  {isExpanded && (
-                    <div className="flex flex-col gap-4 border-t border-line p-4">
-                      <ComparisonIdentificationHeader
-                        logoUrl={settingsQuery.data?.brand.logoUrl}
-                        brandName={settingsQuery.data?.brand.name}
-                        externalRef={request.externalRef}
-                        sequenceNumber={request.sequenceNumber}
-                        unitName={request.unitName}
-                        createdByName={request.createdByName}
-                        createdAt={request.createdAt}
-                      />
+                  {request.comparisonStatus === 'pending_approval' && (
+                    <div className="bg-surface px-4 pb-2">
+                      <Badge>Aguardando aprovação</Badge>
+                    </div>
+                  )}
 
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h2 className="text-lg font-semibold text-ink">{request.unitName}</h2>
-                        <div className="flex flex-wrap gap-2">
-                          <ComingSoonButton label="Imprimir" variant="secondary" />
-                          <ComingSoonButton label="Excel" variant="secondary" />
-                          <ComingSoonButton label="Pedido" variant="secondary" />
-                          <ComingSoonButton label="Editar" variant="secondary" />
-                          <Button
-                            variant="accent"
-                            disabled={
-                              !(
-                                Boolean(comparisonId) &&
-                                requestHasWinner &&
-                                request.comparisonStatus !== 'pending_approval'
-                              )
-                            }
-                            onClick={() => {
-                              if (!comparisonId) return
-                              sendToApproval.mutate(comparisonId)
-                            }}
-                          >
-                            Enviar p/ Aprovação
-                          </Button>
-                          <ComingSoonButton label="Nova" variant="secondary" />
-                        </div>
+                  {isExpanded && (
+                    <div className="flex flex-col gap-4 border-t border-line bg-bg p-4">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <ComingSoonButton label="Imprimir" variant="secondary" />
+                        <ComingSoonButton label="Excel" variant="secondary" />
+                        <ComingSoonButton label="Pedido" variant="secondary" />
+                        <ComingSoonButton label="Editar" variant="secondary" />
+                        <Button
+                          variant="accent"
+                          disabled={
+                            !(
+                              Boolean(comparisonId) &&
+                              requestHasWinner &&
+                              request.comparisonStatus !== 'pending_approval'
+                            )
+                          }
+                          onClick={() => {
+                            if (!comparisonId) return
+                            sendToApproval.mutate(comparisonId)
+                          }}
+                        >
+                          Enviar p/ Aprovação
+                        </Button>
+                        <ComingSoonButton label="Nova" variant="secondary" />
                       </div>
 
                       <SourceCards
