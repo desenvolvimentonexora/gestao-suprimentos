@@ -39,6 +39,7 @@ function baseProps() {
     quotations: [sika, votorantim],
     onWinnerChange: vi.fn(),
     onUpdateQuotationTerms: vi.fn(),
+    isEditable: true,
   }
 }
 
@@ -202,5 +203,36 @@ describe('ComparisonTable', () => {
       paymentTerms: '30 dias',
       deliveryDays: 5,
     })
+  })
+
+  it('mostra Frete, Pagamento e Entrega como texto (sem input) quando isEditable é false', () => {
+    const withValues = { ...sika, freight: 50, paymentTerms: '30 dias', deliveryDays: 5 }
+    render(<ComparisonTable {...baseProps()} quotations={[withValues]} isEditable={false} />)
+
+    expect(screen.queryByLabelText(/frete sika/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/pagamento sika/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/entrega sika/i)).not.toBeInTheDocument()
+
+    expect(screen.getByText('R$ 50,00')).toBeInTheDocument()
+    expect(screen.getByText('30 dias')).toBeInTheDocument()
+    const entregaRow = screen.getByText('Entrega (dias)').closest('tr')
+    expect(entregaRow).not.toBeNull()
+    expect(within(entregaRow!).getByText('5')).toBeInTheDocument()
+  })
+
+  it('mostra travessão no texto de Frete/Pagamento/Entrega quando não isEditable e não há valor', () => {
+    const empty = { ...sika, freight: null, paymentTerms: null, deliveryDays: null }
+    render(<ComparisonTable {...baseProps()} quotations={[empty]} isEditable={false} />)
+
+    const row = screen.getByText('Pagamento').closest('tr')
+    expect(row).not.toBeNull()
+    expect(within(row!).getByText('—')).toBeInTheDocument()
+  })
+
+  it('continua mostrando os inputs de Frete/Pagamento/Entrega quando isEditable é true (padrão)', () => {
+    render(<ComparisonTable {...baseProps()} />)
+    expect(screen.getByLabelText(/frete sika/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/pagamento sika/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/entrega sika/i)).toBeInTheDocument()
   })
 })

@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
+import { Flag } from 'lucide-react'
 import { Card } from '../../components'
 import { getCheapestQuotationId, getQuotationTotal } from './combinedPrice'
 import { getSupplierColor } from './supplierColor'
@@ -15,6 +16,7 @@ export interface ComparisonTableProps {
   quotations: ComparisonQuotationRow[]
   onWinnerChange: (quotationId: string | null) => void
   onUpdateQuotationTerms: (quotationId: string, terms: QuotationTerms) => void
+  isEditable: boolean
 }
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -31,6 +33,7 @@ export function ComparisonTable({
   quotations,
   onWinnerChange,
   onUpdateQuotationTerms,
+  isEditable,
 }: ComparisonTableProps) {
   const [excludedQuotationIds, setExcludedQuotationIds] = useState<string[]>([])
 
@@ -98,7 +101,10 @@ export function ComparisonTable({
                     className={`${COLUMN_DIVIDER} px-3 py-2 font-medium ${isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.header}`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span>{quotation.supplierName}</span>
+                      <span className="flex items-center gap-1">
+                        <Flag size={14} className="text-primary" aria-hidden="true" />
+                        {quotation.supplierName}
+                      </span>
                       <button
                         type="button"
                         onClick={() => toggleExcluded(quotation.quotationId)}
@@ -114,7 +120,10 @@ export function ComparisonTable({
                 )
               })}
               <th rowSpan={2} className={`${COLUMN_DIVIDER} py-2 px-3 font-medium`}>
-                Melhor Forn.
+                <span className="flex items-center gap-1">
+                  <Flag size={14} className="text-primary" aria-hidden="true" />
+                  Melhor Forn.
+                </span>
               </th>
             </tr>
             <tr className="border-b border-line text-ink-muted">
@@ -177,19 +186,25 @@ export function ComparisonTable({
               </td>
               {quotations.map((quotation) => (
                 <td key={quotation.quotationId} colSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2`}>
-                  <input
-                    type="number"
-                    defaultValue={quotation.freight ?? ''}
-                    aria-label={`Frete ${quotation.supplierName}`}
-                    className="w-24 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
-                    onBlur={(e) =>
-                      onUpdateQuotationTerms(quotation.quotationId, {
-                        freight: parseNumberInput(e.target.value),
-                        paymentTerms: quotation.paymentTerms,
-                        deliveryDays: quotation.deliveryDays,
-                      })
-                    }
-                  />
+                  {isEditable ? (
+                    <input
+                      type="number"
+                      defaultValue={quotation.freight ?? ''}
+                      aria-label={`Frete ${quotation.supplierName}`}
+                      className="w-24 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+                      onBlur={(e) =>
+                        onUpdateQuotationTerms(quotation.quotationId, {
+                          freight: parseNumberInput(e.target.value),
+                          paymentTerms: quotation.paymentTerms,
+                          deliveryDays: quotation.deliveryDays,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span className="text-sm text-ink">
+                      {quotation.freight != null ? currencyFormatter.format(quotation.freight) : '—'}
+                    </span>
+                  )}
                 </td>
               ))}
               <td className={COLUMN_DIVIDER} />
@@ -222,19 +237,23 @@ export function ComparisonTable({
               </td>
               {quotations.map((quotation) => (
                 <td key={quotation.quotationId} colSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2`}>
-                  <input
-                    type="text"
-                    defaultValue={quotation.paymentTerms ?? ''}
-                    aria-label={`Pagamento ${quotation.supplierName}`}
-                    className="w-32 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
-                    onBlur={(e) =>
-                      onUpdateQuotationTerms(quotation.quotationId, {
-                        freight: quotation.freight,
-                        paymentTerms: e.target.value.trim() === '' ? null : e.target.value,
-                        deliveryDays: quotation.deliveryDays,
-                      })
-                    }
-                  />
+                  {isEditable ? (
+                    <input
+                      type="text"
+                      defaultValue={quotation.paymentTerms ?? ''}
+                      aria-label={`Pagamento ${quotation.supplierName}`}
+                      className="w-32 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+                      onBlur={(e) =>
+                        onUpdateQuotationTerms(quotation.quotationId, {
+                          freight: quotation.freight,
+                          paymentTerms: e.target.value.trim() === '' ? null : e.target.value,
+                          deliveryDays: quotation.deliveryDays,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span className="text-sm text-ink">{quotation.paymentTerms || '—'}</span>
+                  )}
                 </td>
               ))}
               <td className={COLUMN_DIVIDER} />
@@ -246,19 +265,25 @@ export function ComparisonTable({
               </td>
               {quotations.map((quotation) => (
                 <td key={quotation.quotationId} colSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2`}>
-                  <input
-                    type="number"
-                    defaultValue={quotation.deliveryDays ?? ''}
-                    aria-label={`Entrega ${quotation.supplierName}`}
-                    className="w-20 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
-                    onBlur={(e) =>
-                      onUpdateQuotationTerms(quotation.quotationId, {
-                        freight: quotation.freight,
-                        paymentTerms: quotation.paymentTerms,
-                        deliveryDays: parseNumberInput(e.target.value),
-                      })
-                    }
-                  />
+                  {isEditable ? (
+                    <input
+                      type="number"
+                      defaultValue={quotation.deliveryDays ?? ''}
+                      aria-label={`Entrega ${quotation.supplierName}`}
+                      className="w-20 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+                      onBlur={(e) =>
+                        onUpdateQuotationTerms(quotation.quotationId, {
+                          freight: quotation.freight,
+                          paymentTerms: quotation.paymentTerms,
+                          deliveryDays: parseNumberInput(e.target.value),
+                        })
+                      }
+                    />
+                  ) : (
+                    <span className="text-sm text-ink">
+                      {quotation.deliveryDays != null ? quotation.deliveryDays : '—'}
+                    </span>
+                  )}
                 </td>
               ))}
               <td className={COLUMN_DIVIDER} />

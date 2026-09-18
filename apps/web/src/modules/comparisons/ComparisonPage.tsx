@@ -176,6 +176,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
               const isExpanded = expandedRequestId === request.requestId
               const comparisonId = request.comparisonId ?? createdComparisonIds[request.requestId] ?? null
               const requestHasWinner = Boolean(request.winningQuotationId)
+              const isEditable = request.comparisonStatus !== 'pending_approval'
 
               return (
                 <div key={request.requestId} className="overflow-hidden rounded border border-line">
@@ -209,7 +210,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                         <ComingSoonButton label="Imprimir" variant="secondary" />
                         <ComingSoonButton label="Excel" variant="secondary" />
                         <ComingSoonButton label="Pedido" variant="secondary" />
-                        <ComingSoonButton label="Editar" variant="secondary" />
+                        <ComingSoonButton label="Editar" variant="secondary" disabled={!isEditable} />
                         <Button
                           variant="accent"
                           disabled={
@@ -238,6 +239,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                       <ComparisonTable
                         requestItems={request.requestItems}
                         quotations={request.quotations}
+                        isEditable={isEditable}
                         onWinnerChange={(quotationId) => {
                           if (!comparisonId) return
                           const quotation = request.quotations.find((q) => q.quotationId === quotationId) ?? null
