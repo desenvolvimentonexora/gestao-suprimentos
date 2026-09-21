@@ -13,7 +13,7 @@ function formatDateOnly(isoDate: string): string {
   return new Intl.DateTimeFormat('pt-BR').format(new Date(`${isoDate}T00:00:00`))
 }
 
-function daysLate(expectedDeliveryDate: string, today: Date): number {
+export function daysLate(expectedDeliveryDate: string, today: Date): number {
   const expected = new Date(`${expectedDeliveryDate}T00:00:00`)
   const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   return Math.floor((todayOnly.getTime() - expected.getTime()) / (1000 * 60 * 60 * 24))

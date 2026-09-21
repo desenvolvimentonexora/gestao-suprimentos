@@ -6,9 +6,26 @@ import { buildCalendarGrid } from './buildCalendarGrid'
 import { buildOverdueExportRows, type OverdueExportRow } from './buildOverdueExportRows'
 import { computeDeliveryStats } from './computeDeliveryStats'
 import { DeliveryCalendarGrid } from './DeliveryCalendarGrid'
+import { DeliveryDayOrdersModal } from './DeliveryDayOrdersModal'
+import { DeliveryOrderDetailModal } from './DeliveryOrderDetailModal'
+import { DeliveryOrderViewModal } from './DeliveryOrderViewModal'
+import { DeliveryRescheduleModal } from './DeliveryRescheduleModal'
 import { filterDeliveryOrders } from './filterDeliveryOrders'
 import { groupOrdersByDate } from './groupOrdersByDate'
-import { useActiveDeliveryOrders, useUnitOptions } from './queries'
+import {
+  useActiveDeliveryOrders,
+  useDeliveryOrderDetail,
+  useMarkOrderDelivered,
+  useMarkOrderItemDelivered,
+  useRescheduleDelivery,
+  useUnitOptions,
+  useUpdateDeliveryNotes,
+} from './queries'
+
+export interface DeliveryCalendarPageProps {
+  tenantId: string
+  userId: string
+}
 
 const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
 
@@ -23,14 +40,23 @@ function exportOverdueToExcel(rows: OverdueExportRow[]) {
   XLSX.writeFile(workbook, 'pedidos-atrasados.xlsx')
 }
 
-export function DeliveryCalendarPage() {
+export function DeliveryCalendarPage({ tenantId, userId }: DeliveryCalendarPageProps) {
   const today = useMemo(() => new Date(), [])
   const [visibleMonth, setVisibleMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
   const [search, setSearch] = useState('')
   const [unitFilter, setUnitFilter] = useState<string | null>(null)
+  const [dayListIsoDate, setDayListIsoDate] = useState<string | null>(null)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [isViewOpen, setIsViewOpen] = useState(false)
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false)
 
   const ordersQuery = useActiveDeliveryOrders()
   const unitsQuery = useUnitOptions()
+  const selectedOrderDetailQuery = useDeliveryOrderDetail(selectedOrderId)
+  const markDelivered = useMarkOrderDelivered(selectedOrderId ?? '')
+  const markItemDelivered = useMarkOrderItemDelivered(selectedOrderId ?? '')
+  const updateNotes = useUpdateDeliveryNotes(selectedOrderId ?? '')
+  const rescheduleDelivery = useRescheduleDelivery(selectedOrderId ?? '')
 
   const allOrders = ordersQuery.data ?? []
   const units = unitsQuery.data ?? []
@@ -39,6 +65,7 @@ export function DeliveryCalendarPage() {
   const weeks = buildCalendarGrid(visibleMonth.getFullYear(), visibleMonth.getMonth())
   const ordersByDate = groupOrdersByDate(filteredOrders)
   const monthLabel = capitalizeFirst(MONTH_LABEL_FORMATTER.format(visibleMonth))
+  const dayListOrders = dayListIsoDate ? (ordersByDate.get(dayListIsoDate) ?? []) : []
 
   function goToPreviousMonth() {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))
@@ -56,9 +83,31 @@ export function DeliveryCalendarPage() {
     exportOverdueToExcel(buildOverdueExportRows(filteredOrders, today))
   }
 
-  function handleShowMore(isoDate: string) {
-    // Ação completa (abrir a lista do dia) fica pra Etapa 2, junto dos modais.
-    console.log('Ver mais pedidos do dia', isoDate)
+  function handleCloseDetail() {
+    setSelectedOrderId(null)
+    setIsViewOpen(false)
+    setIsRescheduleOpen(false)
+  }
+
+  function handleSelectOrderFromDayList(orderId: string) {
+    setSelectedOrderId(orderId)
+    setDayListIsoDate(null)
+  }
+
+  function handleConfirmReschedule(values: { newDate: string; reason: string }) {
+    const order = selectedOrderDetailQuery.data
+    if (!order) return
+    rescheduleDelivery.mutate(
+      {
+        tenantId,
+        orderId: order.id,
+        previousDate: order.expectedDeliveryDate,
+        newDate: values.newDate,
+        reason: values.reason,
+        createdBy: userId,
+      },
+      { onSuccess: () => setIsRescheduleOpen(false) },
+    )
   }
 
   return (
@@ -148,9 +197,55 @@ export function DeliveryCalendarPage() {
         </div>
 
         <div className="mt-4">
-          <DeliveryCalendarGrid weeks={weeks} ordersByDate={ordersByDate} today={today} onShowMore={handleShowMore} />
+          <DeliveryCalendarGrid
+            weeks={weeks}
+            ordersByDate={ordersByDate}
+            today={today}
+            onShowMore={setDayListIsoDate}
+            onSelectOrder={setSelectedOrderId}
+          />
         </div>
       </div>
+
+      <DeliveryDayOrdersModal
+        isOpen={Boolean(dayListIsoDate)}
+        isoDate={dayListIsoDate}
+        orders={dayListOrders}
+        today={today}
+        onClose={() => setDayListIsoDate(null)}
+        onSelectOrder={handleSelectOrderFromDayList}
+      />
+
+      <DeliveryOrderDetailModal
+        key={selectedOrderId ?? 'none'}
+        isOpen={Boolean(selectedOrderId)}
+        order={selectedOrderDetailQuery.data}
+        today={today}
+        onClose={handleCloseDetail}
+        onViewOrder={() => setIsViewOpen(true)}
+        onReschedule={() => setIsRescheduleOpen(true)}
+        onMarkDelivered={() => markDelivered.mutate()}
+        isMarkingDelivered={markDelivered.isPending}
+        onToggleItemDelivered={(orderItemId, delivered) => markItemDelivered.mutate({ orderItemId, delivered })}
+        isTogglingItem={markItemDelivered.isPending}
+        onSaveNotes={(notes) => updateNotes.mutate(notes)}
+        isSavingNotes={updateNotes.isPending}
+      />
+
+      <DeliveryOrderViewModal
+        isOpen={isViewOpen}
+        order={selectedOrderDetailQuery.data}
+        onClose={() => setIsViewOpen(false)}
+      />
+
+      <DeliveryRescheduleModal
+        key={selectedOrderId ?? 'none'}
+        isOpen={isRescheduleOpen}
+        order={selectedOrderDetailQuery.data}
+        isSaving={rescheduleDelivery.isPending}
+        onClose={() => setIsRescheduleOpen(false)}
+        onConfirm={handleConfirmReschedule}
+      />
     </div>
   )
 }

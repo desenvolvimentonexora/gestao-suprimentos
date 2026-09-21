@@ -78,4 +78,26 @@ describe('Modal', () => {
     )
     expect(screen.getByText('Título').className).toContain('text-ink')
   })
+
+  it('com headerClassName, pinta a faixa inteira do título de ponta a ponta', () => {
+    render(
+      <Modal isOpen onClose={vi.fn()} title="Pedido PC-100" headerClassName="bg-status-atrasado/10">
+        <p>Conteúdo</p>
+      </Modal>,
+    )
+    const heading = screen.getByText('Pedido PC-100')
+    const headerRow = heading.parentElement
+    expect(headerRow?.className).toContain('bg-status-atrasado/10')
+    expect(headerRow?.className).toContain('rounded-t-xl')
+  })
+
+  it('sem headerClassName, a faixa do título não ganha fundo nem cantos arredondados extras', () => {
+    render(
+      <Modal isOpen onClose={vi.fn()} title="Título">
+        <p>Conteúdo</p>
+      </Modal>,
+    )
+    const headerRow = screen.getByText('Título').parentElement
+    expect(headerRow?.className).not.toContain('rounded-t-xl')
+  })
 })

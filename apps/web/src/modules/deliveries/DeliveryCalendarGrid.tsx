@@ -16,9 +16,10 @@ export interface DeliveryCalendarGridProps {
   ordersByDate: Map<string, DeliveryOrderRow[]>
   today: Date
   onShowMore: (isoDate: string) => void
+  onSelectOrder: (orderId: string) => void
 }
 
-export function DeliveryCalendarGrid({ weeks, ordersByDate, today, onShowMore }: DeliveryCalendarGridProps) {
+export function DeliveryCalendarGrid({ weeks, ordersByDate, today, onShowMore, onSelectOrder }: DeliveryCalendarGridProps) {
   const todayIso = formatIsoDate(today)
 
   return (
@@ -58,13 +59,15 @@ export function DeliveryCalendarGrid({ weeks, ordersByDate, today, onShowMore }:
 
               <div className="flex flex-col gap-1">
                 {visibleOrders.map((order) => (
-                  <span
+                  <button
                     key={order.id}
+                    type="button"
+                    onClick={() => onSelectOrder(order.id)}
                     title={`${order.orderNumber} · ${order.supplierNames.join(', ')} · ${order.unitName}`}
-                    className={`truncate rounded border px-1.5 py-0.5 text-[11px] ${DELIVERY_STATUS_BADGE_CLASSES[getDeliveryStatus(order, today)]}`}
+                    className={`truncate rounded border px-1.5 py-0.5 text-left text-[11px] hover:opacity-80 ${DELIVERY_STATUS_BADGE_CLASSES[getDeliveryStatus(order, today)]}`}
                   >
                     {order.orderNumber} · {order.supplierNames[0] ?? '—'} · {order.unitName}
-                  </span>
+                  </button>
                 ))}
                 {extraCount > 0 && (
                   <button

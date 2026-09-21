@@ -9,10 +9,16 @@ export interface ModalProps {
   icon?: LucideIcon
   /** Classe de cor do título/ícone, sobrepõe o padrão text-ink. Cor de identificação da fila, não a cor da marca. */
   titleClassName?: string
+  /**
+   * Quando informado, a faixa do título vira uma barra colorida de ponta a
+   * ponta (ex.: cor de status de negócio) em vez do cabeçalho padrão — só
+   * afeta o layout quando presente, pra não alterar nenhum modal existente.
+   */
+  headerClassName?: string
   children: ReactNode
 }
 
-export function Modal({ isOpen, onClose, title, icon: Icon, titleClassName, children }: ModalProps) {
+export function Modal({ isOpen, onClose, title, icon: Icon, titleClassName, headerClassName, children }: ModalProps) {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -40,7 +46,13 @@ export function Modal({ isOpen, onClose, title, icon: Icon, titleClassName, chil
         tabIndex={-1}
         className="flex max-h-[90vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-xl bg-surface p-6 shadow-lg focus:outline-none"
       >
-        <div className="flex items-center justify-between">
+        <div
+          className={
+            headerClassName
+              ? `-mx-6 -mt-6 mb-2 flex items-center justify-between rounded-t-xl px-6 py-4 ${headerClassName}`
+              : 'flex items-center justify-between'
+          }
+        >
           <h2 id={titleId} className={`flex items-center gap-2 text-lg font-semibold ${titleClassName ?? 'text-ink'}`}>
             {Icon && <Icon size={20} aria-hidden="true" />}
             {title}
@@ -49,7 +61,7 @@ export function Modal({ isOpen, onClose, title, icon: Icon, titleClassName, chil
             type="button"
             aria-label="Fechar"
             onClick={onClose}
-            className="text-ink-muted hover:text-ink"
+            className={headerClassName ? 'hover:opacity-70' : 'text-ink-muted hover:text-ink'}
           >
             <X size={18} aria-hidden="true" />
           </button>

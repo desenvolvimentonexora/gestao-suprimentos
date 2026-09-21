@@ -93,6 +93,10 @@ function ComparisonRoute({ tenantId, userId }: { tenantId: string; userId: strin
   return <ComparisonPage tenantId={tenantId} userId={userId} />
 }
 
+function DeliveryCalendarRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
+  return <DeliveryCalendarPage tenantId={tenantId} userId={userId} />
+}
+
 function AdminRoute({ tenantId }: { tenantId: string }) {
   return <AdminPage tenantId={tenantId} />
 }
@@ -221,7 +225,10 @@ export function AppRoot() {
               <ComparisonRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />
             }
           />
-          <Route path="/suprimentos/entregas" element={<DeliveryCalendarPage />} />
+          <Route
+            path="/suprimentos/entregas"
+            element={<DeliveryCalendarRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />}
+          />
           <Route
             path="/admin"
             element={

@@ -27,7 +27,9 @@ describe('DeliveryCalendarGrid', () => {
   const weeks = buildCalendarGrid(2026, 8)
 
   it('mostra os rótulos dos dias da semana, domingo a sábado', () => {
-    render(<DeliveryCalendarGrid weeks={weeks} ordersByDate={new Map()} today={today} onShowMore={vi.fn()} />)
+    render(
+      <DeliveryCalendarGrid weeks={weeks} ordersByDate={new Map()} today={today} onShowMore={vi.fn()} onSelectOrder={vi.fn()} />,
+    )
     expect(screen.getByText('Dom')).toBeInTheDocument()
     expect(screen.getByText('Sáb')).toBeInTheDocument()
   })
@@ -40,9 +42,28 @@ describe('DeliveryCalendarGrid', () => {
         ordersByDate={groupOrdersByDate(orders)}
         today={today}
         onShowMore={vi.fn()}
+        onSelectOrder={vi.fn()}
       />,
     )
     expect(screen.getByText('PC-100 · Fornecedor Alfa · UP Graça')).toBeInTheDocument()
+  })
+
+  it('chama onSelectOrder com o id do pedido ao clicar num chip', async () => {
+    const user = userEvent.setup()
+    const onSelectOrder = vi.fn()
+    const orders = [makeOrder({ id: 'o1', expectedDeliveryDate: '2026-09-15' })]
+    render(
+      <DeliveryCalendarGrid
+        weeks={weeks}
+        ordersByDate={groupOrdersByDate(orders)}
+        today={today}
+        onShowMore={vi.fn()}
+        onSelectOrder={onSelectOrder}
+      />,
+    )
+
+    await user.click(screen.getByText('PC-100 · Fornecedor Alfa · UP Graça'))
+    expect(onSelectOrder).toHaveBeenCalledWith('o1')
   })
 
   it('mostra só até 3 chips e um botão "+N mais" pro resto', async () => {
@@ -60,6 +81,7 @@ describe('DeliveryCalendarGrid', () => {
         ordersByDate={groupOrdersByDate(orders)}
         today={today}
         onShowMore={onShowMore}
+        onSelectOrder={vi.fn()}
       />,
     )
     expect(screen.queryByText(/pc-4/i)).not.toBeInTheDocument()
@@ -69,7 +91,9 @@ describe('DeliveryCalendarGrid', () => {
   })
 
   it('mostra a legenda com os 4 status', () => {
-    render(<DeliveryCalendarGrid weeks={weeks} ordersByDate={new Map()} today={today} onShowMore={vi.fn()} />)
+    render(
+      <DeliveryCalendarGrid weeks={weeks} ordersByDate={new Map()} today={today} onShowMore={vi.fn()} onSelectOrder={vi.fn()} />,
+    )
     expect(screen.getByText('Atrasado')).toBeInTheDocument()
     expect(screen.getByText('Hoje')).toBeInTheDocument()
     expect(screen.getByText('No prazo')).toBeInTheDocument()
