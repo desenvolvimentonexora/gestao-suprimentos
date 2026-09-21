@@ -4,6 +4,7 @@ import {
   discardQuotation,
   fetchNegotiatingRequests,
   fetchNegotiatorOptions,
+  fetchQuotationAttachmentUrl,
   fetchSupplierOptions,
   sendBackToDispatch,
   updateNegotiationNotes,
@@ -73,6 +74,22 @@ export function useSendBackToDispatch() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['negotiating-requests'] })
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useViewQuotationPdf() {
+  return useMutation({
+    mutationFn: (quotationId: string) => fetchQuotationAttachmentUrl(quotationId),
+    onSuccess: (url) => {
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      } else {
+        window.alert('Nenhum PDF encontrado para esta cotação.')
+      }
+    },
+    onError: (error) => {
+      window.alert(error instanceof Error ? error.message : 'Não foi possível abrir o PDF. Tente novamente.')
     },
   })
 }

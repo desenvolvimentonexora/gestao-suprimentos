@@ -57,6 +57,7 @@ function baseProps() {
     onAssignNegotiator: vi.fn(),
     onRegisterQuotation: vi.fn(),
     onDiscardQuotation: vi.fn(),
+    onViewPdf: vi.fn(),
     onUpdateNotes: vi.fn(),
     onSendBackToDispatch: vi.fn(),
     onFinalizeNegotiation: vi.fn(),
@@ -297,5 +298,14 @@ describe('NegotiatingRequestCard', () => {
     await user.click(screen.getByRole('button', { name: /expandir/i }))
     await user.click(screen.getByRole('button', { name: /descartar cotação de fornecedor alfa/i }))
     expect(onDiscardQuotation).toHaveBeenCalledWith('q1')
+  })
+
+  it('chama onViewPdf ao clicar em Ver PDF de uma cotação', async () => {
+    const user = userEvent.setup()
+    const onViewPdf = vi.fn()
+    render(<NegotiatingRequestCard {...baseProps()} onViewPdf={onViewPdf} />)
+    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await user.click(screen.getByRole('button', { name: /ver pdf de fornecedor alfa/i }))
+    expect(onViewPdf).toHaveBeenCalledWith('q1')
   })
 })

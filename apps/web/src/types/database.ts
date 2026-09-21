@@ -286,6 +286,77 @@ export type Database = {
           },
         ]
       }
+      email_ingestions: {
+        Row: {
+          created_at: string
+          detail: string | null
+          from_email: string
+          gmail_message_id: string
+          id: string
+          quotation_id: string | null
+          request_id: string | null
+          status: string
+          subject: string | null
+          supplier_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          from_email: string
+          gmail_message_id: string
+          id?: string
+          quotation_id?: string | null
+          request_id?: string | null
+          status: string
+          subject?: string | null
+          supplier_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          from_email?: string
+          gmail_message_id?: string
+          id?: string
+          quotation_id?: string | null
+          request_id?: string | null
+          status?: string
+          subject?: string | null
+          supplier_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_ingestions_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_ingestions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_ingestions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_ingestions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_mappings: {
         Row: {
           column_mapping: Json
@@ -705,6 +776,7 @@ export type Database = {
           id: string
           payment_terms: string | null
           request_id: string
+          source: string
           status: Database["public"]["Enums"]["quotation_status"]
           submitted_at: string | null
           supplier_id: string
@@ -720,6 +792,7 @@ export type Database = {
           id?: string
           payment_terms?: string | null
           request_id: string
+          source?: string
           status?: Database["public"]["Enums"]["quotation_status"]
           submitted_at?: string | null
           supplier_id: string
@@ -735,6 +808,7 @@ export type Database = {
           id?: string
           payment_terms?: string | null
           request_id?: string
+          source?: string
           status?: Database["public"]["Enums"]["quotation_status"]
           submitted_at?: string | null
           supplier_id?: string

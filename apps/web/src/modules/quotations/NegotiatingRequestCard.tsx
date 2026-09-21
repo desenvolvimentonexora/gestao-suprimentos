@@ -34,6 +34,7 @@ export interface NegotiatingRequestCardProps {
   onAssignNegotiator: (requestId: string, negotiatorId: string | null) => void
   onRegisterQuotation: (requestId: string) => void
   onDiscardQuotation: (quotationId: string) => void
+  onViewPdf: (quotationId: string) => void
   onUpdateNotes: (requestId: string, notes: string) => void
   onSendBackToDispatch: (requestId: string) => void
   onFinalizeNegotiation: (requestId: string) => void
@@ -46,6 +47,7 @@ export function NegotiatingRequestCard({
   onAssignNegotiator,
   onRegisterQuotation,
   onDiscardQuotation,
+  onViewPdf,
   onUpdateNotes,
   onSendBackToDispatch,
   onFinalizeNegotiation,
@@ -210,16 +212,26 @@ export function NegotiatingRequestCard({
                         <Badge>{STATUS_LABELS[quotation.status]}</Badge>
                       </td>
                       <td className="py-1">
-                        {quotation.status !== 'discarded' && (
+                        <div className="flex gap-3">
                           <button
                             type="button"
-                            aria-label={`Descartar cotação de ${quotation.supplierName}`}
-                            onClick={() => onDiscardQuotation(quotation.id)}
-                            className="text-ink-muted hover:text-accent"
+                            aria-label={`Ver PDF de ${quotation.supplierName}`}
+                            onClick={() => onViewPdf(quotation.id)}
+                            className="text-ink-muted hover:text-ink"
                           >
-                            Descartar
+                            Ver PDF
                           </button>
-                        )}
+                          {quotation.status !== 'discarded' && (
+                            <button
+                              type="button"
+                              aria-label={`Descartar cotação de ${quotation.supplierName}`}
+                              onClick={() => onDiscardQuotation(quotation.id)}
+                              className="text-ink-muted hover:text-accent"
+                            >
+                              Descartar
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

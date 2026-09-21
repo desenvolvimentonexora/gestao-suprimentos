@@ -7,6 +7,8 @@ import type {
   SupplierOption,
 } from './types'
 
+const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
+
 export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
@@ -135,4 +137,22 @@ export async function discardQuotation(quotationId: string): Promise<void> {
     .update({ status: 'discarded' satisfies QuotationStatus })
     .eq('id', quotationId)
   if (error) throw error
+}
+
+export async function fetchQuotationAttachmentUrl(quotationId: string): Promise<string | null> {
+  const { data: attachment, error: attachmentError } = await supabase
+    .from('quotation_attachments')
+    .select('storage_path')
+    .eq('quotation_id', quotationId)
+    .order('uploaded_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (attachmentError) throw attachmentError
+  if (!attachment) return null
+
+  const { data: signed, error: signError } = await supabase.storage
+    .from('quotation-attachments')
+    .createSignedUrl(attachment.storage_path, SIGNED_URL_EXPIRES_IN_SECONDS)
+  if (signError) throw signError
+  return signed.signedUrl
 }
