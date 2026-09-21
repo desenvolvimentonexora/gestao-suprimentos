@@ -13,7 +13,7 @@ describe('ModulesSection', () => {
 
   it('mostra um módulo ainda não implementado desabilitado, com a nota "ainda não implementado"', () => {
     render(<ModulesSection activeModuleIds={[]} onToggle={vi.fn()} isSaving={false} />)
-    const toggle = screen.getByRole('checkbox', { name: /cobrador de entregas/i })
+    const toggle = screen.getByRole('checkbox', { name: /logística interna/i })
     expect(toggle).toBeDisabled()
     expect(toggle).not.toBeChecked()
     expect(screen.getAllByText(/ainda não implementado/i).length).toBeGreaterThan(0)

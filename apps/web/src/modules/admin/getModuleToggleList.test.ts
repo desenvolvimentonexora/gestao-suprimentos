@@ -5,7 +5,7 @@ describe('getModuleToggleList', () => {
   it('marca como implementado só o módulo que tem rota de verdade', () => {
     const list = getModuleToggleList([])
     const withScreen = list.find((item) => item.id === 'agenda-fornecedores')
-    const placeholder = list.find((item) => item.id === 'cobrador-entregas')
+    const placeholder = list.find((item) => item.id === 'logistica-interna')
 
     expect(withScreen?.implemented).toBe(true)
     expect(placeholder?.implemented).toBe(false)
@@ -18,7 +18,7 @@ describe('getModuleToggleList', () => {
   })
 
   it('nunca marca como ativo um módulo que ainda não foi implementado, mesmo que venha na lista salva', () => {
-    const list = getModuleToggleList(['cobrador-entregas'])
-    expect(list.find((item) => item.id === 'cobrador-entregas')?.active).toBe(false)
+    const list = getModuleToggleList(['logistica-interna'])
+    expect(list.find((item) => item.id === 'logistica-interna')?.active).toBe(false)
   })
 })

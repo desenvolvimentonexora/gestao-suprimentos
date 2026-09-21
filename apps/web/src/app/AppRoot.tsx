@@ -17,6 +17,7 @@ import { AnaliseSolicitacoesPage } from '../modules/requests/AnaliseSolicitacoes
 import { DisparoSolicitacoesPage } from '../modules/requests/DisparoSolicitacoesPage'
 import { EmNegociacaoPage } from '../modules/quotations/EmNegociacaoPage'
 import { ComparisonPage } from '../modules/comparisons/ComparisonPage'
+import { DeliveryCalendarPage } from '../modules/deliveries/DeliveryCalendarPage'
 import { AdminPage } from '../modules/admin/AdminPage'
 import { AppShell } from './AppShell'
 import { LoginPage } from './LoginPage'
@@ -220,6 +221,7 @@ export function AppRoot() {
               <ComparisonRoute tenantId={tenant.tenantId} userId={session?.user.id ?? ''} />
             }
           />
+          <Route path="/suprimentos/entregas" element={<DeliveryCalendarPage />} />
           <Route
             path="/admin"
             element={

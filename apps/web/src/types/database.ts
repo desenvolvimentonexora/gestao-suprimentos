@@ -449,9 +449,61 @@ export type Database = {
           },
         ]
       }
+      order_delivery_reschedules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          new_date: string
+          order_id: string
+          previous_date: string
+          reason: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          new_date: string
+          order_id: string
+          previous_date: string
+          reason?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          new_date?: string
+          order_id?: string
+          previous_date?: string
+          reason?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_delivery_reschedules_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_delivery_reschedules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
+          delivered_at: string | null
           id: string
           material_id: string | null
           material_name_raw: string
@@ -464,6 +516,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          delivered_at?: string | null
           id?: string
           material_id?: string | null
           material_name_raw?: string
@@ -476,6 +529,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          delivered_at?: string | null
           id?: string
           material_id?: string | null
           material_name_raw?: string
@@ -530,6 +584,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          delivered_at: string | null
+          delivery_notes: string | null
+          delivery_receipt_confirmed_at: string | null
           expected_delivery_date: string | null
           id: string
           imported_at: string
@@ -546,6 +603,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          delivered_at?: string | null
+          delivery_notes?: string | null
+          delivery_receipt_confirmed_at?: string | null
           expected_delivery_date?: string | null
           id?: string
           imported_at?: string
@@ -562,6 +622,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          delivered_at?: string | null
+          delivery_notes?: string | null
+          delivery_receipt_confirmed_at?: string | null
           expected_delivery_date?: string | null
           id?: string
           imported_at?: string

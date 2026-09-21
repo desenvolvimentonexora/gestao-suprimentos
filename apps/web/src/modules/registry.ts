@@ -153,6 +153,7 @@ export const suprimentosRegistry: ModuleCardData[] = [
     description: 'Calendário de pedidos de compra por obra',
     icon: CalendarClock,
     status: 'beta',
+    route: '/suprimentos/entregas',
   },
   {
     id: 'logistica-interna',
