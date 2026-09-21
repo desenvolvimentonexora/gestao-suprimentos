@@ -4,7 +4,12 @@ import { Badge, Button, Card, ComingSoonButton } from '../../components'
 import { getDeadlineBadge } from './deadlineBadge'
 import { formatItemReference } from './formatItemReference'
 import { formatRequestNumber } from './formatRequestNumber'
-import { getDaysInNegotiation, isReadyToEqualize } from './negotiationStatus'
+import {
+  countReceivedQuotations,
+  getDaysInNegotiation,
+  isReadyToEqualize,
+  MINIMUM_QUOTATIONS_TO_EQUALIZE,
+} from './negotiationStatus'
 import { getNegotiatorColor } from './negotiatorColor'
 import type { NegotiatingRequestRow, NegotiatorOption, QuotationStatus } from './types'
 
@@ -113,11 +118,17 @@ export function NegotiatingRequestCard({
         {deadlineBadge && (
           <Badge className={DEADLINE_BADGE_CLASSES[deadlineBadge.tone]}>{deadlineBadge.label}</Badge>
         )}
-        {isReadyToEqualize(request) && (
+        {isReadyToEqualize(request) ? (
           <Badge className="gap-1 border-line bg-transparent text-ink">
             <Search size={12} aria-hidden="true" />
             Só falta equalizar
           </Badge>
+        ) : (
+          countReceivedQuotations(request) > 0 && (
+            <Badge className="gap-1 border-line bg-transparent text-ink-muted">
+              {countReceivedQuotations(request)}/{MINIMUM_QUOTATIONS_TO_EQUALIZE} cotações recebidas
+            </Badge>
+          )
         )}
         {daysInNegotiation !== null && (
           <Badge className="gap-1 border-amber-300 bg-amber-100 text-amber-800">

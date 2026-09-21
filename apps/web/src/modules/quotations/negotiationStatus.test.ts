@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getDaysInNegotiation, isReadyToEqualize } from './negotiationStatus'
+import { countReceivedQuotations, getDaysInNegotiation, isReadyToEqualize } from './negotiationStatus'
 import type { NegotiatingRequestRow } from './types'
 
 function makeRequest(overrides: Partial<NegotiatingRequestRow>): NegotiatingRequestRow {
@@ -22,14 +22,36 @@ function makeRequest(overrides: Partial<NegotiatingRequestRow>): NegotiatingRequ
   }
 }
 
-describe('isReadyToEqualize', () => {
-  it('é true quando há ao menos uma cotação recebida', () => {
+function receivedQuotation(id: string): NegotiatingRequestRow['quotations'][number] {
+  return { id, supplierId: `s-${id}`, supplierName: `Fornecedor ${id}`, status: 'received', submittedAt: null }
+}
+
+describe('countReceivedQuotations', () => {
+  it('conta só as cotações com status recebida', () => {
     const request = makeRequest({
       quotations: [
-        { id: 'q1', supplierId: 's1', supplierName: 'Fornecedor Alfa', status: 'received', submittedAt: null },
+        receivedQuotation('q1'),
+        receivedQuotation('q2'),
+        { id: 'q3', supplierId: 's3', supplierName: 'Fornecedor Gama', status: 'pending', submittedAt: null },
       ],
     })
+    expect(countReceivedQuotations(request)).toBe(2)
+  })
+})
+
+describe('isReadyToEqualize', () => {
+  it('é true quando há 3 cotações recebidas', () => {
+    const request = makeRequest({
+      quotations: [receivedQuotation('q1'), receivedQuotation('q2'), receivedQuotation('q3')],
+    })
     expect(isReadyToEqualize(request)).toBe(true)
+  })
+
+  it('é false quando há menos de 3 cotações recebidas', () => {
+    const request = makeRequest({
+      quotations: [receivedQuotation('q1'), receivedQuotation('q2')],
+    })
+    expect(isReadyToEqualize(request)).toBe(false)
   })
 
   it('é false quando não há nenhuma cotação recebida', () => {

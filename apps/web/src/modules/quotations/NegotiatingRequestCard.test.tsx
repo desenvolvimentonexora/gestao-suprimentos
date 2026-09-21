@@ -101,11 +101,22 @@ describe('NegotiatingRequestCard', () => {
     expect(onAssignNegotiator).toHaveBeenCalledWith('r1', 'n2')
   })
 
-  it('mostra o badge "Só falta equalizar" em estilo contorno, com ícone', () => {
-    render(<NegotiatingRequestCard {...baseProps()} />)
+  it('mostra o badge "Só falta equalizar" em estilo contorno, com ícone, quando há 3 cotações recebidas', () => {
+    const threeQuotations: NegotiatingRequestRow['quotations'] = [
+      { id: 'q1', supplierId: 's1', supplierName: 'Fornecedor Alfa', status: 'received', submittedAt: null },
+      { id: 'q2', supplierId: 's2', supplierName: 'Fornecedor Beta', status: 'received', submittedAt: null },
+      { id: 'q3', supplierId: 's3', supplierName: 'Fornecedor Gama', status: 'received', submittedAt: null },
+    ]
+    render(<NegotiatingRequestCard {...baseProps()} request={{ ...request, quotations: threeQuotations }} />)
     const badge = screen.getByText('Só falta equalizar')
     expect(badge.closest('span')?.querySelector('svg')).toBeInTheDocument()
     expect(badge.closest('span')?.className).not.toContain('bg-amber')
+  })
+
+  it('mostra "1/3 cotações recebidas" em vez de "Só falta equalizar" quando ainda não chegou a 3', () => {
+    render(<NegotiatingRequestCard {...baseProps()} />)
+    expect(screen.getByText('1/3 cotações recebidas')).toBeInTheDocument()
+    expect(screen.queryByText('Só falta equalizar')).not.toBeInTheDocument()
   })
 
   it('mostra o badge de dias em negociação preenchido em âmbar, com ícone', () => {

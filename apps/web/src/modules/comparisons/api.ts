@@ -20,6 +20,11 @@ import type {
 
 const IMPORT_TYPE_ORDERS = 'orders'
 
+// Regra de negócio: uma SOL só aparece para equalização com pelo menos 3
+// cotações recebidas. Mesmo valor em quotations/negotiationStatus.ts — módulos
+// não se importam entre si, então o limite é duplicado propositalmente.
+const MINIMUM_QUOTATIONS_TO_EQUALIZE = 3
+
 // created_by/approved_by/released_by são uuid soltos (sem FK para users,
 // diferente de negotiator_id) — resolvidos aqui manualmente em vez de via
 // embed do PostgREST.
@@ -112,7 +117,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
         quotations,
       }
     })
-    .filter((row) => row.quotations.length > 0)
+    .filter((row) => row.quotations.length >= MINIMUM_QUOTATIONS_TO_EQUALIZE)
 }
 
 export async function fetchSupplierOptions(): Promise<SupplierOption[]> {

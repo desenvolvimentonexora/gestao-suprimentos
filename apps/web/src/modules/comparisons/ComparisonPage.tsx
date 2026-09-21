@@ -170,7 +170,10 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
 
         <div className="mt-6 flex flex-col gap-3">
           {requests.length === 0 ? (
-            <p className="text-sm text-ink-muted">Nenhuma requisição com cotações para comparar no momento.</p>
+            <p className="text-sm text-ink-muted">
+              Nenhuma requisição pronta para equalizar. Uma SOL só aparece aqui com pelo menos 3 cotações
+              recebidas.
+            </p>
           ) : (
             requests.map((request) => {
               const isExpanded = expandedRequestId === request.requestId
