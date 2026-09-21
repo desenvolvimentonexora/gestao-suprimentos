@@ -1,6 +1,10 @@
-import { Badge } from '../../components'
+import {
+  DELIVERY_STATUS_BADGE_CLASSES,
+  DELIVERY_STATUS_DOT_CLASSES,
+  DELIVERY_STATUS_LABELS,
+  getDeliveryStatus,
+} from './deliveryStatus'
 import { formatIsoDate, type CalendarDay } from './buildCalendarGrid'
-import { DELIVERY_STATUS_BADGE_CLASSES, DELIVERY_STATUS_LABELS, getDeliveryStatus } from './deliveryStatus'
 import type { DeliveryOrderRow, DeliveryStatus } from './types'
 
 const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -79,9 +83,10 @@ export function DeliveryCalendarGrid({ weeks, ordersByDate, today, onShowMore }:
       <div className="flex flex-wrap items-center gap-3 border-t border-line px-3 py-2 text-xs text-ink-muted">
         <span className="font-medium text-ink">Legenda:</span>
         {LEGEND_STATUSES.map((status) => (
-          <Badge key={status} className={DELIVERY_STATUS_BADGE_CLASSES[status]}>
+          <span key={status} className="flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-full ${DELIVERY_STATUS_DOT_CLASSES[status]}`} aria-hidden="true" />
             {DELIVERY_STATUS_LABELS[status]}
-          </Badge>
+          </span>
         ))}
       </div>
     </div>

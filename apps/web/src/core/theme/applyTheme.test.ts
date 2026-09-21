@@ -43,4 +43,30 @@ describe('applyTheme', () => {
     expect(root.style.getPropertyValue('--color-badge-beta')).toBe('180 83 9')
     expect(root.style.getPropertyValue('--color-badge-soon')).toBe('138 143 140')
   })
+
+  it('define as variáveis de cor de status a partir de theme.status, sem tocar nas de marca', () => {
+    const root = createRoot()
+
+    applyTheme(
+      {
+        primary: '#3A7769',
+        status: { atrasado: '#B91C1C', hoje: '#1D4ED8', noPrazo: '#047857', chegouArPendente: '#D97706' },
+      },
+      root,
+    )
+
+    expect(root.style.getPropertyValue('--color-primary')).toBe('58 119 105')
+    expect(root.style.getPropertyValue('--color-status-atrasado')).toBe('185 28 28')
+    expect(root.style.getPropertyValue('--color-status-hoje')).toBe('29 78 216')
+    expect(root.style.getPropertyValue('--color-status-no-prazo')).toBe('4 120 87')
+    expect(root.style.getPropertyValue('--color-status-chegou-ar-pendente')).toBe('217 119 6')
+  })
+
+  it('não define nenhuma variável de status quando theme.status não é informado', () => {
+    const root = createRoot()
+
+    applyTheme({ primary: '#3A7769' }, root)
+
+    expect(root.style.getPropertyValue('--color-status-atrasado')).toBe('')
+  })
 })

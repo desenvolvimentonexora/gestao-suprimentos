@@ -19,6 +19,13 @@
     --color-badge-available: 58 119 105;
     --color-badge-beta: 180 83 9;
     --color-badge-soon: 138 143 140;
+
+    /* Cores semânticas de status (config.theme.status) — padrão até o
+       tenant configurar as próprias; nunca substituídas pela cor de marca. */
+    --color-status-atrasado: 185 28 28;
+    --color-status-hoje: 29 78 216;
+    --color-status-no-prazo: 4 120 87;
+    --color-status-chegou-ar-pendente: 217 119 6;
   }
 
   html {

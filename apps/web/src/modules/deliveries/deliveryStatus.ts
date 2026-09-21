@@ -1,9 +1,11 @@
 import type { DeliveryOrderRow, DeliveryStatus } from './types'
 
-// Cores semânticas de status de entrega são fixas no código, iguais em
-// todos os tenants — nunca vêm de config.theme (mesmo padrão de
-// quotations/deadlineBadge.ts; ver CLAUDE.md §7: cor semântica nunca é
-// substituída pela cor de marca).
+// Cores semânticas de status de entrega vêm de config.theme.status (via
+// tailwind.config.ts + CSS variables, mesmo mecanismo da cor de marca —
+// ver core/theme/applyTheme.ts). Nunca são substituídas pela cor de marca
+// (CLAUDE.md §7), mas continuam configuráveis por tenant (regra 4.1: nada
+// de cor fixa no código) — daqui só saem nomes de classe Tailwind, nunca
+// um valor de cor literal.
 export const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
   atrasado: 'Atrasado',
   hoje: 'Hoje',
@@ -12,17 +14,17 @@ export const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
 }
 
 export const DELIVERY_STATUS_BADGE_CLASSES: Record<DeliveryStatus, string> = {
-  atrasado: 'border-red-200 bg-red-50 text-red-700',
-  hoje: 'border-blue-200 bg-blue-50 text-blue-700',
-  no_prazo: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  chegou_ar_pendente: 'border-amber-200 bg-amber-50 text-amber-700',
+  atrasado: 'border-status-atrasado/30 bg-status-atrasado/10 text-status-atrasado',
+  hoje: 'border-status-hoje/30 bg-status-hoje/10 text-status-hoje',
+  no_prazo: 'border-status-no-prazo/30 bg-status-no-prazo/10 text-status-no-prazo',
+  chegou_ar_pendente: 'border-status-chegou-ar-pendente/30 bg-status-chegou-ar-pendente/10 text-status-chegou-ar-pendente',
 }
 
 export const DELIVERY_STATUS_DOT_CLASSES: Record<DeliveryStatus, string> = {
-  atrasado: 'bg-red-500',
-  hoje: 'bg-blue-500',
-  no_prazo: 'bg-emerald-500',
-  chegou_ar_pendente: 'bg-amber-500',
+  atrasado: 'bg-status-atrasado',
+  hoje: 'bg-status-hoje',
+  no_prazo: 'bg-status-no-prazo',
+  chegou_ar_pendente: 'bg-status-chegou-ar-pendente',
 }
 
 function toDateOnly(date: Date): number {
