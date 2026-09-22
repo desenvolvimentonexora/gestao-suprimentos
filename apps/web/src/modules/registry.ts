@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   Banknote,
   BarChart3,
   BookUser,
@@ -18,7 +19,6 @@ import {
   Send,
   Truck,
   Users,
-  Wrench,
   type LucideIcon,
 } from 'lucide-react'
 import type { ModuleStatus } from '../components'
@@ -40,7 +40,7 @@ export const sectorRegistry: ModuleCardData[] = [
   {
     id: 'suprimentos',
     label: 'Suprimentos',
-    description: 'Requisições, cotações, comparação de orçamentos e fornecedores',
+    description: 'Solicitações, orçamentos, equalização e Follow up',
     icon: Package,
     status: 'disponivel',
     route: '/suprimentos',
@@ -48,14 +48,14 @@ export const sectorRegistry: ModuleCardData[] = [
   {
     id: 'engenharia',
     label: 'Engenharia',
-    description: 'Cotações, compras, logística e gestão de obras',
+    description: 'EPI, ferramentas e controle de estoque da serralheria',
     icon: HomeIcon,
     status: 'disponivel',
   },
   {
     id: 'recursos-humanos',
     label: 'Recursos Humanos',
-    description: 'Requisição de pessoal, movimentação e comunicado de férias',
+    description: 'Requisição de pessoal, movimentação e comunicado',
     icon: Users,
     status: 'beta',
   },
@@ -67,11 +67,11 @@ export const sectorRegistry: ModuleCardData[] = [
     status: 'beta',
   },
   {
-    id: 'serralheria',
-    label: 'Serralheria',
-    description: 'EPI, ferramentas e controle de estoque da serralheria',
-    icon: Wrench,
-    status: 'beta',
+    id: 'marketing',
+    label: 'Marketing',
+    description: 'Campanhas e comunicação institucional',
+    icon: Megaphone,
+    status: 'em-breve',
   },
   {
     id: 'financeiro',
@@ -92,13 +92,6 @@ export const sectorRegistry: ModuleCardData[] = [
     label: 'Comercial',
     description: 'Gestão comercial e relacionamento com clientes',
     icon: Building2,
-    status: 'em-breve',
-  },
-  {
-    id: 'marketing',
-    label: 'Marketing',
-    description: 'Campanhas e comunicação institucional',
-    icon: Megaphone,
     status: 'em-breve',
   },
 ]
@@ -158,8 +151,15 @@ export const suprimentosRegistry: ModuleCardData[] = [
     id: 'logistica-interna',
     label: 'Logística Interna',
     description: 'Solicitações de transporte e rotas',
-    icon: Truck,
+    icon: ArrowLeftRight,
     status: 'disponivel',
+  },
+  {
+    id: 'gerador-fretes',
+    label: 'Gerador de Fretes',
+    description: 'Calcule e gere fretes para as entregas',
+    icon: Truck,
+    status: 'beta',
   },
   {
     id: 'dashboard-interativo',
