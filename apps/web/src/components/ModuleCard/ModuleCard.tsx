@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { StatusBadge, type ModuleStatus } from '../StatusBadge/StatusBadge'
+import type { ModuleStatus } from '../StatusBadge/StatusBadge'
 
 export interface ModuleCardProps {
   label: string
@@ -13,13 +13,10 @@ export interface ModuleCardProps {
 
 const CARD_HEIGHT = 'h-32'
 
-function CardBody({ label, description, icon: Icon, status }: Omit<ModuleCardProps, 'route'>) {
+function CardBody({ label, description, icon: Icon }: Omit<ModuleCardProps, 'route' | 'status'>) {
   return (
     <>
-      <div className="flex items-start justify-between">
-        <Icon size={20} className="text-primary" aria-hidden="true" />
-        <StatusBadge status={status} />
-      </div>
+      <Icon size={20} className="text-primary" aria-hidden="true" />
       <p className="mt-2 text-sm font-semibold text-ink">{label}</p>
       <p className="mt-1 line-clamp-2 text-xs text-ink-muted">{description}</p>
     </>
@@ -37,7 +34,7 @@ export function ModuleCard({ label, description, icon, status, route }: ModuleCa
         className={`${CARD_HEIGHT} flex cursor-not-allowed flex-col rounded-lg border border-line bg-surface p-3`}
         aria-disabled="true"
       >
-        <CardBody label={label} description={description} icon={icon} status={status} />
+        <CardBody label={label} description={description} icon={icon} />
       </div>
     )
   }
@@ -45,7 +42,7 @@ export function ModuleCard({ label, description, icon, status, route }: ModuleCa
   if (route) {
     return (
       <Link to={route} className={`block ${cardClassName}`}>
-        <CardBody label={label} description={description} icon={icon} status={status} />
+        <CardBody label={label} description={description} icon={icon} />
       </Link>
     )
   }
@@ -53,7 +50,7 @@ export function ModuleCard({ label, description, icon, status, route }: ModuleCa
   return (
     <div>
       <button type="button" onClick={() => setShowUnavailable(true)} className={cardClassName}>
-        <CardBody label={label} description={description} icon={icon} status={status} />
+        <CardBody label={label} description={description} icon={icon} />
       </button>
       {showUnavailable && (
         <p className="mt-1 text-xs text-ink-muted" role="status">

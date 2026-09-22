@@ -20,11 +20,11 @@ function renderCard(props: Partial<React.ComponentProps<typeof ModuleCard>> = {}
 }
 
 describe('ModuleCard', () => {
-  it('renderiza nome, descrição e selo de status', () => {
+  it('renderiza nome e descrição, sem selo de status', () => {
     renderCard()
     expect(screen.getByText('Suprimentos')).toBeInTheDocument()
     expect(screen.getByText('Requisições, cotações e fornecedores')).toBeInTheDocument()
-    expect(screen.getByText('DISPONÍVEL')).toBeInTheDocument()
+    expect(screen.queryByText('DISPONÍVEL')).not.toBeInTheDocument()
   })
 
   it('vira um link para a rota quando informada', () => {
