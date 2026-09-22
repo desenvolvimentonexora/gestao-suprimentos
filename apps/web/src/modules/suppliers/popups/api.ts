@@ -6,13 +6,13 @@ const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
 
 export async function fetchLeadTimeDays(
   supplierId: string,
-  materialId: string,
+  materialVariantId: string,
 ): Promise<number | null> {
   const { data, error } = await supabase
     .from('supplier_materials')
     .select('lead_time_days')
     .eq('supplier_id', supplierId)
-    .eq('material_id', materialId)
+    .eq('material_variant_id', materialVariantId)
     .maybeSingle()
 
   if (error) throw error
@@ -21,14 +21,14 @@ export async function fetchLeadTimeDays(
 
 export async function updateLeadTimeDays(
   supplierId: string,
-  materialId: string,
+  materialVariantId: string,
   days: number | null,
 ): Promise<void> {
   const { error } = await supabase
     .from('supplier_materials')
     .update({ lead_time_days: days })
     .eq('supplier_id', supplierId)
-    .eq('material_id', materialId)
+    .eq('material_variant_id', materialVariantId)
   if (error) throw error
 }
 
@@ -79,38 +79,39 @@ export async function fetchSupplierMaterialLinks(
 ): Promise<SupplierMaterialLinkRow[]> {
   const { data, error } = await supabase
     .from('supplier_materials')
-    .select('material_id, materials(name, code)')
+    .select('material_variant_id, material_variants(code, description, materials(name))')
     .eq('supplier_id', supplierId)
 
   if (error) throw error
 
   return data.map((row) => ({
-    materialId: row.material_id,
-    materialName: row.materials?.name ?? '',
-    materialCode: row.materials?.code ?? null,
+    materialVariantId: row.material_variant_id,
+    materialName: row.material_variants?.materials?.name ?? '',
+    code: row.material_variants?.code ?? null,
+    description: row.material_variants?.description ?? null,
   }))
 }
 
 export async function addSupplierMaterialLink(
   tenantId: string,
   supplierId: string,
-  materialId: string,
+  materialVariantId: string,
 ): Promise<void> {
   const { error } = await supabase
     .from('supplier_materials')
-    .upsert({ tenant_id: tenantId, supplier_id: supplierId, material_id: materialId })
+    .upsert({ tenant_id: tenantId, supplier_id: supplierId, material_variant_id: materialVariantId })
   if (error) throw error
 }
 
 export async function removeSupplierMaterialLink(
   supplierId: string,
-  materialId: string,
+  materialVariantId: string,
 ): Promise<void> {
   const { error } = await supabase
     .from('supplier_materials')
     .delete()
     .eq('supplier_id', supplierId)
-    .eq('material_id', materialId)
+    .eq('material_variant_id', materialVariantId)
   if (error) throw error
 }
 

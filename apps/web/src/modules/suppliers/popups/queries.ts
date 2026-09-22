@@ -12,10 +12,10 @@ import {
   uploadCertificate,
 } from './api'
 
-export function useLeadTimeDays(supplierId: string, materialId: string, enabled: boolean) {
+export function useLeadTimeDays(supplierId: string, materialVariantId: string, enabled: boolean) {
   return useQuery({
-    queryKey: ['lead-time', supplierId, materialId],
-    queryFn: () => fetchLeadTimeDays(supplierId, materialId),
+    queryKey: ['lead-time', supplierId, materialVariantId],
+    queryFn: () => fetchLeadTimeDays(supplierId, materialVariantId),
     enabled,
   })
 }
@@ -25,16 +25,16 @@ export function useUpdateLeadTimeDays() {
   return useMutation({
     mutationFn: ({
       supplierId,
-      materialId,
+      materialVariantId,
       days,
     }: {
       supplierId: string
-      materialId: string
+      materialVariantId: string
       days: number | null
-    }) => updateLeadTimeDays(supplierId, materialId, days),
+    }) => updateLeadTimeDays(supplierId, materialVariantId, days),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['lead-time', variables.supplierId, variables.materialId],
+        queryKey: ['lead-time', variables.supplierId, variables.materialVariantId],
       })
     },
   })
@@ -77,8 +77,13 @@ export function useSupplierMaterialLinks(supplierId: string, enabled: boolean) {
 export function useAddSupplierMaterialLink(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ supplierId, materialId }: { supplierId: string; materialId: string }) =>
-      addSupplierMaterialLink(tenantId, supplierId, materialId),
+    mutationFn: ({
+      supplierId,
+      materialVariantId,
+    }: {
+      supplierId: string
+      materialVariantId: string
+    }) => addSupplierMaterialLink(tenantId, supplierId, materialVariantId),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['supplier-material-links', variables.supplierId],
@@ -92,8 +97,13 @@ export function useAddSupplierMaterialLink(tenantId: string) {
 export function useRemoveSupplierMaterialLink() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ supplierId, materialId }: { supplierId: string; materialId: string }) =>
-      removeSupplierMaterialLink(supplierId, materialId),
+    mutationFn: ({
+      supplierId,
+      materialVariantId,
+    }: {
+      supplierId: string
+      materialVariantId: string
+    }) => removeSupplierMaterialLink(supplierId, materialVariantId),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['supplier-material-links', variables.supplierId],

@@ -2,11 +2,11 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { SupplierFormModal } from './SupplierFormModal'
-import type { MaterialRow } from './types'
+import type { MaterialVariantRow } from './types'
 
-const allMaterials: MaterialRow[] = [
-  { id: 'm1', name: 'Cimento', categoryId: 'c1', supplierCount: 3, icon: 'layers', code: null, description: null },
-  { id: 'm2', name: 'Areia', categoryId: 'c1', supplierCount: 1, icon: 'layers', code: null, description: null },
+const allMaterialVariants: MaterialVariantRow[] = [
+  { id: 'v1', materialId: 'm1', materialName: 'Cimento', code: '1023', description: null },
+  { id: 'v2', materialId: 'm2', materialName: 'Areia', code: '1024', description: null },
 ]
 
 function baseProps() {
@@ -14,7 +14,7 @@ function baseProps() {
     isOpen: true,
     onClose: vi.fn(),
     mode: 'create' as const,
-    allMaterials,
+    allMaterialVariants,
     onSubmit: vi.fn(),
     isSubmitting: false,
   }
@@ -39,20 +39,20 @@ describe('SupplierFormModal', () => {
     expect(screen.getAllByRole('textbox', { name: /^CNPJ/ })).toHaveLength(2)
   })
 
-  it('filtra os materiais pela busca e envia os selecionados', async () => {
+  it('filtra as variantes pela busca de código e envia as selecionadas', async () => {
     const props = baseProps()
     render(<SupplierFormModal {...props} />)
 
     await userEvent.type(screen.getByLabelText('Nome', { exact: true }), 'Fornecedor Teste')
-    await userEvent.type(screen.getByPlaceholderText('Buscar material'), 'cimento')
+    await userEvent.type(screen.getByPlaceholderText('Buscar por código ou descrição'), '1023')
 
-    expect(screen.queryByLabelText('Areia')).not.toBeInTheDocument()
-    await userEvent.click(screen.getByLabelText('Cimento'))
+    expect(screen.queryByText(/Areia/)).not.toBeInTheDocument()
+    await userEvent.click(screen.getByLabelText(/Cimento/))
 
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar fornecedor' }))
 
     expect(props.onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Fornecedor Teste', materialIds: ['m1'] }),
+      expect.objectContaining({ name: 'Fornecedor Teste', materialVariantIds: ['v1'] }),
     )
   })
 
@@ -71,7 +71,7 @@ describe('SupplierFormModal', () => {
           contactName: 'Ana',
           contactPhone: '11999999999',
           contactEmail: 'ana@fornecedor.com',
-          materialIds: ['m2'],
+          materialVariantIds: ['v2'],
         }}
       />,
     )

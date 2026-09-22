@@ -11,6 +11,12 @@ export interface MaterialRow {
   categoryId: string
   supplierCount: number
   icon: string
+}
+
+export interface MaterialVariantRow {
+  id: string
+  materialId: string
+  materialName: string
   code: string | null
   description: string | null
 }

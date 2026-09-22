@@ -14,7 +14,8 @@ export interface CertificateRow {
 }
 
 export interface SupplierMaterialLinkRow {
-  materialId: string
+  materialVariantId: string
   materialName: string
-  materialCode: string | null
+  code: string | null
+  description: string | null
 }

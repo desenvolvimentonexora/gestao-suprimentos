@@ -4,7 +4,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { Trash2 } from 'lucide-react'
 import { z } from 'zod'
 import { Button, Input, Modal } from '../../components'
-import type { MaterialRow } from './types'
+import type { MaterialVariantRow } from './types'
 
 const supplierFormSchema = z.object({
   name: z.string().min(1, 'Informe o nome.'),
@@ -16,7 +16,7 @@ const supplierFormSchema = z.object({
   contactName: z.string(),
   contactPhone: z.string(),
   contactEmail: z.string(),
-  materialIds: z.array(z.string()),
+  materialVariantIds: z.array(z.string()),
 })
 
 export interface SupplierFormValues {
@@ -29,7 +29,7 @@ export interface SupplierFormValues {
   contactName: string
   contactPhone: string
   contactEmail: string
-  materialIds: string[]
+  materialVariantIds: string[]
 }
 
 type FormShape = z.infer<typeof supplierFormSchema>
@@ -39,7 +39,7 @@ export interface SupplierFormModalProps {
   onClose: () => void
   mode: 'create' | 'edit'
   initialValues?: SupplierFormValues
-  allMaterials: MaterialRow[]
+  allMaterialVariants: MaterialVariantRow[]
   onSubmit: (values: SupplierFormValues) => void
   isSubmitting: boolean
 }
@@ -55,8 +55,12 @@ function toFormShape(values?: SupplierFormValues): FormShape {
     contactName: values?.contactName ?? '',
     contactPhone: values?.contactPhone ?? '',
     contactEmail: values?.contactEmail ?? '',
-    materialIds: values?.materialIds ?? [],
+    materialVariantIds: values?.materialVariantIds ?? [],
   }
+}
+
+function variantLabel(variant: MaterialVariantRow) {
+  return [variant.materialName, variant.code, variant.description].filter(Boolean).join(' — ')
 }
 
 export function SupplierFormModal({
@@ -64,7 +68,7 @@ export function SupplierFormModal({
   onClose,
   mode,
   initialValues,
-  allMaterials,
+  allMaterialVariants,
   onSubmit,
   isSubmitting,
 }: SupplierFormModalProps) {
@@ -89,8 +93,11 @@ export function SupplierFormModal({
     })
   }
 
-  const visibleMaterials = allMaterials.filter((material) =>
-    material.name.toLowerCase().includes(materialSearch.trim().toLowerCase()),
+  const normalizedMaterialSearch = materialSearch.trim().toLowerCase()
+  const visibleVariants = allMaterialVariants.filter(
+    (variant) =>
+      variant.code?.toLowerCase().includes(normalizedMaterialSearch) ||
+      variant.description?.toLowerCase().includes(normalizedMaterialSearch),
   )
 
   return (
@@ -164,30 +171,30 @@ export function SupplierFormModal({
           <p className="text-sm font-medium text-ink">Materiais fornecidos</p>
           <input
             type="search"
-            placeholder="Buscar material"
+            placeholder="Buscar por código ou descrição"
             value={materialSearch}
             onChange={(e) => setMaterialSearch(e.target.value)}
             className="mt-1 w-full rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
           />
           <Controller
             control={control}
-            name="materialIds"
+            name="materialVariantIds"
             render={({ field }) => (
               <div className="mt-2 flex max-h-40 flex-col gap-1 overflow-y-auto">
-                {visibleMaterials.map((material) => (
-                  <label key={material.id} className="flex items-center gap-2 text-sm text-ink">
+                {visibleVariants.map((variant) => (
+                  <label key={variant.id} className="flex items-center gap-2 text-sm text-ink">
                     <input
                       type="checkbox"
-                      checked={field.value.includes(material.id)}
+                      checked={field.value.includes(variant.id)}
                       onChange={(e) => {
                         field.onChange(
                           e.target.checked
-                            ? [...field.value, material.id]
-                            : field.value.filter((id) => id !== material.id),
+                            ? [...field.value, variant.id]
+                            : field.value.filter((id) => id !== variant.id),
                         )
                       }}
                     />
-                    {material.name}
+                    {variantLabel(variant)}
                   </label>
                 ))}
               </div>

@@ -13,10 +13,12 @@ import { ReportModal } from './ReportModal'
 import {
   useCategories,
   useCreateMaterial,
+  useCreateMaterialVariant,
   useDeleteMaterial,
   useDeleteSupplier,
   useFavoriteSupplierIds,
   useMaterials,
+  useMaterialVariants,
   useSupplierEmailsByMaterial,
   useSupplierReport,
   useSuppliersByMaterial,
@@ -51,7 +53,9 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
 
   const categoriesQuery = useCategories()
   const materialsQuery = useMaterials()
+  const materialVariantsQuery = useMaterialVariants()
   const createMaterial = useCreateMaterial(tenantId)
+  const createMaterialVariant = useCreateMaterialVariant(tenantId)
   const updateMaterial = useUpdateMaterial()
   const deleteMaterial = useDeleteMaterial()
   const deleteSupplier = useDeleteSupplier()
@@ -126,11 +130,11 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             selectedCategoryId={selectedCategoryId}
             selectedMaterialId={selectedMaterialId}
             onSelectMaterial={selectMaterial}
-            onCreateMaterial={(name, categoryId, icon, code, description) =>
-              createMaterial.mutate({ name, categoryId, icon, code, description })
+            onCreateMaterial={(name, categoryId, icon) =>
+              createMaterial.mutate({ name, categoryId, icon })
             }
-            onUpdateMaterial={(materialId, name, categoryId, icon, code, description) =>
-              updateMaterial.mutate({ materialId, values: { name, categoryId, icon, code, description } })
+            onUpdateMaterial={(materialId, name, categoryId, icon) =>
+              updateMaterial.mutate({ materialId, values: { name, categoryId, icon } })
             }
             onDeleteMaterial={(materialId) => deleteMaterial.mutate(materialId)}
             materialSearch={materialSearch}
@@ -162,9 +166,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             }}
             availableTypes={[]}
             onRequestQuote={() => setQuoteRequestOpen(true)}
-            onAddSupplier={() =>
-              setFormState({ mode: 'create', defaultMaterialId: selectedMaterialId ?? undefined })
-            }
+            onAddSupplier={() => setFormState({ mode: 'create' })}
             favoriteIds={favoriteIds.data ?? new Set()}
             onToggleFavorite={(supplierId) =>
               toggleFavorite.mutate({ supplierId, favorite: !favoriteIds.data?.has(supplierId) })
@@ -186,6 +188,10 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         selectedMaterialId={selectedMaterialId}
         selectedMaterialName={selectedMaterial?.name ?? null}
         allMaterials={materialsQuery.data ?? []}
+        allMaterialVariants={materialVariantsQuery.data ?? []}
+        onCreateMaterialVariant={(materialId, code, description) =>
+          createMaterialVariant.mutateAsync({ materialId, code, description })
+        }
       />
 
       <QuoteRequestModal
@@ -200,7 +206,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         tenantId={tenantId}
         state={formState}
         onClose={() => setFormState(null)}
-        allMaterials={materialsQuery.data ?? []}
+        allMaterialVariants={materialVariantsQuery.data ?? []}
       />
 
       <ReportModal

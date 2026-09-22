@@ -1,12 +1,14 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createMaterial,
+  createMaterialVariant,
   createSupplier,
   deleteMaterial,
   deleteSupplier,
   fetchCategories,
   fetchFavoriteSupplierIds,
   fetchMaterials,
+  fetchMaterialVariants,
   fetchSupplierDetail,
   fetchSupplierEmailsByMaterial,
   fetchSupplierReport,
@@ -25,6 +27,30 @@ export function useCategories() {
 
 export function useMaterials() {
   return useQuery({ queryKey: ['materials'], queryFn: fetchMaterials })
+}
+
+export function useMaterialVariants() {
+  return useQuery({ queryKey: ['material-variants'], queryFn: fetchMaterialVariants })
+}
+
+export function useCreateMaterialVariant(tenantId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      materialId,
+      code,
+      description,
+    }: {
+      materialId: string
+      code: string
+      description: string
+    }) => createMaterialVariant(tenantId, materialId, code, description),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['material-variants'] })
+      queryClient.invalidateQueries({ queryKey: ['materials'] })
+    },
+  })
 }
 
 export function useSuppliersByMaterial(materialId: string | null, filter: SupplierFilter) {
@@ -95,15 +121,11 @@ export function useCreateMaterial(tenantId: string) {
       name,
       categoryId,
       icon,
-      code,
-      description,
     }: {
       name: string
       categoryId: string
       icon: string
-      code: string
-      description: string
-    }) => createMaterial(tenantId, name, categoryId, icon, code, description),
+    }) => createMaterial(tenantId, name, categoryId, icon),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] })
     },
@@ -119,7 +141,7 @@ export function useUpdateMaterial() {
       values,
     }: {
       materialId: string
-      values: { name: string; categoryId: string; icon: string; code: string; description: string }
+      values: { name: string; categoryId: string; icon: string }
     }) => updateMaterial(materialId, values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] })

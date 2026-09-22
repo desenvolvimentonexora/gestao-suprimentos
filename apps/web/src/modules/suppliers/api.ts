@@ -1,6 +1,6 @@
 import { supabase } from '../../lib/supabase'
 import type { SupplierFormValues } from './SupplierFormModal'
-import type { CategoryRow, MaterialRow, SupplierReportRow, SupplierRow } from './types'
+import type { CategoryRow, MaterialRow, MaterialVariantRow, SupplierReportRow, SupplierRow } from './types'
 
 export async function fetchCategories(): Promise<CategoryRow[]> {
   const { data, error } = await supabase
@@ -16,7 +16,7 @@ export async function fetchCategories(): Promise<CategoryRow[]> {
 export async function fetchMaterials(): Promise<MaterialRow[]> {
   const { data, error } = await supabase
     .from('materials')
-    .select('id, name, category_id, icon, code, description, supplier_materials(count)')
+    .select('id, name, category_id, icon, material_variants(supplier_materials(count))')
     .is('deleted_at', null)
     .order('name')
 
@@ -27,15 +27,16 @@ export async function fetchMaterials(): Promise<MaterialRow[]> {
     name: row.name,
     categoryId: row.category_id,
     icon: row.icon,
-    code: row.code,
-    description: row.description,
-    supplierCount: row.supplier_materials[0]?.count ?? 0,
+    supplierCount: row.material_variants.reduce(
+      (total, variant) => total + (variant.supplier_materials[0]?.count ?? 0),
+      0,
+    ),
   }))
 }
 
 export async function updateMaterial(
   materialId: string,
-  values: { name: string; categoryId: string; icon: string; code: string; description: string },
+  values: { name: string; categoryId: string; icon: string },
 ): Promise<void> {
   const { error } = await supabase
     .from('materials')
@@ -43,11 +44,55 @@ export async function updateMaterial(
       name: values.name,
       category_id: values.categoryId,
       icon: values.icon,
-      code: values.code || null,
-      description: values.description || null,
     })
     .eq('id', materialId)
   if (error) throw error
+}
+
+export async function fetchMaterialVariants(): Promise<MaterialVariantRow[]> {
+  const { data, error } = await supabase
+    .from('material_variants')
+    .select('id, material_id, code, description, materials(name)')
+    .is('deleted_at', null)
+    .order('code')
+
+  if (error) throw error
+
+  return data.map((row) => ({
+    id: row.id,
+    materialId: row.material_id,
+    materialName: row.materials?.name ?? '',
+    code: row.code,
+    description: row.description,
+  }))
+}
+
+export async function createMaterialVariant(
+  tenantId: string,
+  materialId: string,
+  code: string,
+  description: string,
+): Promise<MaterialVariantRow> {
+  const { data, error } = await supabase
+    .from('material_variants')
+    .insert({
+      tenant_id: tenantId,
+      material_id: materialId,
+      code: code || null,
+      description: description || null,
+    })
+    .select('id, material_id, code, description, materials(name)')
+    .single()
+
+  if (error) throw error
+
+  return {
+    id: data.id,
+    materialId: data.material_id,
+    materialName: data.materials?.name ?? '',
+    code: data.code,
+    description: data.description,
+  }
 }
 
 export interface SupplierFilter {
@@ -62,6 +107,25 @@ export interface SupplierPage {
   total: number
 }
 
+/** IDs dos fornecedores que trabalham com qualquer variante de um material (ex.: qualquer código de "Aço"). */
+async function fetchSupplierIdsByMaterial(materialId: string): Promise<string[]> {
+  const { data: variantRows, error: variantsError } = await supabase
+    .from('material_variants')
+    .select('id')
+    .eq('material_id', materialId)
+    .is('deleted_at', null)
+  if (variantsError) throw variantsError
+  const variantIds = variantRows.map((row) => row.id)
+  if (variantIds.length === 0) return []
+
+  const { data: linkRows, error: linksError } = await supabase
+    .from('supplier_materials')
+    .select('supplier_id')
+    .in('material_variant_id', variantIds)
+  if (linksError) throw linksError
+  return [...new Set(linkRows.map((row) => row.supplier_id))]
+}
+
 export async function fetchSuppliersByMaterial(
   materialId: string,
   { search, type, page, pageSize }: SupplierFilter,
@@ -69,13 +133,15 @@ export async function fetchSuppliersByMaterial(
   const from = page * pageSize
   const to = from + pageSize - 1
 
+  const supplierIds = await fetchSupplierIdsByMaterial(materialId)
+  if (supplierIds.length === 0) return { rows: [], total: 0 }
+
   let query = supabase
     .from('suppliers')
-    .select(
-      'id, name, city, type, status, created_by, supplier_contacts(name, phone, email), supplier_materials!inner(material_id)',
-      { count: 'exact' },
-    )
-    .eq('supplier_materials.material_id', materialId)
+    .select('id, name, city, type, status, created_by, supplier_contacts(name, phone, email)', {
+      count: 'exact',
+    })
+    .in('id', supplierIds)
     .is('deleted_at', null)
     .order('name')
     .range(from, to)
@@ -169,7 +235,9 @@ export async function deleteSupplier(supplierId: string): Promise<void> {
 export async function fetchSupplierReport(): Promise<SupplierReportRow[]> {
   const { data, error } = await supabase
     .from('suppliers')
-    .select('id, name, city, supplier_contacts(name), supplier_materials(materials(name))')
+    .select(
+      'id, name, city, supplier_contacts(name), supplier_materials(material_variants(materials(name)))',
+    )
     .is('deleted_at', null)
     .order('name')
 
@@ -180,9 +248,13 @@ export async function fetchSupplierReport(): Promise<SupplierReportRow[]> {
     name: row.name,
     city: row.city,
     contactName: row.supplier_contacts[0]?.name ?? null,
-    materials: row.supplier_materials
-      .map((link) => link.materials?.name)
-      .filter((name): name is string => Boolean(name)),
+    materials: [
+      ...new Set(
+        row.supplier_materials
+          .map((link) => link.material_variants?.materials?.name)
+          .filter((name): name is string => Boolean(name)),
+      ),
+    ],
   }))
 }
 
@@ -199,10 +271,13 @@ export async function fetchUnits(): Promise<{ id: string; name: string }[]> {
 export async function fetchSupplierEmailsByMaterial(
   materialId: string,
 ): Promise<{ id: string; name: string; email: string }[]> {
+  const supplierIds = await fetchSupplierIdsByMaterial(materialId)
+  if (supplierIds.length === 0) return []
+
   const { data, error } = await supabase
     .from('suppliers')
-    .select('id, name, supplier_contacts(email), supplier_materials!inner(material_id)')
-    .eq('supplier_materials.material_id', materialId)
+    .select('id, name, supplier_contacts(email)')
+    .in('id', supplierIds)
     .is('deleted_at', null)
     .order('name')
 
@@ -217,7 +292,7 @@ export async function fetchSupplierDetail(supplierId: string): Promise<SupplierF
   const { data, error } = await supabase
     .from('suppliers')
     .select(
-      'name, type, city, status, notes, supplier_contacts(name, phone, email), supplier_documents(cnpj), supplier_materials(material_id)',
+      'name, type, city, status, notes, supplier_contacts(name, phone, email), supplier_documents(cnpj), supplier_materials(material_variant_id)',
     )
     .eq('id', supplierId)
     .single()
@@ -234,7 +309,7 @@ export async function fetchSupplierDetail(supplierId: string): Promise<SupplierF
     contactName: data.supplier_contacts[0]?.name ?? '',
     contactPhone: data.supplier_contacts[0]?.phone ?? '',
     contactEmail: data.supplier_contacts[0]?.email ?? '',
-    materialIds: data.supplier_materials.map((link) => link.material_id),
+    materialVariantIds: data.supplier_materials.map((link) => link.material_variant_id),
   }
 }
 
@@ -307,10 +382,10 @@ async function writeSupplierRelations(
     if (error) throw error
   }
 
-  for (const materialId of values.materialIds) {
+  for (const materialVariantId of values.materialVariantIds) {
     const { error } = await supabase
       .from('supplier_materials')
-      .insert({ tenant_id: tenantId, supplier_id: supplierId, material_id: materialId })
+      .insert({ tenant_id: tenantId, supplier_id: supplierId, material_variant_id: materialVariantId })
     if (error) throw error
   }
 }
@@ -320,8 +395,6 @@ export async function createMaterial(
   name: string,
   categoryId: string,
   icon: string,
-  code: string,
-  description: string,
 ): Promise<MaterialRow> {
   const { data, error } = await supabase
     .from('materials')
@@ -330,10 +403,8 @@ export async function createMaterial(
       name,
       category_id: categoryId,
       icon,
-      code: code || null,
-      description: description || null,
     })
-    .select('id, name, category_id, icon, code, description')
+    .select('id, name, category_id, icon')
     .single()
 
   if (error) throw error
@@ -343,8 +414,6 @@ export async function createMaterial(
     name: data.name,
     categoryId: data.category_id,
     icon: data.icon,
-    code: data.code,
-    description: data.description,
     supplierCount: 0,
   }
 }
