@@ -13,7 +13,7 @@ const brand = {
   name: 'Nexora',
   subtitle: 'Gestão de Suprimentos',
   tagline: 'Sistema de Gestão Integrado',
-  logoUrl: '/assets/logo-nexora.svg',
+  logoUrl: '/assets/logo-nexora.png',
 }
 
 describe('LoginPage', () => {

@@ -30,7 +30,11 @@ function LoginPanel({ brand }: { brand: Brand }) {
   return (
     <div className="flex flex-col items-center justify-between bg-gradient-to-t from-primary-dark to-primary px-8 py-10 text-on-primary sm:w-1/2">
       <div className="flex flex-col items-center gap-1">
-        <img src={brand.logoUrl} alt={brand.name ?? ''} className="h-14" />
+        <img
+          src={brand.logoUrl}
+          alt={brand.name ?? ''}
+          className="h-24 w-auto max-w-full object-contain"
+        />
         {brand.subtitle && <p className="text-sm text-on-primary">{brand.subtitle}</p>}
       </div>
       <p className="max-w-xs text-center text-lg font-medium">{brand.tagline}</p>

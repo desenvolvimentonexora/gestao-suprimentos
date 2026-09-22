@@ -50,7 +50,7 @@ values (
     'name', 'Nexora',
     'subtitle', 'Gestão de Suprimentos',
     'tagline', 'Sistema de Gestão Integrado',
-    'logoUrl', '/assets/logo-nexora.svg'
+    'logoUrl', '/assets/logo-nexora.png'
   ),
   -- Módulos de Suprimentos que já têm tela construída (têm rota real em
   -- suprimentosRegistry) — ativos por padrão, conforme Fase 5 Administração.
