@@ -68,7 +68,9 @@ export function ImportRequestsModal({ isOpen, onClose, tenantId }: ImportRequest
     const units = unitsQuery.data ?? []
     const materials = materialsQuery.data ?? []
     const unitsByName = new Map(units.map((unit) => [normalizeName(unit.name), unit.id]))
-    const materialsByName = new Map(materials.map((material) => [normalizeName(material.name), material.id]))
+    const materialsByName = new Map(
+      materials.map((material) => [normalizeName(material.materialName), material.id]),
+    )
     const materialsByCode = new Map(
       materials.filter((material) => material.code).map((material) => [normalizeName(material.code!), material.id]),
     )

@@ -11,6 +11,7 @@ export type RequestStatus =
 
 export interface RequestItemRow {
   id: string
+  /** Na verdade o id da variante (material_variants.id) — a requisição fica amarrada ao código exato. */
   materialId: string
   materialName: string
   materialCode: string | null
@@ -42,6 +43,7 @@ export interface RequestRow {
   items: RequestItemRow[]
 }
 
+/** id é o da variante (material_variants.id); name é o nome do material genérico. */
 export interface MaterialWithSupplierCount {
   id: string
   name: string
@@ -50,6 +52,7 @@ export interface MaterialWithSupplierCount {
 }
 
 export interface RequestItemFormValues {
+  /** id da variante (material_variants.id). */
   materialId: string
   quantity: number
   unitOfMeasure: string
@@ -62,10 +65,12 @@ export interface RequestFormValues {
   items: RequestItemFormValues[]
 }
 
+/** Opção de variante (material_variants) para o seletor de item da requisição. */
 export interface MaterialOption {
   id: string
-  name: string
+  materialName: string
   code: string | null
+  description: string | null
 }
 
 export interface UnitOption {

@@ -118,7 +118,9 @@ export function RequestFormModal({
                   <option value="">Selecione…</option>
                   {materials.map((material) => (
                     <option key={material.id} value={material.id}>
-                      {material.code ? `${material.code} · ${material.name}` : material.name}
+                      {material.code
+                        ? `${material.code} · ${material.materialName}`
+                        : material.materialName}
                     </option>
                   ))}
                 </select>

@@ -15,7 +15,7 @@ export async function fetchRequests(): Promise<RequestRow[]> {
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, status, needed_by, external_ref, sequence_number, created_at, subject_category, notes, negotiating_started_at, dispatch_blocked_reason, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_id, quantity, unit_of_measure, status_code, authorized_at, pendente, motivo_pendencia, deleted_at, materials(name, code, description)), quotations(id, deleted_at)',
+      'id, status, needed_by, external_ref, sequence_number, created_at, subject_category, notes, negotiating_started_at, dispatch_blocked_reason, units(id, name), negotiator:users!negotiator_id(id, full_name), request_items(id, material_variant_id, quantity, unit_of_measure, status_code, authorized_at, pendente, motivo_pendencia, deleted_at, material_variants(code, description, materials(name))), quotations(id, deleted_at)',
     )
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -42,10 +42,10 @@ export async function fetchRequests(): Promise<RequestRow[]> {
       .filter((item) => !item.deleted_at)
       .map((item) => ({
         id: item.id,
-        materialId: item.material_id,
-        materialName: item.materials?.name ?? '',
-        materialCode: item.materials?.code ?? null,
-        materialDescription: item.materials?.description ?? null,
+        materialId: item.material_variant_id,
+        materialName: item.material_variants?.materials?.name ?? '',
+        materialCode: item.material_variants?.code ?? null,
+        materialDescription: item.material_variants?.description ?? null,
         quantity: Number(item.quantity),
         unitOfMeasure: item.unit_of_measure,
         statusCode: item.status_code,
@@ -66,14 +66,14 @@ export async function updateRequestNotes(requestId: string, notes: string): Prom
 
 export async function fetchMaterialsWithSupplierCount(): Promise<MaterialWithSupplierCount[]> {
   const { data, error } = await supabase
-    .from('materials')
-    .select('id, name, code, supplier_materials(count)')
+    .from('material_variants')
+    .select('id, code, materials(name), supplier_materials(count)')
     .is('deleted_at', null)
-    .order('name')
+    .order('code')
   if (error) throw error
   return data.map((row) => ({
     id: row.id,
-    name: row.name,
+    name: row.materials?.name ?? '',
     code: row.code,
     supplierCount: row.supplier_materials[0]?.count ?? 0,
   }))
@@ -110,12 +110,17 @@ export async function fetchUnitOptions(): Promise<UnitOption[]> {
 
 export async function fetchMaterialOptions(): Promise<MaterialOption[]> {
   const { data, error } = await supabase
-    .from('materials')
-    .select('id, name, code')
+    .from('material_variants')
+    .select('id, code, description, materials(name)')
     .is('deleted_at', null)
-    .order('name')
+    .order('code')
   if (error) throw error
-  return data
+  return data.map((row) => ({
+    id: row.id,
+    materialName: row.materials?.name ?? '',
+    code: row.code,
+    description: row.description,
+  }))
 }
 
 export async function createRequest(tenantId: string, values: RequestFormValues): Promise<void> {
@@ -135,7 +140,7 @@ export async function createRequest(tenantId: string, values: RequestFormValues)
     values.items.map((item) => ({
       tenant_id: tenantId,
       request_id: data.id,
-      material_id: item.materialId,
+      material_variant_id: item.materialId,
       quantity: item.quantity,
       unit_of_measure: item.unitOfMeasure || null,
     })),
@@ -168,7 +173,7 @@ export async function updateRequest(
     values.items.map((item) => ({
       tenant_id: tenantId,
       request_id: requestId,
-      material_id: item.materialId,
+      material_variant_id: item.materialId,
       quantity: item.quantity,
       unit_of_measure: item.unitOfMeasure || null,
     })),

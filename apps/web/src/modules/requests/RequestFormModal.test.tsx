@@ -10,8 +10,8 @@ const units: UnitOption[] = [
 ]
 
 const materials: MaterialOption[] = [
-  { id: 'm1', name: 'Cimento', code: '1023' },
-  { id: 'm2', name: 'Areia', code: null },
+  { id: 'm1', materialName: 'Cimento', code: '1023', description: null },
+  { id: 'm2', materialName: 'Areia', code: null, description: null },
 ]
 
 function baseProps() {
