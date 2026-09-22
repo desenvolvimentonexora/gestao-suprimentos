@@ -36,6 +36,10 @@ export const themeSchema = z
 export const brandSchema = z
   .object({
     name: z.string().optional(),
+    // Segunda linha do bloco de logo (ex.: segmento/razão social), distinta
+    // da tagline (frase central da tela de login). Opcional — sem
+    // configuração, o bloco de logo mostra só o nome.
+    subtitle: z.string().optional(),
     tagline: z.string().optional(),
     logoUrl: z.string().optional(),
   })

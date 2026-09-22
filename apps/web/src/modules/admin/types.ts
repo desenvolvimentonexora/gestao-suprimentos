@@ -20,6 +20,7 @@ export interface ThemeValues {
 
 export interface BrandValues {
   name: string
+  subtitle: string
   tagline: string
   logoUrl: string
 }

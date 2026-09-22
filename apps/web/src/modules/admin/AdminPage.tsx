@@ -78,6 +78,7 @@ export function AdminPage({ tenantId }: AdminPageProps) {
               <IdentitySection
                 brand={{
                   name: settings.brand.name ?? '',
+                  subtitle: settings.brand.subtitle ?? '',
                   tagline: settings.brand.tagline ?? '',
                   logoUrl: settings.brand.logoUrl ?? '',
                 }}

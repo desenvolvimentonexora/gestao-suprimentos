@@ -6,7 +6,12 @@ import { IdentitySection } from './IdentitySection'
 
 vi.mock('../../core/theme', () => ({ applyTheme: vi.fn() }))
 
-const brand = { name: 'Nexora', tagline: 'Sistema de Gestão Integrado', logoUrl: '/logo.svg' }
+const brand = {
+  name: 'Nexora',
+  subtitle: 'Gestão de Suprimentos',
+  tagline: 'Sistema de Gestão Integrado',
+  logoUrl: '/logo.svg',
+}
 const theme = { primary: '#3A7769', primaryDark: '#0E0E0E', accent: '#B45309' }
 
 function baseProps() {
@@ -25,6 +30,11 @@ describe('IdentitySection', () => {
     expect(screen.getByLabelText('Nome da marca')).toHaveValue('Nexora')
     expect(screen.getByLabelText('Tagline')).toHaveValue('Sistema de Gestão Integrado')
     expect(screen.getByLabelText('Cor primária (hex)')).toHaveValue('#3A7769')
+  })
+
+  it('pré-preenche e permite editar o subtítulo da marca', () => {
+    render(<IdentitySection {...baseProps()} />)
+    expect(screen.getByLabelText('Subtítulo da marca')).toHaveValue('Gestão de Suprimentos')
   })
 
   it('aplica o tema ao vivo assim que uma cor muda, sem precisar salvar', async () => {
@@ -49,7 +59,12 @@ describe('IdentitySection', () => {
     await user.click(screen.getByRole('button', { name: /salvar identidade/i }))
 
     expect(onSave).toHaveBeenCalledWith({
-      brand: { name: 'Cliente X', tagline: 'Sistema de Gestão Integrado', logoUrl: '/logo.svg' },
+      brand: {
+        name: 'Cliente X',
+        subtitle: 'Gestão de Suprimentos',
+        tagline: 'Sistema de Gestão Integrado',
+        logoUrl: '/logo.svg',
+      },
       theme,
     })
   })

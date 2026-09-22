@@ -84,6 +84,11 @@ export function IdentitySection({ brand, theme, onSave, onUploadLogo, isSaving }
           onChange={(e) => setBrandValues((current) => ({ ...current, name: e.target.value }))}
         />
         <Input
+          label="Subtítulo da marca"
+          value={brandValues.subtitle}
+          onChange={(e) => setBrandValues((current) => ({ ...current, subtitle: e.target.value }))}
+        />
+        <Input
           label="Tagline"
           value={brandValues.tagline}
           onChange={(e) => setBrandValues((current) => ({ ...current, tagline: e.target.value }))}
