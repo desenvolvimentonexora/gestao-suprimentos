@@ -29,12 +29,12 @@ function CardBody({ label, description, icon: Icon, status }: Omit<ModuleCardPro
 export function ModuleCard({ label, description, icon, status, route }: ModuleCardProps) {
   const [showUnavailable, setShowUnavailable] = useState(false)
 
-  const cardClassName = `w-full ${CARD_HEIGHT} flex flex-col rounded-xl border border-line bg-surface p-4 text-left transition duration-DEFAULT hover:-translate-y-0.5 hover:shadow-sm`
+  const cardClassName = `w-full ${CARD_HEIGHT} flex flex-col rounded-lg border border-line bg-surface p-4 text-left transition duration-DEFAULT hover:-translate-y-0.5 hover:shadow-sm`
 
   if (status === 'em-breve') {
     return (
       <div
-        className={`${CARD_HEIGHT} flex cursor-not-allowed flex-col rounded-xl border border-line bg-surface p-4 opacity-50`}
+        className={`${CARD_HEIGHT} flex cursor-not-allowed flex-col rounded-lg border border-line bg-surface p-4 opacity-50`}
         aria-disabled="true"
       >
         <CardBody label={label} description={description} icon={icon} status={status} />

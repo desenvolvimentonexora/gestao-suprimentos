@@ -44,12 +44,12 @@ export function Modal({ isOpen, onClose, title, icon: Icon, titleClassName, head
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="flex max-h-[90vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-xl bg-surface p-6 shadow-lg focus:outline-none"
+        className="flex max-h-[90vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-lg bg-surface p-6 shadow-lg focus:outline-none"
       >
         <div
           className={
             headerClassName
-              ? `-mx-6 -mt-6 mb-2 flex items-center justify-between rounded-t-xl px-6 py-4 ${headerClassName}`
+              ? `-mx-6 -mt-6 mb-2 flex items-center justify-between rounded-t-lg px-6 py-4 ${headerClassName}`
               : 'flex items-center justify-between'
           }
         >

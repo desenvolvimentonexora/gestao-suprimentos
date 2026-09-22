@@ -33,7 +33,7 @@ export function SupplierCard({
   const isActive = supplier.status === 'active'
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
+    <div className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div

@@ -88,7 +88,7 @@ describe('Modal', () => {
     const heading = screen.getByText('Pedido PC-100')
     const headerRow = heading.parentElement
     expect(headerRow?.className).toContain('bg-status-atrasado/10')
-    expect(headerRow?.className).toContain('rounded-t-xl')
+    expect(headerRow?.className).toContain('rounded-t-lg')
   })
 
   it('sem headerClassName, a faixa do título não ganha fundo nem cantos arredondados extras', () => {
@@ -98,6 +98,6 @@ describe('Modal', () => {
       </Modal>,
     )
     const headerRow = screen.getByText('Título').parentElement
-    expect(headerRow?.className).not.toContain('rounded-t-xl')
+    expect(headerRow?.className).not.toContain('rounded-t-lg')
   })
 })
