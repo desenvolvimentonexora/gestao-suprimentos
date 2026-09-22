@@ -48,6 +48,7 @@ values (
   'BRL',
   jsonb_build_object(
     'name', 'Nexora',
+    'subtitle', 'Gestão de Suprimentos',
     'tagline', 'Sistema de Gestão Integrado',
     'logoUrl', '/assets/logo-nexora.svg'
   ),
