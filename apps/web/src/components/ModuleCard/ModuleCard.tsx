@@ -11,17 +11,17 @@ export interface ModuleCardProps {
   route?: string
 }
 
-const CARD_HEIGHT = 'h-44'
+const CARD_HEIGHT = 'h-32'
 
 function CardBody({ label, description, icon: Icon, status }: Omit<ModuleCardProps, 'route'>) {
   return (
     <>
       <div className="flex items-start justify-between">
-        <Icon size={28} className="text-primary" aria-hidden="true" />
+        <Icon size={20} className="text-primary" aria-hidden="true" />
         <StatusBadge status={status} />
       </div>
-      <p className="mt-3 font-semibold text-ink">{label}</p>
-      <p className="mt-1 line-clamp-3 text-sm text-ink-muted">{description}</p>
+      <p className="mt-2 text-sm font-semibold text-ink">{label}</p>
+      <p className="mt-1 line-clamp-2 text-xs text-ink-muted">{description}</p>
     </>
   )
 }
@@ -29,12 +29,12 @@ function CardBody({ label, description, icon: Icon, status }: Omit<ModuleCardPro
 export function ModuleCard({ label, description, icon, status, route }: ModuleCardProps) {
   const [showUnavailable, setShowUnavailable] = useState(false)
 
-  const cardClassName = `w-full ${CARD_HEIGHT} flex flex-col rounded-lg border border-line bg-surface p-4 text-left transition duration-DEFAULT hover:-translate-y-0.5 hover:shadow-sm`
+  const cardClassName = `w-full ${CARD_HEIGHT} flex flex-col rounded-lg border border-line bg-surface p-3 text-left transition duration-DEFAULT hover:-translate-y-0.5 hover:shadow-sm`
 
   if (status === 'em-breve') {
     return (
       <div
-        className={`${CARD_HEIGHT} flex cursor-not-allowed flex-col rounded-lg border border-line bg-surface p-4 opacity-50`}
+        className={`${CARD_HEIGHT} flex cursor-not-allowed flex-col rounded-lg border border-line bg-surface p-3`}
         aria-disabled="true"
       >
         <CardBody label={label} description={description} icon={icon} status={status} />
