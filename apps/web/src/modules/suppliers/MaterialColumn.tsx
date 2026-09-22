@@ -23,11 +23,10 @@ export interface MaterialColumnProps {
     description: string,
   ) => void
   onDeleteMaterial: (materialId: string) => void
-  supplierSearch: string
-  onSupplierSearchChange: (value: string) => void
+  materialSearch: string
+  showNewForm: boolean
+  onCloseNewForm: () => void
   onOpenReport: () => void
-  /** Vocabulário do cliente para esta entidade (settings.vocabulary.material) — "material" se não vier. */
-  materialLabel?: string
 }
 
 interface MaterialFormValues {
@@ -121,13 +120,11 @@ export function MaterialColumn({
   onCreateMaterial,
   onUpdateMaterial,
   onDeleteMaterial,
-  supplierSearch,
-  onSupplierSearchChange,
+  materialSearch,
+  showNewForm,
+  onCloseNewForm,
   onOpenReport,
-  materialLabel = 'material',
 }: MaterialColumnProps) {
-  const [materialSearch, setMaterialSearch] = useState('')
-  const [showNewForm, setShowNewForm] = useState(false)
   const [editingMaterialId, setEditingMaterialId] = useState<string | null>(null)
 
   const visibleMaterials = filterMaterials(materials, {
@@ -137,35 +134,17 @@ export function MaterialColumn({
 
   return (
     <div className="flex flex-col gap-3">
-      <input
-        type="search"
-        placeholder={`Buscar ${materialLabel}`}
-        value={materialSearch}
-        onChange={(e) => setMaterialSearch(e.target.value)}
-        className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
-      />
-
-      {showNewForm ? (
+      {showNewForm && (
         <MaterialForm
           categories={categories}
           submitLabel="Criar material"
           onSubmit={({ name, categoryId, icon, code, description }) => {
             onCreateMaterial(name, categoryId, icon, code, description)
-            setShowNewForm(false)
+            onCloseNewForm()
           }}
-          onCancel={() => setShowNewForm(false)}
+          onCancel={onCloseNewForm}
         />
-      ) : (
-        <Button onClick={() => setShowNewForm(true)}>+ Novo</Button>
       )}
-
-      <input
-        type="search"
-        placeholder="Buscar fornecedor"
-        value={supplierSearch}
-        onChange={(e) => onSupplierSearchChange(e.target.value)}
-        className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
-      />
 
       <Button variant="info" onClick={onOpenReport}>
         📋 Relatório de Fornecedores

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Button } from '../../components'
 import { useSettings } from '../../core/config'
 import { CategoryColumn } from './CategoryColumn'
 import { MaterialColumn } from './MaterialColumn'
@@ -34,6 +35,8 @@ export interface AgendaFornecedoresPageProps {
 export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresPageProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null)
+  const [materialSearch, setMaterialSearch] = useState('')
+  const [showNewMaterialForm, setShowNewMaterialForm] = useState(false)
   const [supplierSearch, setSupplierSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
   const [page, setPage] = useState(0)
@@ -87,6 +90,26 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
       </div>
 
       <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-4">
+        <input
+          type="search"
+          placeholder={`Buscar ${materialLabel ?? 'material'}`}
+          value={materialSearch}
+          onChange={(e) => setMaterialSearch(e.target.value)}
+          className="min-w-[200px] flex-1 rounded border border-line bg-bg px-3 py-2 text-sm text-ink"
+        />
+        <Button onClick={() => setShowNewMaterialForm(true)}>+ Novo</Button>
+        <input
+          type="search"
+          placeholder="Buscar fornecedor"
+          value={supplierSearch}
+          onChange={(e) => {
+            setSupplierSearch(e.target.value)
+            setPage(0)
+          }}
+          className="min-w-[200px] flex-1 rounded border border-line bg-bg px-3 py-2 text-sm text-ink"
+        />
+      </div>
       <div className="grid grid-cols-1 items-start gap-6 lg:h-[calc(100vh-14rem)] lg:grid-cols-[200px_320px_1fr]">
         <div className="lg:h-full lg:overflow-y-auto">
           <CategoryColumn
@@ -110,13 +133,10 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
               updateMaterial.mutate({ materialId, values: { name, categoryId, icon, code, description } })
             }
             onDeleteMaterial={(materialId) => deleteMaterial.mutate(materialId)}
-            supplierSearch={supplierSearch}
-            onSupplierSearchChange={(value) => {
-              setSupplierSearch(value)
-              setPage(0)
-            }}
+            materialSearch={materialSearch}
+            showNewForm={showNewMaterialForm}
+            onCloseNewForm={() => setShowNewMaterialForm(false)}
             onOpenReport={() => setReportOpen(true)}
-            materialLabel={materialLabel}
           />
         </div>
 

@@ -37,8 +37,9 @@ function baseProps() {
     onCreateMaterial: vi.fn(),
     onUpdateMaterial: vi.fn(),
     onDeleteMaterial: vi.fn(),
-    supplierSearch: '',
-    onSupplierSearchChange: vi.fn(),
+    materialSearch: '',
+    showNewForm: false,
+    onCloseNewForm: vi.fn(),
     onOpenReport: vi.fn(),
   }
 }
@@ -63,15 +64,8 @@ describe('MaterialColumn', () => {
     expect(row?.textContent).not.toContain('null')
   })
 
-  it('usa o rótulo de vocabulário do cliente na busca, quando informado', () => {
-    render(<MaterialColumn {...baseProps()} materialLabel="insumo" />)
-    expect(screen.getByPlaceholderText('Buscar insumo')).toBeInTheDocument()
-  })
-
-  it('filtra pela busca de material digitada', async () => {
-    render(<MaterialColumn {...baseProps()} />)
-
-    await userEvent.type(screen.getByPlaceholderText('Buscar material'), 'cabo')
+  it('filtra pela busca de material recebida por prop (o input mora na página)', () => {
+    render(<MaterialColumn {...baseProps()} materialSearch="cabo" />)
 
     expect(screen.queryByText('Cimento')).not.toBeInTheDocument()
     expect(screen.getByText('Cabo elétrico')).toBeInTheDocument()
@@ -86,23 +80,22 @@ describe('MaterialColumn', () => {
     expect(props.onSelectMaterial).toHaveBeenCalledWith('m1')
   })
 
-  it('abre o formulário de novo material, sugere um ícone pelo nome e cria ao enviar', async () => {
+  it('mostra o formulário de novo material quando showNewForm é true, sugere um ícone pelo nome e cria ao enviar', async () => {
     const props = baseProps()
-    render(<MaterialColumn {...props} />)
+    render(<MaterialColumn {...props} showNewForm />)
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Novo' }))
     await userEvent.type(screen.getByLabelText('Nome do material'), 'Cabo de Aço')
     await userEvent.selectOptions(screen.getByLabelText('Categoria'), 'c1')
     await userEvent.click(screen.getByRole('button', { name: 'Criar material' }))
 
     expect(props.onCreateMaterial).toHaveBeenCalledWith('Cabo de Aço', 'c1', 'zap', '', '')
+    expect(props.onCloseNewForm).toHaveBeenCalledTimes(1)
   })
 
   it('permite trocar manualmente o ícone sugerido antes de criar', async () => {
     const props = baseProps()
-    render(<MaterialColumn {...props} />)
+    render(<MaterialColumn {...props} showNewForm />)
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Novo' }))
     await userEvent.type(screen.getByLabelText('Nome do material'), 'Cabo de Aço')
     await userEvent.click(screen.getByRole('button', { name: 'wrench' }))
     await userEvent.click(screen.getByRole('button', { name: 'Criar material' }))
@@ -112,9 +105,8 @@ describe('MaterialColumn', () => {
 
   it('cria um material com código e descrição preenchidos', async () => {
     const props = baseProps()
-    render(<MaterialColumn {...props} />)
+    render(<MaterialColumn {...props} showNewForm />)
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Novo' }))
     await userEvent.type(screen.getByLabelText('Nome do material'), 'Cabo de Aço')
     await userEvent.type(screen.getByLabelText('Código'), '2051')
     await userEvent.type(screen.getByLabelText('Descrição'), 'Cabo de aço galvanizado 5mm')
@@ -127,6 +119,15 @@ describe('MaterialColumn', () => {
       '2051',
       'Cabo de aço galvanizado 5mm',
     )
+  })
+
+  it('chama onCloseNewForm ao cancelar o formulário de novo material', async () => {
+    const props = baseProps()
+    render(<MaterialColumn {...props} showNewForm />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(props.onCloseNewForm).toHaveBeenCalledTimes(1)
   })
 
   it('chama onDeleteMaterial ao clicar em excluir', async () => {
@@ -161,15 +162,6 @@ describe('MaterialColumn', () => {
     expect(screen.getByLabelText('Descrição')).toHaveValue('Cimento CP-II 50kg')
   })
 
-  it('chama onSupplierSearchChange ao digitar na busca de fornecedor', async () => {
-    const props = baseProps()
-    render(<MaterialColumn {...props} />)
-
-    await userEvent.type(screen.getByPlaceholderText('Buscar fornecedor'), 'a')
-
-    expect(props.onSupplierSearchChange).toHaveBeenCalled()
-  })
-
   it('chama onOpenReport ao clicar no botão de relatório', async () => {
     const props = baseProps()
     render(<MaterialColumn {...props} />)
@@ -179,9 +171,8 @@ describe('MaterialColumn', () => {
     expect(props.onOpenReport).toHaveBeenCalledTimes(1)
   })
 
-  it('usa a cor da marca no botão "+ Novo" e uma cor de destaque própria no de relatório', () => {
+  it('usa uma cor de destaque própria no botão de relatório', () => {
     render(<MaterialColumn {...baseProps()} />)
-    expect(screen.getByRole('button', { name: '+ Novo' }).className).toContain('bg-primary')
     expect(screen.getByRole('button', { name: /Relatório de Fornecedores/ }).className).toContain('bg-blue')
   })
 
