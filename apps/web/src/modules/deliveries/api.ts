@@ -55,7 +55,7 @@ const DELIVERY_ORDER_DETAIL_COLUMNS = `
   requests(needed_by, negotiator:users!negotiator_id(full_name)),
   order_items(
     id, quantity, unit_price, delivered_at, material_name_raw,
-    materials(code, name, description),
+    material_variants(code, description, materials(name)),
     request_items(unit_of_measure),
     suppliers(id, name, city, supplier_contacts(id, name, phone, email))
   )
@@ -104,9 +104,9 @@ export async function fetchDeliveryOrderDetail(orderId: string): Promise<Deliver
     suppliers: [...suppliersById.values()],
     items: row.order_items.map((item) => ({
       id: item.id,
-      materialCode: item.materials?.code ?? null,
-      materialName: item.materials?.name ?? item.material_name_raw,
-      materialDescription: item.materials?.description ?? null,
+      materialCode: item.material_variants?.code ?? null,
+      materialName: item.material_variants?.materials?.name ?? item.material_name_raw,
+      materialDescription: item.material_variants?.description ?? null,
       unitOfMeasure: item.request_items?.unit_of_measure ?? null,
       quantity: Number(item.quantity),
       unitPrice: Number(item.unit_price),

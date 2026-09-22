@@ -36,7 +36,7 @@ async function fetchRequestForDispatch(
   const { data, error } = await adminClient
     .from('requests')
     .select(
-      'tenant_id, external_ref, sequence_number, needed_by, units(name), request_items(material_id, quantity, unit_of_measure, deleted_at, materials(name))',
+      'tenant_id, external_ref, sequence_number, needed_by, units(name), request_items(material_variant_id, quantity, unit_of_measure, deleted_at, material_variants(materials(name)))',
     )
     .eq('id', requestId)
     .single()
@@ -44,17 +44,17 @@ async function fetchRequestForDispatch(
 
   const items = (
     data.request_items as unknown as {
-      material_id: string
+      material_variant_id: string
       quantity: number
       unit_of_measure: string | null
       deleted_at: string | null
-      materials: { name: string } | null
+      material_variants: { materials: { name: string } | null } | null
     }[]
   )
     .filter((item) => !item.deleted_at)
     .map((item) => ({
-      materialId: item.material_id,
-      materialName: item.materials?.name ?? '',
+      materialId: item.material_variant_id,
+      materialName: item.material_variants?.materials?.name ?? '',
       quantity: item.quantity,
       unitOfMeasure: item.unit_of_measure,
     }))
@@ -74,8 +74,8 @@ async function fetchSuppliersForMaterial(
 ): Promise<SupplierEmailOption[]> {
   const { data, error } = await adminClient
     .from('suppliers')
-    .select('id, name, supplier_contacts(email), supplier_materials!inner(material_id)')
-    .eq('supplier_materials.material_id', materialId)
+    .select('id, name, supplier_contacts(email), supplier_materials!inner(material_variant_id)')
+    .eq('supplier_materials.material_variant_id', materialId)
     .is('deleted_at', null)
   if (error) throw error
 
@@ -179,7 +179,7 @@ async function attemptAutoDispatch(
       tenant_id: request.tenantId,
       request_id: requestId,
       supplier_id: group.supplierId,
-      material_id: item.materialId,
+      material_variant_id: item.materialId,
       email: group.email,
     })),
   )

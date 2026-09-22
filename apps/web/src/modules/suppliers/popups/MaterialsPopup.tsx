@@ -102,7 +102,7 @@ export function MaterialsPopup({
         {normalizedSearch.length > 0 && suggestions.length === 0 && (
           <div className="mt-3 flex flex-col gap-2 rounded border border-line p-3">
             <p className="text-xs text-ink-muted">
-              Nenhuma variante com esse código. Cadastrar "{search.trim()}" como nova:
+              Nenhuma variante com esse código. Cadastrar &ldquo;{search.trim()}&rdquo; como nova:
             </p>
             <div className="flex flex-col gap-1">
               <label htmlFor="new-variant-material" className="text-sm font-medium text-ink">

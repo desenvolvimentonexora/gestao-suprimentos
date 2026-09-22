@@ -40,7 +40,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, units(name), external_ref, sequence_number, request_items(id, quantity, unit_of_measure, deleted_at, materials(name)), quotations(id, status, deleted_at, freight_amount, payment_terms, delivery_days, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
+      'id, units(name), external_ref, sequence_number, request_items(id, quantity, unit_of_measure, deleted_at, material_variants(materials(name))), quotations(id, status, deleted_at, freight_amount, payment_terms, delivery_days, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
@@ -79,7 +79,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
         .filter((item) => !item.deleted_at)
         .map((item) => ({
           id: item.id,
-          materialName: item.materials?.name ?? '',
+          materialName: item.material_variants?.materials?.name ?? '',
           quantity: Number(item.quantity),
           unitOfMeasure: item.unit_of_measure,
         }))
@@ -606,16 +606,16 @@ export async function fetchOrderImportContext(): Promise<OrderImportContext> {
 
   const suppliers = await fetchSupplierOptions()
 
-  const { data: materials, error: materialsError } = await supabase
-    .from('materials')
-    .select('id, name, code')
+  const { data: materialVariants, error: materialsError } = await supabase
+    .from('material_variants')
+    .select('id, code, materials(name)')
     .is('deleted_at', null)
   if (materialsError) throw materialsError
 
   const requestIds = comparisons.map((comparison) => comparison.request_id)
   const { data: requestItems, error: requestItemsError } = await supabase
     .from('request_items')
-    .select('id, request_id, material_id')
+    .select('id, request_id, material_variant_id')
     .in('request_id', requestIds.length > 0 ? requestIds : [''])
     .is('deleted_at', null)
   if (requestItemsError) throw requestItemsError
@@ -631,11 +631,15 @@ export async function fetchOrderImportContext(): Promise<OrderImportContext> {
         hasOrder: orderedComparisonIds.has(comparison.id),
       })),
     suppliers,
-    materials,
+    materials: materialVariants.map((variant) => ({
+      id: variant.id,
+      name: variant.materials?.name ?? '',
+      code: variant.code,
+    })),
     requestItems: requestItems.map((item) => ({
       id: item.id,
       requestId: item.request_id,
-      materialId: item.material_id,
+      materialId: item.material_variant_id,
     })),
   }
 }
@@ -661,7 +665,7 @@ export async function bulkImportOrders(tenantId: string, groups: OrderImportGrou
         tenant_id: tenantId,
         order_id: order.id,
         request_item_id: item.requestItemId,
-        material_id: item.materialId,
+        material_variant_id: item.materialId,
         material_name_raw: item.materialNameRaw,
         supplier_id: item.supplierId,
         quantity: item.quantity,

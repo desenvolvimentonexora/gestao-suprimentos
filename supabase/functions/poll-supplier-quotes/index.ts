@@ -213,7 +213,7 @@ async function processMessage(adminClient: SupabaseClient, accessToken: string, 
 
     const { data: requestItemsData, error: itemsError } = await adminClient
       .from('request_items')
-      .select('id, quantity, unit_of_measure, deleted_at, materials(name)')
+      .select('id, quantity, unit_of_measure, deleted_at, material_variants(materials(name))')
       .eq('request_id', requestRow.id)
       .is('deleted_at', null)
     if (itemsError) throw itemsError
@@ -222,12 +222,12 @@ async function processMessage(adminClient: SupabaseClient, accessToken: string, 
       id: string
       quantity: number
       unit_of_measure: string | null
-      materials: { name: string } | null
+      material_variants: { materials: { name: string } | null } | null
     }[]
 
     const requestItems: QuoteRequestItem[] = requestItemsRows.map((item) => ({
       id: item.id,
-      materialName: item.materials?.name ?? '',
+      materialName: item.material_variants?.materials?.name ?? '',
       quantity: Number(item.quantity),
       unitOfMeasure: item.unit_of_measure,
     }))

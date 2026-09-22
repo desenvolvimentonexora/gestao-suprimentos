@@ -13,7 +13,7 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, unit_id, needed_by, needed_by_changed, external_ref, sequence_number, created_at, notes, negotiating_started_at, units(name), negotiator:users!negotiator_id(id, full_name), request_items(id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, materials(name, code, description)), quotations(id, supplier_id, status, submitted_at, deleted_at, suppliers(name))',
+      'id, unit_id, needed_by, needed_by_changed, external_ref, sequence_number, created_at, notes, negotiating_started_at, units(name), negotiator:users!negotiator_id(id, full_name), request_items(id, quantity, unit_of_measure, status_code, authorized_at, deleted_at, material_variants(code, description, materials(name))), quotations(id, supplier_id, status, submitted_at, deleted_at, suppliers(name))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
@@ -38,9 +38,9 @@ export async function fetchNegotiatingRequests(): Promise<NegotiatingRequestRow[
       .filter((item) => !item.deleted_at)
       .map((item) => ({
         id: item.id,
-        materialName: item.materials?.name ?? '',
-        materialCode: item.materials?.code ?? null,
-        materialDescription: item.materials?.description ?? null,
+        materialName: item.material_variants?.materials?.name ?? '',
+        materialCode: item.material_variants?.code ?? null,
+        materialDescription: item.material_variants?.description ?? null,
         quantity: Number(item.quantity),
         unitOfMeasure: item.unit_of_measure,
         statusCode: item.status_code,
