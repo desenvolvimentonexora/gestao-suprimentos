@@ -392,14 +392,63 @@ export type Database = {
           },
         ]
       }
-      materials: {
+      material_variants: {
         Row: {
-          category_id: string
           code: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
           description: string | null
+          id: string
+          material_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          material_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          material_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_variants_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_variants_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          category_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
           icon: string
           id: string
           name: string
@@ -408,11 +457,9 @@ export type Database = {
         }
         Insert: {
           category_id: string
-          code?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
-          description?: string | null
           icon?: string
           id?: string
           name: string
@@ -421,11 +468,9 @@ export type Database = {
         }
         Update: {
           category_id?: string
-          code?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
-          description?: string | null
           icon?: string
           id?: string
           name?: string
@@ -505,8 +550,8 @@ export type Database = {
           created_at: string
           delivered_at: string | null
           id: string
-          material_id: string | null
           material_name_raw: string
+          material_variant_id: string | null
           order_id: string
           quantity: number
           request_item_id: string | null
@@ -518,8 +563,8 @@ export type Database = {
           created_at?: string
           delivered_at?: string | null
           id?: string
-          material_id?: string | null
           material_name_raw?: string
+          material_variant_id?: string | null
           order_id: string
           quantity: number
           request_item_id?: string | null
@@ -531,8 +576,8 @@ export type Database = {
           created_at?: string
           delivered_at?: string | null
           id?: string
-          material_id?: string | null
           material_name_raw?: string
+          material_variant_id?: string | null
           order_id?: string
           quantity?: number
           request_item_id?: string | null
@@ -542,10 +587,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "order_items_material_id_fkey"
-            columns: ["material_id"]
+            foreignKeyName: "order_items_material_variant_id_fkey"
+            columns: ["material_variant_id"]
             isOneToOne: false
-            referencedRelation: "materials"
+            referencedRelation: "material_variants"
             referencedColumns: ["id"]
           },
           {
@@ -906,7 +951,7 @@ export type Database = {
         Row: {
           email: string
           id: string
-          material_id: string
+          material_variant_id: string
           request_id: string
           sent_at: string
           supplier_id: string
@@ -915,7 +960,7 @@ export type Database = {
         Insert: {
           email: string
           id?: string
-          material_id: string
+          material_variant_id: string
           request_id: string
           sent_at?: string
           supplier_id: string
@@ -924,7 +969,7 @@ export type Database = {
         Update: {
           email?: string
           id?: string
-          material_id?: string
+          material_variant_id?: string
           request_id?: string
           sent_at?: string
           supplier_id?: string
@@ -932,10 +977,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "request_dispatch_recipients_material_id_fkey"
-            columns: ["material_id"]
+            foreignKeyName: "request_dispatch_recipients_material_variant_id_fkey"
+            columns: ["material_variant_id"]
             isOneToOne: false
-            referencedRelation: "materials"
+            referencedRelation: "material_variants"
             referencedColumns: ["id"]
           },
           {
@@ -967,7 +1012,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
-          material_id: string
+          material_variant_id: string
           motivo_pendencia: string | null
           pendente: boolean
           quantity: number
@@ -981,7 +1026,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
-          material_id: string
+          material_variant_id: string
           motivo_pendencia?: string | null
           pendente?: boolean
           quantity: number
@@ -995,7 +1040,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
-          material_id?: string
+          material_variant_id?: string
           motivo_pendencia?: string | null
           pendente?: boolean
           quantity?: number
@@ -1006,10 +1051,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "request_items_material_id_fkey"
-            columns: ["material_id"]
+            foreignKeyName: "request_items_material_variant_id_fkey"
+            columns: ["material_variant_id"]
             isOneToOne: false
-            referencedRelation: "materials"
+            referencedRelation: "material_variants"
             referencedColumns: ["id"]
           },
           {
@@ -1493,30 +1538,30 @@ export type Database = {
         Row: {
           created_at: string
           lead_time_days: number | null
-          material_id: string
+          material_variant_id: string
           supplier_id: string
           tenant_id: string
         }
         Insert: {
           created_at?: string
           lead_time_days?: number | null
-          material_id: string
+          material_variant_id: string
           supplier_id: string
           tenant_id: string
         }
         Update: {
           created_at?: string
           lead_time_days?: number | null
-          material_id?: string
+          material_variant_id?: string
           supplier_id?: string
           tenant_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "supplier_materials_material_id_fkey"
-            columns: ["material_id"]
+            foreignKeyName: "supplier_materials_material_variant_id_fkey"
+            columns: ["material_variant_id"]
             isOneToOne: false
-            referencedRelation: "materials"
+            referencedRelation: "material_variants"
             referencedColumns: ["id"]
           },
           {
