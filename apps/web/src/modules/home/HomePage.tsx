@@ -33,7 +33,7 @@ export function HomePage({ fullName, onSignOut, now = new Date(), pendingWork }:
         </p>
       )}
 
-      <div className="mx-auto mt-10 max-w-6xl">
+      <div className="mx-auto mt-10 max-w-[960px]">
         <ModuleGrid>
           {sectorRegistry.map((item) => (
             <ModuleCard key={item.id} {...item} />

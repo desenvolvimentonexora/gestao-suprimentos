@@ -48,7 +48,7 @@ export function SuprimentosPage({ fullName, onSignOut, tenantId, now = new Date(
         </Link>
       </div>
 
-      <div className="mx-auto mt-10 max-w-6xl">
+      <div className="mx-auto mt-10 max-w-[960px]">
         <ModuleGrid>
           {visibleModules.map((item) => (
             <ModuleCard key={item.id} {...item} />
