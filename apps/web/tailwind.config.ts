@@ -25,6 +25,11 @@ export default {
         'status-no-prazo': 'rgb(var(--color-status-no-prazo) / <alpha-value>)',
         'status-chegou-ar-pendente': 'rgb(var(--color-status-chegou-ar-pendente) / <alpha-value>)',
       },
+      borderRadius: {
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+      },
       transitionDuration: {
         DEFAULT: '120ms',
       },

@@ -26,6 +26,13 @@
     --color-status-hoje: 29 78 216;
     --color-status-no-prazo: 4 120 87;
     --color-status-chegou-ar-pendente: 217 119 6;
+
+    /* Escala de raio de borda — reutilizável em todo o sistema, não é
+       configuração de tenant (diferente das cores acima). Medida
+       proporcionalmente na referência de fidelidade visual do Login. */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 12px;
   }
 
   html {
