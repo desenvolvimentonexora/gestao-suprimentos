@@ -16,7 +16,6 @@ import {
   Monitor,
   Package,
   Send,
-  Target,
   Truck,
   Users,
   Wrench,
@@ -189,13 +188,6 @@ export const suprimentosRegistry: ModuleCardData[] = [
     label: 'Concorrência (RFQ/RFP)',
     description: 'Cotação de listas de insumos com fornecedores',
     icon: Coins,
-    status: 'beta',
-  },
-  {
-    id: 'projeto-okr',
-    label: 'Projeto OKR',
-    description: 'Objetivos e Resultados-Chave — quadro estratégico colaborativo',
-    icon: Target,
     status: 'beta',
   },
 ]
