@@ -1,5 +1,6 @@
 import {
   Armchair,
+  Banknote,
   Boxes,
   Briefcase,
   Building2,
@@ -39,6 +40,7 @@ import {
 export const ICON_MAP: Record<string, LucideIcon> = {
   'layout-grid': LayoutGrid,
   'hard-hat': HardHat,
+  banknote: Banknote,
   users: Users,
   landmark: Landmark,
   monitor: Monitor,
