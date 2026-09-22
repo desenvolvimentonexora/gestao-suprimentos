@@ -29,9 +29,17 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 function LoginPanel({ brand }: { brand: Brand }) {
   return (
     <div className="flex flex-col items-center justify-between bg-gradient-to-t from-primary-dark to-primary px-8 py-10 text-on-primary sm:w-1/2">
-      <img src={brand.logoUrl} alt={brand.name ?? ''} className="h-8" />
+      <div className="flex flex-col items-center gap-1">
+        <img src={brand.logoUrl} alt={brand.name ?? ''} className="h-14" />
+        {brand.subtitle && <p className="text-sm text-on-primary">{brand.subtitle}</p>}
+      </div>
       <p className="max-w-xs text-center text-lg font-medium">{brand.tagline}</p>
-      <img src="/assets/skyline.svg" alt="" className="w-full max-w-md" aria-hidden="true" />
+      <img
+        src="/assets/skyline.svg"
+        alt=""
+        className="hidden w-full max-w-md sm:block"
+        aria-hidden="true"
+      />
     </div>
   )
 }

@@ -11,6 +11,7 @@ vi.mock('../core/auth', () => ({
 
 const brand = {
   name: 'Nexora',
+  subtitle: 'Gestão de Suprimentos',
   tagline: 'Sistema de Gestão Integrado',
   logoUrl: '/assets/logo-nexora.svg',
 }
@@ -26,6 +27,17 @@ describe('LoginPage', () => {
     expect(screen.getByText('Sistema de Gestão Integrado')).toBeInTheDocument()
     expect(screen.getByText('Bem-vindo 👋')).toBeInTheDocument()
     expect(screen.getByText('Faça login para continuar')).toBeInTheDocument()
+  })
+
+  it('mostra o subtítulo da marca quando configurado', () => {
+    render(<LoginPage brand={brand} onLoginSuccess={vi.fn()} />)
+    expect(screen.getByText('Gestão de Suprimentos')).toBeInTheDocument()
+  })
+
+  it('não mostra subtítulo quando a marca não tem um configurado', () => {
+    const brandSemSubtitulo = { ...brand, subtitle: undefined }
+    render(<LoginPage brand={brandSemSubtitulo} onLoginSuccess={vi.fn()} />)
+    expect(screen.queryByText('Gestão de Suprimentos')).not.toBeInTheDocument()
   })
 
   it('exibe erros de validação ao enviar o formulário vazio', async () => {
