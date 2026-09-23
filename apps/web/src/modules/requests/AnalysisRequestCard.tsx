@@ -98,7 +98,7 @@ export function AnalysisRequestCard({
       {isExpanded && (
         <div className="flex flex-col gap-3 border-t border-line pt-3">
           <div className="overflow-x-auto rounded-lg border border-line">
-            <table className="w-full text-left text-sm">
+            <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-bg">
                 <tr className="border-b border-line text-ink">
                   <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Centro</th>
