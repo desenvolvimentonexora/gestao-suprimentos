@@ -124,18 +124,14 @@ export function SupplierCard({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
-        <Button variant="ghost" className="text-blue-700 hover:text-blue-800" onClick={() => onEdit(supplier.id)}>
+        <Button variant="secondary" onClick={() => onEdit(supplier.id)}>
           Editar
         </Button>
-        <Button
-          variant="ghost"
-          className="text-amber-600 hover:text-amber-700"
-          onClick={() => onOpenPopup('avaliacoes', supplier.id)}
-        >
+        <Button variant="secondary" onClick={() => onOpenPopup('avaliacoes', supplier.id)}>
           Avaliar
         </Button>
-        <ComingSoonButton label="Copiar" className="text-slate-500 hover:text-slate-600" />
-        <ComingSoonButton label="Copiar para setor" variant="info" />
+        <ComingSoonButton label="Copiar" variant="secondary" />
+        <ComingSoonButton label="Copiar para setor" variant="secondary" />
         <Button variant="danger" onClick={() => onDelete(supplier.id)}>
           Excluir
         </Button>

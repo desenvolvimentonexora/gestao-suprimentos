@@ -93,11 +93,29 @@ describe('SupplierCard', () => {
     expect(screen.getByTestId('status-dot').className).not.toContain('bg-emerald')
   })
 
-  it('usa cores distintas nos links do rodapé: editar em azul, avaliar em âmbar, excluir preenchido em vermelho', () => {
+  it('editar, avaliar, copiar e copiar para setor têm o mesmo tamanho e cor de fundo', () => {
     render(<SupplierCard {...baseProps()} />)
-    expect(screen.getByRole('button', { name: 'Editar' }).className).toContain('text-blue')
-    expect(screen.getByRole('button', { name: 'Avaliar' }).className).toContain('text-amber')
-    expect(screen.getByRole('button', { name: 'Excluir' }).className).toContain('bg-red')
+    const editar = screen.getByRole('button', { name: 'Editar' }).className
+    const avaliar = screen.getByRole('button', { name: 'Avaliar' }).className
+    const copiar = screen.getByRole('button', { name: 'Copiar' }).className
+    const copiarParaSetor = screen.getByRole('button', { name: 'Copiar para setor' }).className
+
+    expect(avaliar).toBe(editar)
+    expect(copiar).toBe(editar)
+    expect(copiarParaSetor).toBe(editar)
+  })
+
+  it('excluir tem o mesmo tamanho dos demais botões, mas preenchido em vermelho', () => {
+    render(<SupplierCard {...baseProps()} />)
+    const editarClass = screen.getByRole('button', { name: 'Editar' }).className
+    const excluirClass = screen.getByRole('button', { name: 'Excluir' }).className
+
+    const sizeClasses = ['rounded-md', 'px-4', 'py-2', 'text-sm', 'font-medium']
+    for (const sizeClass of sizeClasses) {
+      expect(editarClass).toContain(sizeClass)
+      expect(excluirClass).toContain(sizeClass)
+    }
+    expect(excluirClass).toContain('bg-red')
   })
 
   it('mostra a seção de contatos da empresa com estado vazio', () => {
