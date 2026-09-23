@@ -28,7 +28,6 @@ export interface AnalysisRequestCardProps {
   onToggleItemPendency: (itemId: string, pendente: boolean, motivo: string | null) => void
   onUpdateNotes: (requestId: string, notes: string) => void
   onDeleteRequest: (request: RequestRow) => void
-  onOpenClarificationModal: (requestId: string) => void
   onOpenExtensionModal: (requestId: string) => void
   onReleaseToDispatch: (requestId: string) => void
 }
@@ -40,7 +39,6 @@ export function AnalysisRequestCard({
   onToggleItemPendency,
   onUpdateNotes,
   onDeleteRequest,
-  onOpenClarificationModal,
   onOpenExtensionModal,
   onReleaseToDispatch,
 }: AnalysisRequestCardProps) {
@@ -61,14 +59,14 @@ export function AnalysisRequestCard({
       data-testid={`analysis-card-${request.id}`}
       className="flex flex-col gap-3 rounded border border-line bg-surface p-4"
     >
-      <div className="flex flex-wrap items-start justify-between gap-2">
+      <div className="flex items-center gap-2">
         <button
           type="button"
           aria-expanded={isExpanded}
           onClick={() => setIsExpanded((current) => !current)}
-          className="flex flex-1 flex-wrap items-center gap-4 text-left"
+          className="flex flex-1 items-center gap-4 overflow-x-auto text-left"
         >
-          <div className="flex min-w-[10rem] flex-1 flex-col">
+          <div className="flex shrink-0 flex-col whitespace-nowrap">
             <span className="font-semibold text-ink">{displayNumber}</span>
             <span className="flex items-center gap-1 text-xs text-ink-muted">
               <MapPin size={14} aria-hidden="true" />
@@ -76,21 +74,21 @@ export function AnalysisRequestCard({
             </span>
           </div>
 
-          <span className="flex items-center gap-1 text-xs text-ink-muted">
+          <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
             <CalendarDays size={14} aria-hidden="true" />
             Solicitada em {formatDate(request.createdAt)}
           </span>
 
           {request.neededBy && (
-            <span className="flex items-center gap-1 text-xs text-ink-muted">
+            <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
               <Truck size={14} aria-hidden="true" />
               Entrega {formatDateOnly(request.neededBy)}
             </span>
           )}
 
-          <Badge className={TIER_BADGE_CLASSES[urgency.tier]}>{urgency.label}</Badge>
+          <Badge className={`shrink-0 ${TIER_BADGE_CLASSES[urgency.tier]}`}>{urgency.label}</Badge>
 
-          <span className="text-xs text-ink-muted">
+          <span className="shrink-0 whitespace-nowrap text-xs text-ink-muted">
             {request.items.length} {request.items.length === 1 ? 'item' : 'itens'}
           </span>
         </button>
@@ -99,7 +97,7 @@ export function AnalysisRequestCard({
           type="button"
           aria-label={`Excluir requisição de ${request.unitName}`}
           onClick={() => onDeleteRequest(request)}
-          className="text-ink-muted hover:text-accent"
+          className="shrink-0 text-ink-muted hover:text-accent"
         >
           <Trash2 size={16} aria-hidden="true" />
         </button>
@@ -184,9 +182,15 @@ export function AnalysisRequestCard({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label htmlFor={`notes-${request.id}`} className="text-sm font-medium text-ink">
-              Observação
-            </label>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <label
+                htmlFor={`notes-${request.id}`}
+                className="text-xs font-medium uppercase tracking-wide text-ink-muted"
+              >
+                Observações
+              </label>
+              <span className="text-xs text-ink-muted">Ficam registradas até a SOL ser aprovada.</span>
+            </div>
             <textarea
               id={`notes-${request.id}`}
               value={notesDraft}
@@ -194,25 +198,16 @@ export function AnalysisRequestCard({
               onBlur={() => onUpdateNotes(request.id, notesDraft)}
               className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
             />
-            <p className="text-xs text-ink-muted">Ficam registradas até a SOL ser aprovada.</p>
           </div>
 
           {hasOpenPendency && (
             <p className="text-sm text-accent">
-              Há item(ns) sinalizado(s) sem solução. Peça esclarecimento ao engenheiro antes de liberar pro
-              Disparo.
+              Há item(ns) sinalizado(s) sem solução. Peça prorrogação e explique o que falta antes de liberar
+              pro Disparo.
             </p>
           )}
 
           <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              disabled={!hasOpenPendency || !canAnalyze}
-              title={!hasOpenPendency ? 'Sinalize ao menos um item pendente para habilitar' : undefined}
-              onClick={() => onOpenClarificationModal(request.id)}
-            >
-              Solicitar esclarecimento
-            </Button>
             <Button
               variant="secondary"
               disabled={!canAnalyze}

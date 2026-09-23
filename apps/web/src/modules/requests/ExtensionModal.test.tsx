@@ -46,4 +46,21 @@ describe('ExtensionModal', () => {
       reason: 'Fornecedor sem estoque até lá',
     })
   })
+
+  it('mostra os itens sinalizados quando há algum (Solicitar esclarecimento foi incorporado aqui)', () => {
+    render(
+      <ExtensionModal
+        {...baseProps()}
+        pendingItems={[{ materialName: 'Aço', motivo: 'Falta a bitola' }]}
+      />,
+    )
+    expect(screen.getByText('Itens sinalizados')).toBeInTheDocument()
+    expect(screen.getByText('Aço')).toBeInTheDocument()
+    expect(screen.getByText(/Falta a bitola/)).toBeInTheDocument()
+  })
+
+  it('não mostra o bloco de itens sinalizados quando não há nenhum', () => {
+    render(<ExtensionModal {...baseProps()} />)
+    expect(screen.queryByText('Itens sinalizados')).not.toBeInTheDocument()
+  })
 })

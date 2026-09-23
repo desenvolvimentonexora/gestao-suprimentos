@@ -10,7 +10,6 @@ import {
   fetchRequests,
   fetchUnitOptions,
   releaseRequestToDispatch,
-  requestClarification,
   requestExtension,
   retryDispatch,
   saveImportMapping,
@@ -138,17 +137,6 @@ export function useToggleItemPendency() {
       pendente: boolean
       motivoPendencia: string | null
     }) => toggleItemPendency(itemId, pendente, motivoPendencia),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['requests'] })
-    },
-  })
-}
-
-export function useRequestClarification() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({ requestId, message }: { requestId: string; message: string }) =>
-      requestClarification(requestId, message),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },

@@ -251,13 +251,6 @@ async function parseReviewError(error: unknown): Promise<Error> {
   return error instanceof Error ? error : new Error('Não foi possível concluir a ação. Tente novamente.')
 }
 
-export async function requestClarification(requestId: string, message: string): Promise<void> {
-  const { error } = await supabase.functions.invoke('review-request', {
-    body: { requestId, action: 'request_clarification', message },
-  })
-  if (error) throw await parseReviewError(error)
-}
-
 export async function requestExtension(
   requestId: string,
   newNeededBy: string,

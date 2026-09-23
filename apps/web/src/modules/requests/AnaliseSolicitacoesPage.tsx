@@ -10,7 +10,6 @@ import { AnalysisRequestCard } from './AnalysisRequestCard'
 import { getAnalysisIndicators } from './analysisIndicators'
 import { buildExtensionMessage } from './buildExtensionMessage'
 import { openMailto } from './buildMailtoUrl'
-import { ClarificationModal } from './ClarificationModal'
 import { ExtensionModal } from './ExtensionModal'
 import { filterAnalysisRequests } from './filterAnalysisRequests'
 import { formatRequestNumber } from './formatRequestNumber'
@@ -22,7 +21,6 @@ import {
   useCreateRequest,
   useMaterialOptions,
   useReleaseRequestToDispatch,
-  useRequestClarification,
   useRequestExtension,
   useRequests,
   useToggleItemPendency,
@@ -45,7 +43,6 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   const [search, setSearch] = useState('')
   const [unitFilter, setUnitFilter] = useState<string | null>(null)
   const [tierFilter, setTierFilter] = useState<UrgencyTier | null>(null)
-  const [clarificationRequestId, setClarificationRequestId] = useState<string | null>(null)
   const [extensionRequestId, setExtensionRequestId] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
@@ -72,7 +69,6 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   const toggleItemPendency = useToggleItemPendency()
   const updateRequestNotes = useUpdateRequestNotes()
   const cancelRequest = useCancelRequest()
-  const requestClarification = useRequestClarification()
   const requestExtension = useRequestExtension()
   const releaseToDispatch = useReleaseRequestToDispatch()
   const createRequest = useCreateRequest(tenantId)
@@ -99,9 +95,8 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
     today,
   })
 
-  const clarificationRequest = requests.find((request) => request.id === clarificationRequestId)
   const extensionRequest = requests.find((request) => request.id === extensionRequestId)
-  const pendingItems = (clarificationRequest?.items ?? [])
+  const pendingItems = (extensionRequest?.items ?? [])
     .filter((item) => item.pendente)
     .map((item) => ({ materialName: item.materialName, motivo: item.motivoPendencia }))
 
@@ -190,7 +185,6 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
                 }
                 onUpdateNotes={(requestId, notes) => updateRequestNotes.mutate({ requestId, notes })}
                 onDeleteRequest={handleDeleteRequest}
-                onOpenClarificationModal={setClarificationRequestId}
                 onOpenExtensionModal={setExtensionRequestId}
                 onReleaseToDispatch={(requestId) =>
                   releaseToDispatch.mutate(requestId, {
@@ -211,42 +205,13 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
         </div>
       </div>
 
-      {clarificationRequest && (
-        <ClarificationModal
-          key={clarificationRequest.id}
-          isOpen
-          onClose={() => setClarificationRequestId(null)}
-          pendingItems={pendingItems}
-          onSubmit={(message) =>
-            requestClarification.mutate(
-              { requestId: clarificationRequest.id, message },
-              {
-                onSuccess: () => {
-                  setClarificationRequestId(null)
-                  setToast({
-                    variant: 'success',
-                    message:
-                      'Esclarecimento registrado. Abrindo seu e-mail com o texto pronto — se nada abrir, seu navegador não tem um cliente de e-mail padrão configurado; copie o texto e envie manualmente.',
-                  })
-                  openMailto({
-                    subject: `Esclarecimento necessário — ${formatRequestNumber(clarificationRequest.externalRef, clarificationRequest.sequenceNumber)}`,
-                    body: message,
-                  })
-                },
-              },
-            )
-          }
-          isSubmitting={requestClarification.isPending}
-          submitError={errorMessage(requestClarification.error)}
-        />
-      )}
-
       {extensionRequest && (
         <ExtensionModal
           key={extensionRequest.id}
           isOpen
           onClose={() => setExtensionRequestId(null)}
           currentNeededBy={extensionRequest.neededBy}
+          pendingItems={pendingItems}
           onSubmit={(values) =>
             requestExtension.mutate(
               { requestId: extensionRequest.id, newNeededBy: values.newNeededBy, reason: values.reason },
@@ -264,6 +229,7 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
                       currentNeededBy: extensionRequest.neededBy,
                       newNeededBy: values.newNeededBy,
                       reason: values.reason,
+                      pendingItems,
                     }),
                   })
                 },

@@ -50,7 +50,6 @@ function baseProps() {
     onToggleItemPendency: vi.fn(),
     onUpdateNotes: vi.fn(),
     onDeleteRequest: vi.fn(),
-    onOpenClarificationModal: vi.fn(),
     onOpenExtensionModal: vi.fn(),
     onReleaseToDispatch: vi.fn(),
   }
@@ -118,18 +117,16 @@ describe('AnalysisRequestCard', () => {
     await user.click(screen.getByText('SOL 1097'))
 
     expect(screen.getByRole('button', { name: 'Liberar pro Disparo' })).toBeDisabled()
-    expect(screen.getByText(/peça esclarecimento ao engenheiro/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Solicitar esclarecimento' })).toBeEnabled()
+    expect(screen.getByText(/peça prorrogação e explique o que falta/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pedir prorrogação' })).toBeEnabled()
   })
 
-  it('"Solicitar esclarecimento" fica desabilitado sem nenhum item pendente, com o motivo explicado no title', async () => {
+  it('"Pedir prorrogação" continua habilitado mesmo sem item pendente', async () => {
     const user = userEvent.setup()
     render(<AnalysisRequestCard {...baseProps()} request={makeRequest({})} />)
     await user.click(screen.getByText('SOL 1097'))
 
-    const clarificationButton = screen.getByRole('button', { name: 'Solicitar esclarecimento' })
-    expect(clarificationButton).toBeDisabled()
-    expect(clarificationButton).toHaveAttribute('title', 'Sinalize ao menos um item pendente para habilitar')
+    expect(screen.getByRole('button', { name: 'Pedir prorrogação' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Liberar pro Disparo' })).toBeEnabled()
   })
 
