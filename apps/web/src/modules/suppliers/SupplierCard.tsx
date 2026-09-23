@@ -123,7 +123,7 @@ export function SupplierCard({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
+      <div className="flex flex-wrap items-center justify-center gap-2 border-t border-line pt-3">
         <Button variant="secondary" onClick={() => onEdit(supplier.id)}>
           Editar
         </Button>
@@ -132,7 +132,7 @@ export function SupplierCard({
         </Button>
         <ComingSoonButton label="Copiar" variant="secondary" />
         <ComingSoonButton label="Copiar para setor" variant="secondary" />
-        <Button variant="danger" onClick={() => onDelete(supplier.id)}>
+        <Button variant="danger" className="!px-6 !py-2.5 !text-base" onClick={() => onDelete(supplier.id)}>
           Excluir
         </Button>
       </div>

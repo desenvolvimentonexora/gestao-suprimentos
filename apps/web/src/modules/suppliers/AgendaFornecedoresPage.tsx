@@ -93,8 +93,9 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl pl-4 pr-6 py-8">
       <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-4">
+        <Button onClick={() => setShowNewMaterialForm(true)}>+ Novo</Button>
         <input
           type="search"
           placeholder={`Buscar ${materialLabel ?? 'material'}`}
@@ -102,7 +103,6 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
           onChange={(e) => setMaterialSearch(e.target.value)}
           className="min-w-[200px] flex-1 rounded border border-line bg-bg px-3 py-2 text-sm text-ink"
         />
-        <Button onClick={() => setShowNewMaterialForm(true)}>+ Novo</Button>
         <input
           type="search"
           placeholder="Buscar fornecedor"
