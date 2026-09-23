@@ -13,6 +13,15 @@ const TIER_BADGE_CLASSES = {
   ag_aprovacao: 'border-line bg-bg text-ink-muted',
 } as const
 
+// Faixa na borda esquerda do card com a mesma cor do badge de urgência
+// (seção "DIAS" da referência) — mesmo sinal, mais visível na lista fechada.
+const TIER_LEFT_BORDER_CLASSES = {
+  urgente: 'border-l-red-500',
+  atencao: 'border-l-orange-500',
+  tranquila: 'border-l-green-500',
+  ag_aprovacao: 'border-l-line',
+} as const
+
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat('pt-BR').format(new Date(value))
 }
@@ -49,7 +58,7 @@ export function AnalysisRequestCard({
   return (
     <div
       data-testid={`analysis-card-${request.id}`}
-      className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4"
+      className={`flex flex-col gap-3 rounded-lg border-y border-r border-l-4 border-line bg-surface p-4 ${TIER_LEFT_BORDER_CLASSES[urgency.tier]}`}
     >
       <div className="flex items-center gap-2">
         <button
