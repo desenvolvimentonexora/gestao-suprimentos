@@ -107,39 +107,39 @@ export function AnalysisRequestCard({
         <div className="flex flex-col gap-3 border-t border-line pt-3">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="text-ink-muted">
-                  <th className="py-1 pr-3 font-medium">Centro</th>
-                  <th className="py-1 pr-3 font-medium">Insumo-Sub</th>
-                  <th className="py-1 pr-3 font-medium">Sit</th>
-                  <th className="py-1 pr-3 font-medium">Especificação</th>
-                  <th className="py-1 pr-3 font-medium">Unid</th>
-                  <th className="py-1 pr-3 font-medium">Qtd</th>
-                  <th className="py-1 pr-3 font-medium">Solicitação</th>
-                  <th className="py-1 pr-3 font-medium">Entrega SOL</th>
-                  <th className="py-1 pr-3 font-medium">Data Solic.</th>
-                  <th className="py-1 pr-3 font-medium">Data Aut.</th>
-                  <th className="py-1 pr-3 font-medium">Dias</th>
-                  <th className="py-1 pr-3 font-medium">Pendência</th>
+              <thead className="bg-bg">
+                <tr className="text-ink">
+                  <th className="py-2 pr-3 font-semibold">Centro</th>
+                  <th className="py-2 pr-3 font-semibold">Insumo-Sub</th>
+                  <th className="py-2 pr-3 font-semibold">Sit</th>
+                  <th className="py-2 pr-3 font-semibold">Especificação</th>
+                  <th className="py-2 pr-3 font-semibold">Unid</th>
+                  <th className="py-2 pr-3 font-semibold">Qtd</th>
+                  <th className="py-2 pr-3 font-semibold">Solicitação</th>
+                  <th className="py-2 pr-3 font-semibold">Entrega SOL</th>
+                  <th className="py-2 pr-3 font-semibold">Data Solic.</th>
+                  <th className="py-2 pr-3 font-semibold">Data Aut.</th>
+                  <th className="py-2 pr-3 font-semibold">Dias</th>
+                  <th className="py-2 pr-3 font-semibold">Pendência</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-line">
                 {request.items.map((item, index) => (
                   <tr key={item.id} className="text-ink">
-                    <td className="py-1 pr-3">{request.unitName}</td>
-                    <td className="py-1 pr-3">
+                    <td className="py-2 pr-3">{request.unitName}</td>
+                    <td className="py-2 pr-3">
                       {item.materialCode ?? item.materialName}
                     </td>
-                    <td className="py-1 pr-3">{item.statusCode ?? '—'}</td>
-                    <td className="py-1 pr-3">{item.materialDescription ?? '—'}</td>
-                    <td className="py-1 pr-3">{item.unitOfMeasure ?? '—'}</td>
-                    <td className="py-1 pr-3">{item.quantity}</td>
-                    <td className="py-1 pr-3">{formatItemReference(displayNumber, index)}</td>
-                    <td className="py-1 pr-3">{request.neededBy ? formatDateOnly(request.neededBy) : '—'}</td>
-                    <td className="py-1 pr-3">{formatDate(request.createdAt)}</td>
-                    <td className="py-1 pr-3">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
-                    <td className="py-1 pr-3">{urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}</td>
-                    <td className="py-1 pr-3">
+                    <td className="py-2 pr-3">{item.statusCode ?? '—'}</td>
+                    <td className="py-2 pr-3">{item.materialDescription ?? '—'}</td>
+                    <td className="py-2 pr-3">{item.unitOfMeasure ?? '—'}</td>
+                    <td className="py-2 pr-3">{item.quantity}</td>
+                    <td className="py-2 pr-3">{formatItemReference(displayNumber, index)}</td>
+                    <td className="py-2 pr-3">{request.neededBy ? formatDateOnly(request.neededBy) : '—'}</td>
+                    <td className="py-2 pr-3">{formatDate(request.createdAt)}</td>
+                    <td className="py-2 pr-3">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
+                    <td className="py-2 pr-3">{urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}</td>
+                    <td className="py-2 pr-3">
                       <div className="flex flex-col gap-1">
                         <button
                           type="button"
