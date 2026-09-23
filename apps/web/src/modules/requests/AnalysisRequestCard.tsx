@@ -61,18 +61,18 @@ export function AnalysisRequestCard({
           <span className="shrink-0 whitespace-nowrap font-semibold text-ink">{displayNumber}</span>
 
           <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
-            <MapPin size={14} aria-hidden="true" />
+            <MapPin size={14} className="text-blue-600" aria-hidden="true" />
             {request.unitName}
           </span>
 
           <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
-            <CalendarDays size={14} aria-hidden="true" />
+            <CalendarDays size={14} className="text-violet-600" aria-hidden="true" />
             Solicitada em {formatDate(request.createdAt)}
           </span>
 
           {request.neededBy && (
             <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
-              <Truck size={14} aria-hidden="true" />
+              <Truck size={14} className="text-amber-600" aria-hidden="true" />
               Entrega {formatDateOnly(request.neededBy)}
             </span>
           )}
