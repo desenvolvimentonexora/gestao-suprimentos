@@ -58,13 +58,12 @@ export function AnalysisRequestCard({
           onClick={() => setIsExpanded((current) => !current)}
           className="flex flex-1 items-center gap-4 overflow-x-auto text-left"
         >
-          <div className="flex shrink-0 flex-col whitespace-nowrap">
-            <span className="font-semibold text-ink">{displayNumber}</span>
-            <span className="flex items-center gap-1 text-xs text-ink-muted">
-              <MapPin size={14} aria-hidden="true" />
-              {request.unitName}
-            </span>
-          </div>
+          <span className="shrink-0 whitespace-nowrap font-semibold text-ink">{displayNumber}</span>
+
+          <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
+            <MapPin size={14} aria-hidden="true" />
+            {request.unitName}
+          </span>
 
           <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
             <CalendarDays size={14} aria-hidden="true" />
@@ -77,22 +76,24 @@ export function AnalysisRequestCard({
               Entrega {formatDateOnly(request.neededBy)}
             </span>
           )}
+        </button>
 
+        <div className="flex shrink-0 items-center gap-2">
           <Badge className={`shrink-0 ${TIER_BADGE_CLASSES[urgency.tier]}`}>{urgency.label}</Badge>
 
           <span className="shrink-0 whitespace-nowrap text-xs text-ink-muted">
             {request.items.length} {request.items.length === 1 ? 'item' : 'itens'}
           </span>
-        </button>
 
-        <button
-          type="button"
-          aria-label={`Excluir requisição de ${request.unitName}`}
-          onClick={() => onDeleteRequest(request)}
-          className="shrink-0 text-ink-muted hover:text-accent"
-        >
-          <Trash2 size={16} aria-hidden="true" />
-        </button>
+          <button
+            type="button"
+            aria-label={`Excluir requisição de ${request.unitName}`}
+            onClick={() => onDeleteRequest(request)}
+            className="shrink-0 text-ink-muted hover:text-accent"
+          >
+            <Trash2 size={16} aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       {isExpanded && (
