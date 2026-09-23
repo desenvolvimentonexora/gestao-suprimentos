@@ -89,7 +89,18 @@ describe('MaterialsPopup', () => {
     expect(onAddLink).toHaveBeenCalledWith('v3')
   })
 
-  it('sem sugestões, oferece cadastrar o texto buscado como nova variante de um material escolhido', async () => {
+  it('o botão "+ Nova variação" abre o formulário de cadastro direto, sem precisar buscar antes', async () => {
+    render(<MaterialsPopup {...baseProps()} />)
+
+    expect(screen.queryByLabelText('Material')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Nova variação' }))
+
+    expect(screen.getByLabelText('Material')).toBeInTheDocument()
+    expect(screen.getByLabelText('Código')).toBeInTheDocument()
+  })
+
+  it('cadastra uma nova variante pelo formulário aberto no botão', async () => {
     const onCreateVariant = vi.fn().mockResolvedValue({
       id: 'v5',
       materialId: 'm3',
@@ -100,12 +111,31 @@ describe('MaterialsPopup', () => {
     const onAddLink = vi.fn()
     render(<MaterialsPopup {...baseProps()} onCreateVariant={onCreateVariant} onAddLink={onAddLink} />)
 
-    await userEvent.type(screen.getByPlaceholderText('Buscar por código ou descrição'), 'CA-25')
+    await userEvent.click(screen.getByRole('button', { name: '+ Nova variação' }))
     await userEvent.selectOptions(screen.getByLabelText('Material'), 'm3')
+    await userEvent.type(screen.getByLabelText('Código'), 'CA-25')
     await userEvent.type(screen.getByLabelText('Descrição'), 'Vergalhão 6mm')
     await userEvent.click(screen.getByRole('button', { name: '+ Adicionar variante' }))
 
     expect(onCreateVariant).toHaveBeenCalledWith('m3', 'CA-25', 'Vergalhão 6mm')
     expect(onAddLink).toHaveBeenCalledWith('v5')
+  })
+
+  it('pré-preenche o código no formulário com o que já foi digitado na busca', async () => {
+    render(<MaterialsPopup {...baseProps()} />)
+
+    await userEvent.type(screen.getByPlaceholderText('Buscar por código ou descrição'), 'CA-25')
+    await userEvent.click(screen.getByRole('button', { name: '+ Nova variação' }))
+
+    expect(screen.getByLabelText('Código')).toHaveValue('CA-25')
+  })
+
+  it('cancelar fecha o formulário de nova variação', async () => {
+    render(<MaterialsPopup {...baseProps()} />)
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Nova variação' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(screen.queryByLabelText('Material')).not.toBeInTheDocument()
   })
 })

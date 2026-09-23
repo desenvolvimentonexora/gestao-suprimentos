@@ -31,7 +31,9 @@ export function MaterialsPopup({
   onCreateVariant,
 }: MaterialsPopupProps) {
   const [search, setSearch] = useState('')
+  const [showNewVariantForm, setShowNewVariantForm] = useState(false)
   const [newMaterialId, setNewMaterialId] = useState(allMaterials[0]?.id ?? '')
+  const [newCode, setNewCode] = useState('')
   const [newDescription, setNewDescription] = useState('')
 
   const linkedIds = new Set(links.map((link) => link.materialVariantId))
@@ -46,12 +48,23 @@ export function MaterialsPopup({
         )
       : []
 
+  function openNewVariantForm() {
+    setNewCode(search.trim())
+    setShowNewVariantForm(true)
+  }
+
+  function closeNewVariantForm() {
+    setShowNewVariantForm(false)
+    setNewCode('')
+    setNewDescription('')
+  }
+
   async function handleCreateVariant() {
-    if (!newMaterialId || !search.trim()) return
-    const variant = await onCreateVariant(newMaterialId, search.trim(), newDescription.trim())
+    if (!newMaterialId || !newCode.trim()) return
+    const variant = await onCreateVariant(newMaterialId, newCode.trim(), newDescription.trim())
     onAddLink(variant.id)
     setSearch('')
-    setNewDescription('')
+    closeNewVariantForm()
   }
 
   return (
@@ -73,13 +86,21 @@ export function MaterialsPopup({
       </div>
 
       <div className="border-t border-line pt-3">
-        <input
-          type="search"
-          placeholder="Buscar por código ou descrição"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
+        <div className="flex gap-2">
+          <input
+            type="search"
+            placeholder="Buscar por código ou descrição"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
+          />
+          {!showNewVariantForm && (
+            <Button type="button" variant="secondary" onClick={openNewVariantForm}>
+              + Nova variação
+            </Button>
+          )}
+        </div>
+
         {suggestions.length > 0 && (
           <div className="mt-2 flex flex-col gap-1">
             {suggestions.map((variant) => (
@@ -99,11 +120,9 @@ export function MaterialsPopup({
           </div>
         )}
 
-        {normalizedSearch.length > 0 && suggestions.length === 0 && (
+        {showNewVariantForm && (
           <div className="mt-3 flex flex-col gap-2 rounded border border-line p-3">
-            <p className="text-xs text-ink-muted">
-              Nenhuma variante com esse código. Cadastrar &ldquo;{search.trim()}&rdquo; como nova:
-            </p>
+            <p className="text-xs text-ink-muted">Cadastrar nova variação:</p>
             <div className="flex flex-col gap-1">
               <label htmlFor="new-variant-material" className="text-sm font-medium text-ink">
                 Material
@@ -121,14 +140,20 @@ export function MaterialsPopup({
                 ))}
               </select>
             </div>
+            <Input label="Código" value={newCode} onChange={(e) => setNewCode(e.target.value)} />
             <Input
               label="Descrição"
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
             />
-            <Button type="button" onClick={handleCreateVariant} disabled={!newMaterialId}>
-              + Adicionar variante
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" onClick={handleCreateVariant} disabled={!newMaterialId || !newCode.trim()}>
+                + Adicionar variante
+              </Button>
+              <Button type="button" variant="ghost" onClick={closeNewVariantForm}>
+                Cancelar
+              </Button>
+            </div>
           </div>
         )}
       </div>
