@@ -106,40 +106,40 @@ export function AnalysisRequestCard({
       {isExpanded && (
         <div className="flex flex-col gap-3 border-t border-line pt-3">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-bg">
                 <tr className="text-ink">
-                  <th className="py-2 pr-3 font-semibold">Centro</th>
-                  <th className="py-2 pr-3 font-semibold">Insumo-Sub</th>
-                  <th className="py-2 pr-3 font-semibold">Sit</th>
-                  <th className="py-2 pr-3 font-semibold">Especificação</th>
-                  <th className="py-2 pr-3 font-semibold">Unid</th>
-                  <th className="py-2 pr-3 font-semibold">Qtd</th>
-                  <th className="py-2 pr-3 font-semibold">Solicitação</th>
-                  <th className="py-2 pr-3 font-semibold">Entrega SOL</th>
-                  <th className="py-2 pr-3 font-semibold">Data Solic.</th>
-                  <th className="py-2 pr-3 font-semibold">Data Aut.</th>
-                  <th className="py-2 pr-3 font-semibold">Dias</th>
-                  <th className="py-2 pr-3 font-semibold">Pendência</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Centro</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Insumo-Sub</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Sit</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Especificação</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Unid</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Qtd</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Solicitação</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Entrega SOL</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Data Solic.</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Data Aut.</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Dias</th>
+                  <th className="border border-line px-3 py-2 font-semibold">Pendência</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line">
+              <tbody>
                 {request.items.map((item, index) => (
                   <tr key={item.id} className="text-ink">
-                    <td className="py-2 pr-3">{request.unitName}</td>
-                    <td className="py-2 pr-3">
+                    <td className="border border-line px-3 py-2">{request.unitName}</td>
+                    <td className="border border-line px-3 py-2">
                       {item.materialCode ?? item.materialName}
                     </td>
-                    <td className="py-2 pr-3">{item.statusCode ?? '—'}</td>
-                    <td className="py-2 pr-3">{item.materialDescription ?? '—'}</td>
-                    <td className="py-2 pr-3">{item.unitOfMeasure ?? '—'}</td>
-                    <td className="py-2 pr-3">{item.quantity}</td>
-                    <td className="py-2 pr-3">{formatItemReference(displayNumber, index)}</td>
-                    <td className="py-2 pr-3">{request.neededBy ? formatDateOnly(request.neededBy) : '—'}</td>
-                    <td className="py-2 pr-3">{formatDate(request.createdAt)}</td>
-                    <td className="py-2 pr-3">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
-                    <td className="py-2 pr-3">{urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}</td>
-                    <td className="py-2 pr-3">
+                    <td className="border border-line px-3 py-2">{item.statusCode ?? '—'}</td>
+                    <td className="border border-line px-3 py-2">{item.materialDescription ?? '—'}</td>
+                    <td className="border border-line px-3 py-2">{item.unitOfMeasure ?? '—'}</td>
+                    <td className="border border-line px-3 py-2">{item.quantity}</td>
+                    <td className="border border-line px-3 py-2">{formatItemReference(displayNumber, index)}</td>
+                    <td className="border border-line px-3 py-2">{request.neededBy ? formatDateOnly(request.neededBy) : '—'}</td>
+                    <td className="border border-line px-3 py-2">{formatDate(request.createdAt)}</td>
+                    <td className="border border-line px-3 py-2">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
+                    <td className="border border-line px-3 py-2">{urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}</td>
+                    <td className="border border-line px-3 py-2">
                       <div className="flex flex-col gap-1">
                         <button
                           type="button"
