@@ -49,7 +49,7 @@ export function AnalysisRequestCard({
   return (
     <div
       data-testid={`analysis-card-${request.id}`}
-      className="flex flex-col gap-3 rounded border border-line bg-surface p-4"
+      className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4"
     >
       <div className="flex items-center gap-2">
         <button
@@ -97,39 +97,37 @@ export function AnalysisRequestCard({
 
       {isExpanded && (
         <div className="flex flex-col gap-3 border-t border-line pt-3">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm">
+          <div className="overflow-x-auto rounded-lg border border-line">
+            <table className="w-full text-left text-sm">
               <thead className="bg-bg">
-                <tr className="text-ink">
-                  <th className="border border-line px-3 py-2 font-semibold">Centro</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Insumo-Sub</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Sit</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Especificação</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Unid</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Qtd</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Solicitação</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Entrega SOL</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Data Solic.</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Data Aut.</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Dias</th>
+                <tr className="border-b border-line text-ink">
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Centro</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Insumo-Sub</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Sit</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Especificação</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Unid</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Qtd</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Solicitação</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Entrega SOL.</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Data Solic.</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Data Aut.</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Dias</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-line">
                 {request.items.map((item, index) => (
                   <tr key={item.id} className="text-ink">
-                    <td className="border border-line px-3 py-2">{request.unitName}</td>
-                    <td className="border border-line px-3 py-2">
-                      {item.materialCode ?? item.materialName}
-                    </td>
-                    <td className="border border-line px-3 py-2">{item.statusCode ?? '—'}</td>
-                    <td className="border border-line px-3 py-2">{item.materialDescription ?? '—'}</td>
-                    <td className="border border-line px-3 py-2">{item.unitOfMeasure ?? '—'}</td>
-                    <td className="border border-line px-3 py-2">{item.quantity}</td>
-                    <td className="border border-line px-3 py-2">{formatItemReference(displayNumber, index)}</td>
-                    <td className="border border-line px-3 py-2">{request.neededBy ? formatDateOnly(request.neededBy) : '—'}</td>
-                    <td className="border border-line px-3 py-2">{formatDate(request.createdAt)}</td>
-                    <td className="border border-line px-3 py-2">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
-                    <td className="border border-line px-3 py-2">{urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}</td>
+                    <td className="px-3 py-2">{request.unitName}</td>
+                    <td className="px-3 py-2">{item.materialCode ?? item.materialName}</td>
+                    <td className="px-3 py-2">{item.statusCode ?? '—'}</td>
+                    <td className="px-3 py-2">{item.materialDescription ?? '—'}</td>
+                    <td className="px-3 py-2">{item.unitOfMeasure ?? '—'}</td>
+                    <td className="px-3 py-2">{item.quantity}</td>
+                    <td className="px-3 py-2">{formatItemReference(displayNumber, index)}</td>
+                    <td className="px-3 py-2">{request.neededBy ? formatDateOnly(request.neededBy) : '—'}</td>
+                    <td className="px-3 py-2">{formatDate(request.createdAt)}</td>
+                    <td className="px-3 py-2">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
+                    <td className="px-3 py-2">{urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}</td>
                   </tr>
                 ))}
               </tbody>
