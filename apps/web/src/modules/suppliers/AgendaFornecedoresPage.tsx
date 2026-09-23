@@ -116,12 +116,14 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         />
       </div>
       <div className="grid grid-cols-1 items-start gap-6 lg:h-[calc(100vh-14rem)] lg:grid-cols-[200px_320px_1fr]">
-        <div className="lg:h-full lg:overflow-y-auto">
-          <CategoryColumn
-            categories={categoriesQuery.data ?? []}
-            selectedCategoryId={selectedCategoryId}
-            onSelect={setSelectedCategoryId}
-          />
+        <div className="flex flex-col lg:h-full">
+          <div className="lg:flex-1 lg:overflow-y-auto">
+            <CategoryColumn
+              categories={categoriesQuery.data ?? []}
+              selectedCategoryId={selectedCategoryId}
+              onSelect={setSelectedCategoryId}
+            />
+          </div>
           <CnpjLookupBlock />
         </div>
 
