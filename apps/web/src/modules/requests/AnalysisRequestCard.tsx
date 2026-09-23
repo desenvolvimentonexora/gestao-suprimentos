@@ -100,7 +100,7 @@ export function AnalysisRequestCard({
           <div className="overflow-x-auto rounded-lg border border-line">
             <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-bg">
-                <tr className="border-b border-line text-ink">
+                <tr className="border-b-2 border-ink-muted/30 text-ink">
                   <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Centro</th>
                   <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Insumo-Sub</th>
                   <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Sit</th>
@@ -114,7 +114,7 @@ export function AnalysisRequestCard({
                   <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Dias</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line">
+              <tbody className="divide-y divide-ink-muted/20">
                 {request.items.map((item, index) => (
                   <tr key={item.id} className="text-ink">
                     <td className="px-3 py-2">{request.unitName}</td>
