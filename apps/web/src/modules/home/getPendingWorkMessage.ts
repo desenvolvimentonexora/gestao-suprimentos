@@ -1,6 +1,5 @@
 export interface PendingWorkSummary {
   dueTodayCount: number
-  awaitingQuoteCount: number
   pendingApprovalsCount?: number
 }
 
@@ -16,13 +15,6 @@ export function getPendingWorkMessage(summary: PendingWorkSummary): PendingWorkS
     segments.push({
       text: `${summary.dueTodayCount} ${summary.dueTodayCount === 1 ? 'requisição vence' : 'requisições vencem'} hoje`,
       href: '/suprimentos/disparo-solicitacoes',
-    })
-  }
-
-  if (summary.awaitingQuoteCount > 0) {
-    segments.push({
-      text: `${summary.awaitingQuoteCount} aguardando cotação`,
-      href: '/suprimentos/em-negociacao',
     })
   }
 
