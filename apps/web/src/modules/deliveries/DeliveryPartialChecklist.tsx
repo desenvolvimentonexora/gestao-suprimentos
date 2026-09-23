@@ -25,7 +25,7 @@ export function DeliveryPartialChecklist({ orderNumber, items, isSaving, onToggl
           />
           <label htmlFor={`partial-item-${item.id}`} className="flex-1">
             {formatSubpedidoLabel(orderNumber, index)} ·{' '}
-            {item.materialCode ? `${item.materialCode} · ${item.materialName}` : item.materialName}
+            {item.materialCode ?? item.materialName}
           </label>
         </li>
       ))}

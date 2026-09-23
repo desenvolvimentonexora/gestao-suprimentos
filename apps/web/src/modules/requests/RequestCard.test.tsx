@@ -91,7 +91,7 @@ describe('RequestCard', () => {
 
   it('não mostra a expansão por padrão', () => {
     render(<RequestCard {...baseProps()} />)
-    expect(screen.queryByText('1023 · Cimento CP-II')).not.toBeInTheDocument()
+    expect(screen.queryByText('1023')).not.toBeInTheDocument()
   })
 
   it('expande ao clicar no corpo do card, mostrando itens e observação', async () => {
@@ -100,7 +100,7 @@ describe('RequestCard', () => {
 
     await user.click(screen.getByText('1243'))
 
-    expect(screen.getByText('1023 · Cimento CP-II')).toBeInTheDocument()
+    expect(screen.getByText('1023')).toBeInTheDocument()
     expect(screen.getByText('Areia')).toBeInTheDocument()
     expect(screen.getByLabelText('Observação')).toBeInTheDocument()
   })
@@ -110,7 +110,7 @@ describe('RequestCard', () => {
     render(<RequestCard {...baseProps()} />)
     await user.click(screen.getByText('1243'))
 
-    expect(screen.getByText('1023 · Cimento CP-II')).toBeInTheDocument()
+    expect(screen.getByText('1023')).toBeInTheDocument()
     expect(screen.getByText('Areia')).toBeInTheDocument()
   })
 
@@ -138,10 +138,10 @@ describe('RequestCard', () => {
     render(<RequestCard {...baseProps()} />)
 
     await user.click(screen.getByText('1243'))
-    expect(screen.getByText('1023 · Cimento CP-II')).toBeInTheDocument()
+    expect(screen.getByText('1023')).toBeInTheDocument()
 
     await user.click(screen.getByText('1243'))
-    expect(screen.queryByText('1023 · Cimento CP-II')).not.toBeInTheDocument()
+    expect(screen.queryByText('1023')).not.toBeInTheDocument()
   })
 
   it('não expande ao clicar nos ícones de ação (Editar/Cancelar)', async () => {
@@ -152,7 +152,7 @@ describe('RequestCard', () => {
     await user.click(screen.getByRole('button', { name: /editar requisição/i }))
 
     expect(onEditRequest).toHaveBeenCalledWith('r1')
-    expect(screen.queryByText('1023 · Cimento CP-II')).not.toBeInTheDocument()
+    expect(screen.queryByText('1023')).not.toBeInTheDocument()
   })
 
   it('chama onUpdateNotes ao sair do campo de observação', async () => {

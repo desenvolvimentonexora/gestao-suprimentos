@@ -87,7 +87,7 @@ describe('NegotiatingRequestCard', () => {
     const user = userEvent.setup()
     render(<NegotiatingRequestCard {...baseProps()} />)
     await user.click(screen.getByRole('button', { name: /expandir/i }))
-    expect(screen.getByText('1023 · Cimento CP-II')).toBeInTheDocument()
+    expect(screen.getByText('1023')).toBeInTheDocument()
   })
 
   it('mostra o negociador atribuído e permite reatribuir', async () => {
@@ -213,7 +213,7 @@ describe('NegotiatingRequestCard', () => {
       render(<NegotiatingRequestCard {...baseProps()} />)
       await user.click(screen.getByRole('button', { name: /expandir/i }))
 
-      expect(screen.getByText('1023 · Cimento CP-II')).toBeInTheDocument()
+      expect(screen.getByText('1023')).toBeInTheDocument()
       expect(screen.getByText('Areia')).toBeInTheDocument()
     })
 

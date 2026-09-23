@@ -140,7 +140,7 @@ export function DeliveryOrderDetailModal({
             <li key={item.id} className="flex items-center justify-between border-b border-line py-1 last:border-0">
               <span>
                 {formatSubpedidoLabel(order.orderNumber, index)} ·{' '}
-                {item.materialCode ? `${item.materialCode} · ${item.materialName}` : item.materialName} · Qtd{' '}
+                {item.materialCode ?? item.materialName} · Qtd{' '}
                 {item.quantity} {item.unitOfMeasure ?? ''}
               </span>
               <span className="text-ink-muted">{formatCurrencyBRL(item.quantity * item.unitPrice)}</span>

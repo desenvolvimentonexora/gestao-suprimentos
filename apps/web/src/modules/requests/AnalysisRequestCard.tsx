@@ -130,7 +130,7 @@ export function AnalysisRequestCard({
                   <tr key={item.id} className="text-ink">
                     <td className="py-1 pr-3">{request.unitName}</td>
                     <td className="py-1 pr-3">
-                      {item.materialCode ? `${item.materialCode} · ${item.materialName}` : item.materialName}
+                      {item.materialCode ?? item.materialName}
                     </td>
                     <td className="py-1 pr-3">{item.statusCode ?? '—'}</td>
                     <td className="py-1 pr-3">{item.materialDescription ?? '—'}</td>

@@ -23,7 +23,7 @@ describe('DeliveryPartialChecklist', () => {
     const items = [makeItem({ id: 'oi1', deliveredAt: null }), makeItem({ id: 'oi2', deliveredAt: '2026-09-20T00:00:00Z' })]
     render(<DeliveryPartialChecklist orderNumber="PC-100" items={items} isSaving={false} onToggleItem={vi.fn()} />)
 
-    expect(screen.getByText('PC-100/001 · 1023 · Cimento CP-II')).toBeInTheDocument()
+    expect(screen.getByText('PC-100/001 · 1023')).toBeInTheDocument()
     expect(screen.getByRole('checkbox', { name: /pc-100\/001/i })).not.toBeChecked()
     expect(screen.getByRole('checkbox', { name: /pc-100\/002/i })).toBeChecked()
   })
