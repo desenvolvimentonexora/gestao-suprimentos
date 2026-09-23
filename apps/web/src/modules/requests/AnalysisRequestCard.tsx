@@ -25,7 +25,6 @@ export interface AnalysisRequestCardProps {
   request: RequestRow
   today: Date
   canAnalyze: boolean
-  onToggleItemPendency: (itemId: string, pendente: boolean, motivo: string | null) => void
   onUpdateNotes: (requestId: string, notes: string) => void
   onDeleteRequest: (request: RequestRow) => void
   onOpenExtensionModal: (requestId: string) => void
@@ -36,7 +35,6 @@ export function AnalysisRequestCard({
   request,
   today,
   canAnalyze,
-  onToggleItemPendency,
   onUpdateNotes,
   onDeleteRequest,
   onOpenExtensionModal,
@@ -44,15 +42,9 @@ export function AnalysisRequestCard({
 }: AnalysisRequestCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [notesDraft, setNotesDraft] = useState(request.notes ?? '')
-  const [motivoDrafts, setMotivoDrafts] = useState<Record<string, string>>({})
 
   const urgency = getUrgencyTier(request.neededBy, today)
   const displayNumber = formatRequestNumber(request.externalRef, request.sequenceNumber)
-  const hasOpenPendency = request.items.some((item) => item.pendente)
-
-  function motivoFor(itemId: string, fallback: string | null): string {
-    return motivoDrafts[itemId] ?? fallback ?? ''
-  }
 
   return (
     <div
@@ -120,7 +112,6 @@ export function AnalysisRequestCard({
                   <th className="border border-line px-3 py-2 font-semibold">Data Solic.</th>
                   <th className="border border-line px-3 py-2 font-semibold">Data Aut.</th>
                   <th className="border border-line px-3 py-2 font-semibold">Dias</th>
-                  <th className="border border-line px-3 py-2 font-semibold">Pendência</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,42 +130,6 @@ export function AnalysisRequestCard({
                     <td className="border border-line px-3 py-2">{formatDate(request.createdAt)}</td>
                     <td className="border border-line px-3 py-2">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
                     <td className="border border-line px-3 py-2">{urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}</td>
-                    <td className="border border-line px-3 py-2">
-                      <div className="flex flex-col gap-1">
-                        <button
-                          type="button"
-                          aria-pressed={item.pendente}
-                          disabled={!canAnalyze}
-                          onClick={() =>
-                            onToggleItemPendency(
-                              item.id,
-                              !item.pendente,
-                              item.pendente ? null : motivoFor(item.id, item.motivoPendencia),
-                            )
-                          }
-                          className={`rounded border px-2 py-1 text-xs ${
-                            item.pendente
-                              ? 'border-accent bg-amber-50 text-accent'
-                              : 'border-line text-ink-muted hover:text-ink'
-                          }`}
-                        >
-                          {item.pendente ? '⚠ Pendente' : 'Sinalizar pendência'}
-                        </button>
-                        {item.pendente && (
-                          <input
-                            type="text"
-                            aria-label={`O que falta em ${item.materialName}`}
-                            placeholder="O que falta informar?"
-                            value={motivoFor(item.id, item.motivoPendencia)}
-                            onChange={(e) =>
-                              setMotivoDrafts((current) => ({ ...current, [item.id]: e.target.value }))
-                            }
-                            onBlur={(e) => onToggleItemPendency(item.id, true, e.target.value)}
-                            className="rounded border border-line bg-surface px-2 py-1 text-xs text-ink"
-                          />
-                        )}
-                      </div>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -200,13 +155,6 @@ export function AnalysisRequestCard({
             />
           </div>
 
-          {hasOpenPendency && (
-            <p className="text-sm text-accent">
-              Há item(ns) sinalizado(s) sem solução. Peça prorrogação e explique o que falta antes de liberar
-              pro Disparo.
-            </p>
-          )}
-
           <div className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
@@ -215,10 +163,7 @@ export function AnalysisRequestCard({
             >
               Pedir prorrogação
             </Button>
-            <Button
-              disabled={hasOpenPendency || !canAnalyze}
-              onClick={() => onReleaseToDispatch(request.id)}
-            >
+            <Button disabled={!canAnalyze} onClick={() => onReleaseToDispatch(request.id)}>
               Liberar pro Disparo
             </Button>
           </div>

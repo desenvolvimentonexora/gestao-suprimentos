@@ -220,18 +220,6 @@ export async function cancelRequest(requestId: string): Promise<void> {
   await updateRequestStatus(requestId, 'cancelled')
 }
 
-export async function toggleItemPendency(
-  itemId: string,
-  pendente: boolean,
-  motivoPendencia: string | null,
-): Promise<void> {
-  const { error } = await supabase
-    .from('request_items')
-    .update({ pendente, motivo_pendencia: pendente ? motivoPendencia : null })
-    .eq('id', itemId)
-  if (error) throw error
-}
-
 // A Edge Function review-request devolve { error: "mensagem" } no corpo da
 // resposta quando a regra de negócio no banco recusa a ação (ex.: liberar
 // com pendência aberta). O supabase-js não expõe esse corpo em error.message

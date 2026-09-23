@@ -23,7 +23,6 @@ import {
   useReleaseRequestToDispatch,
   useRequestExtension,
   useRequests,
-  useToggleItemPendency,
   useUnitOptions,
   useUpdateRequestNotes,
 } from './queries'
@@ -66,7 +65,6 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   const permissionsQuery = useUserPermissions(userId)
   const canAnalyze = (permissionsQuery.data ?? []).includes('requests.analyze')
 
-  const toggleItemPendency = useToggleItemPendency()
   const updateRequestNotes = useUpdateRequestNotes()
   const cancelRequest = useCancelRequest()
   const requestExtension = useRequestExtension()
@@ -96,9 +94,6 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   })
 
   const extensionRequest = requests.find((request) => request.id === extensionRequestId)
-  const pendingItems = (extensionRequest?.items ?? [])
-    .filter((item) => item.pendente)
-    .map((item) => ({ materialName: item.materialName, motivo: item.motivoPendencia }))
 
   function handleDeleteRequest(request: RequestRow) {
     if (window.confirm(`Excluir a ${requestLabel} de "${request.unitName}"?`)) {
@@ -180,9 +175,6 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
                 request={request}
                 today={today}
                 canAnalyze={canAnalyze}
-                onToggleItemPendency={(itemId, pendente, motivo) =>
-                  toggleItemPendency.mutate({ itemId, pendente, motivoPendencia: motivo })
-                }
                 onUpdateNotes={(requestId, notes) => updateRequestNotes.mutate({ requestId, notes })}
                 onDeleteRequest={handleDeleteRequest}
                 onOpenExtensionModal={setExtensionRequestId}
@@ -211,7 +203,6 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
           isOpen
           onClose={() => setExtensionRequestId(null)}
           currentNeededBy={extensionRequest.neededBy}
-          pendingItems={pendingItems}
           onSubmit={(values) =>
             requestExtension.mutate(
               { requestId: extensionRequest.id, newNeededBy: values.newNeededBy, reason: values.reason },
@@ -229,7 +220,6 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
                       currentNeededBy: extensionRequest.neededBy,
                       newNeededBy: values.newNeededBy,
                       reason: values.reason,
-                      pendingItems,
                     }),
                   })
                 },

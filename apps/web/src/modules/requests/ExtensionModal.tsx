@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Button, Input, Modal } from '../../components'
-import type { PendingItemSummary } from './buildExtensionMessage'
 
 const extensionSchema = z.object({
   newNeededBy: z.string().min(1, 'Informe a nova data de entrega proposta.'),
@@ -15,7 +14,6 @@ export interface ExtensionModalProps {
   isOpen: boolean
   onClose: () => void
   currentNeededBy: string | null
-  pendingItems?: PendingItemSummary[]
   onSubmit: (values: { newNeededBy: string; reason: string }) => void
   isSubmitting: boolean
   submitError: string | null
@@ -25,7 +23,6 @@ export function ExtensionModal({
   isOpen,
   onClose,
   currentNeededBy,
-  pendingItems = [],
   onSubmit,
   isSubmitting,
   submitError,
@@ -50,20 +47,6 @@ export function ExtensionModal({
           <p className="text-sm text-ink-muted">
             Entrega atual: {new Intl.DateTimeFormat('pt-BR').format(new Date(`${currentNeededBy}T00:00:00`))}
           </p>
-        )}
-
-        {pendingItems.length > 0 && (
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-ink">Itens sinalizados</span>
-            <ul className="flex flex-col gap-1 rounded border border-line bg-bg p-3 text-sm text-ink">
-              {pendingItems.map((item) => (
-                <li key={item.materialName}>
-                  <span className="font-medium">{item.materialName}</span>
-                  {item.motivo && <span className="text-ink-muted"> — {item.motivo}</span>}
-                </li>
-              ))}
-            </ul>
-          </div>
         )}
 
         <Input

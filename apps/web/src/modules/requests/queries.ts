@@ -13,7 +13,6 @@ import {
   requestExtension,
   retryDispatch,
   saveImportMapping,
-  toggleItemPendency,
   updateRequest,
   updateRequestNotes,
   updateRequestStatus,
@@ -119,24 +118,6 @@ export function useCancelRequest() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (requestId: string) => cancelRequest(requestId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['requests'] })
-    },
-  })
-}
-
-export function useToggleItemPendency() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({
-      itemId,
-      pendente,
-      motivoPendencia,
-    }: {
-      itemId: string
-      pendente: boolean
-      motivoPendencia: string | null
-    }) => toggleItemPendency(itemId, pendente, motivoPendencia),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },

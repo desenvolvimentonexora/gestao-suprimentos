@@ -47,7 +47,6 @@ function baseProps() {
   return {
     today: new Date('2026-09-15T12:00:00'),
     canAnalyze: true,
-    onToggleItemPendency: vi.fn(),
     onUpdateNotes: vi.fn(),
     onDeleteRequest: vi.fn(),
     onOpenExtensionModal: vi.fn(),
@@ -76,61 +75,7 @@ describe('AnalysisRequestCard', () => {
     expect(screen.getByText('Porta')).toBeInTheDocument()
   })
 
-  it('sinaliza um item como pendente e libera o campo de motivo', async () => {
-    const user = userEvent.setup()
-    const onToggleItemPendency = vi.fn()
-    render(
-      <AnalysisRequestCard
-        {...baseProps()}
-        onToggleItemPendency={onToggleItemPendency}
-        request={makeRequest({})}
-      />,
-    )
-    await user.click(screen.getByText('SOL 1097'))
-
-    await user.click(screen.getByRole('button', { name: 'Sinalizar pendência' }))
-    expect(onToggleItemPendency).toHaveBeenCalledWith('i1', true, '')
-  })
-
-  it('mostra o campo de motivo e o botão fica marcado quando o item já está pendente', async () => {
-    const user = userEvent.setup()
-    render(
-      <AnalysisRequestCard
-        {...baseProps()}
-        request={makeRequest({ items: [makeItem({ pendente: true, motivoPendencia: 'Falta o modelo' })] })}
-      />,
-    )
-    await user.click(screen.getByText('SOL 1097'))
-
-    expect(screen.getByRole('button', { name: '⚠ Pendente' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByLabelText('O que falta em Porta')).toHaveValue('Falta o modelo')
-  })
-
-  it('bloqueia "Liberar pro Disparo" e explica o motivo quando há item pendente', async () => {
-    const user = userEvent.setup()
-    render(
-      <AnalysisRequestCard
-        {...baseProps()}
-        request={makeRequest({ items: [makeItem({ pendente: true, motivoPendencia: 'Falta o modelo' })] })}
-      />,
-    )
-    await user.click(screen.getByText('SOL 1097'))
-
-    expect(screen.getByRole('button', { name: 'Liberar pro Disparo' })).toBeDisabled()
-    expect(screen.getByText(/peça prorrogação e explique o que falta/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Pedir prorrogação' })).toBeEnabled()
-  })
-
-  it('"Pedir prorrogação" continua habilitado mesmo sem item pendente', async () => {
-    const user = userEvent.setup()
-    render(<AnalysisRequestCard {...baseProps()} request={makeRequest({})} />)
-    await user.click(screen.getByText('SOL 1097'))
-
-    expect(screen.getByRole('button', { name: 'Pedir prorrogação' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: 'Liberar pro Disparo' })).toBeEnabled()
-  })
-
-  it('chama onReleaseToDispatch ao clicar em "Liberar pro Disparo" sem pendência', async () => {
+  it('chama onReleaseToDispatch ao clicar em "Liberar pro Disparo"', async () => {
     const user = userEvent.setup()
     const onReleaseToDispatch = vi.fn()
     render(
@@ -144,6 +89,22 @@ describe('AnalysisRequestCard', () => {
     await user.click(screen.getByRole('button', { name: 'Liberar pro Disparo' }))
 
     expect(onReleaseToDispatch).toHaveBeenCalledWith('r1')
+  })
+
+  it('chama onOpenExtensionModal ao clicar em "Pedir prorrogação"', async () => {
+    const user = userEvent.setup()
+    const onOpenExtensionModal = vi.fn()
+    render(
+      <AnalysisRequestCard
+        {...baseProps()}
+        onOpenExtensionModal={onOpenExtensionModal}
+        request={makeRequest({})}
+      />,
+    )
+    await user.click(screen.getByText('SOL 1097'))
+    await user.click(screen.getByRole('button', { name: 'Pedir prorrogação' }))
+
+    expect(onOpenExtensionModal).toHaveBeenCalledWith('r1')
   })
 
   it('chama onDeleteRequest ao clicar no ícone de excluir', async () => {
@@ -161,7 +122,6 @@ describe('AnalysisRequestCard', () => {
     render(<AnalysisRequestCard {...baseProps()} canAnalyze={false} request={makeRequest({})} />)
     await user.click(screen.getByText('SOL 1097'))
 
-    expect(screen.getByRole('button', { name: 'Sinalizar pendência' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Pedir prorrogação' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Liberar pro Disparo' })).toBeDisabled()
   })
