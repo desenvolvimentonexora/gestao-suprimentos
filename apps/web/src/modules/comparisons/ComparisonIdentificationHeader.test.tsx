@@ -15,14 +15,15 @@ function baseProps() {
 }
 
 describe('ComparisonIdentificationHeader', () => {
-  it('mostra o número da solicitação usando o número externo quando existe', () => {
+  it('mostra o rótulo "Solicitação" e o número usando o número externo quando existe', () => {
     render(<ComparisonIdentificationHeader {...baseProps()} />)
-    expect(screen.getByText('SOLICITAÇÃO Nº 1243')).toBeInTheDocument()
+    expect(screen.getByText('Solicitação')).toBeInTheDocument()
+    expect(screen.getByText('Nº 1243')).toBeInTheDocument()
   })
 
   it('cai pra "SOL {sequência}" sem número externo', () => {
     render(<ComparisonIdentificationHeader {...baseProps()} externalRef={null} />)
-    expect(screen.getByText('SOLICITAÇÃO Nº SOL 42')).toBeInTheDocument()
+    expect(screen.getByText('Nº SOL 42')).toBeInTheDocument()
   })
 
   it('mostra o rótulo fixo do produto e o nome da unidade', () => {
@@ -31,15 +32,18 @@ describe('ComparisonIdentificationHeader', () => {
     expect(screen.getByText('Depósito Simões Filho')).toBeInTheDocument()
   })
 
-  it('mostra quem equalizou e a data formatada em pt-BR', () => {
+  it('mostra o rótulo "Equalizado por", quem equalizou (em destaque) e a data formatada em pt-BR', () => {
     render(<ComparisonIdentificationHeader {...baseProps()} />)
-    expect(screen.getByText('EQUALIZADO POR Maria Souza')).toBeInTheDocument()
+    expect(screen.getByText('Equalizado por')).toBeInTheDocument()
+    const name = screen.getByText('Maria Souza')
+    expect(name).toBeInTheDocument()
+    expect(name.className).toContain('font-semibold')
     expect(screen.getByText('18/09/2026')).toBeInTheDocument()
   })
 
   it('mostra travessão quando não há responsável', () => {
     render(<ComparisonIdentificationHeader {...baseProps()} createdByName={null} />)
-    expect(screen.getByText('EQUALIZADO POR —')).toBeInTheDocument()
+    expect(screen.getByText('—')).toBeInTheDocument()
   })
 
   it('mostra o logo da marca quando configurado', () => {

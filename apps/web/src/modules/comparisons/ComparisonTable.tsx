@@ -1,6 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
 import { Flag } from 'lucide-react'
-import { Card } from '../../components'
 import { getCheapestQuotationId, getQuotationTotal } from './combinedPrice'
 import { getSupplierColor } from './supplierColor'
 import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
@@ -79,7 +78,7 @@ export function ComparisonTable({
   const combinedBestPrice = winningQuotation ? getQuotationTotal(requestItems, winningQuotation) : null
 
   return (
-    <Card className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 rounded-sm border border-line bg-surface p-4">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-sm">
           <thead>
@@ -114,7 +113,7 @@ export function ComparisonTable({
                         aria-label={
                           isExcluded ? `Reincluir ${quotation.supplierName}` : `Excluir ${quotation.supplierName}`
                         }
-                        className="rounded px-1 text-ink-muted hover:bg-white/50 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="rounded-sm px-1 text-ink-muted hover:bg-white/50 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         ×
                       </button>
@@ -200,7 +199,7 @@ export function ComparisonTable({
                       type="number"
                       defaultValue={quotation.freight ?? ''}
                       aria-label={`Frete ${quotation.supplierName}`}
-                      className="w-24 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+                      className="w-24 rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
                       onBlur={(e) =>
                         onUpdateQuotationTerms(quotation.quotationId, {
                           freight: parseNumberInput(e.target.value),
@@ -231,7 +230,7 @@ export function ComparisonTable({
                     key={quotation.quotationId}
                     data-testid={`total-${quotation.quotationId}`}
                     colSpan={2}
-                    className={`${COLUMN_DIVIDER} px-3 py-2.5 font-semibold ${isWinner ? 'rounded bg-blue-900 text-white' : 'text-ink'}`}
+                    className={`${COLUMN_DIVIDER} px-3 py-2.5 font-semibold ${isWinner ? 'rounded-sm bg-blue-900 text-white' : 'text-ink'}`}
                   >
                     {total === null ? '—' : currencyFormatter.format(total)}
                   </td>
@@ -251,7 +250,7 @@ export function ComparisonTable({
                       type="text"
                       defaultValue={quotation.paymentTerms ?? ''}
                       aria-label={`Pagamento ${quotation.supplierName}`}
-                      className="w-32 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+                      className="w-32 rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
                       onBlur={(e) =>
                         onUpdateQuotationTerms(quotation.quotationId, {
                           freight: quotation.freight,
@@ -279,7 +278,7 @@ export function ComparisonTable({
                       type="number"
                       defaultValue={quotation.deliveryDays ?? ''}
                       aria-label={`Entrega ${quotation.supplierName}`}
-                      className="w-20 rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+                      className="w-20 rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
                       onBlur={(e) =>
                         onUpdateQuotationTerms(quotation.quotationId, {
                           freight: quotation.freight,
@@ -302,10 +301,10 @@ export function ComparisonTable({
       </div>
 
       {combinedBestPrice !== null && (
-        <div className="rounded bg-primary px-4 py-3 text-base font-semibold text-on-primary">
+        <div className="rounded-md bg-primary px-4 py-3 text-base font-semibold text-on-primary">
           🏆 Melhor preço combinado: {currencyFormatter.format(combinedBestPrice)}
         </div>
       )}
-    </Card>
+    </div>
   )
 }

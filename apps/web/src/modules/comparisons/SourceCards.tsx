@@ -13,7 +13,7 @@ const SUPPLIER_SLOTS = 4
 export function SourceCards({ itemCount, quotations, onAddQuotation }: SourceCardsProps) {
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-      <div className="flex flex-col items-center gap-1 rounded border border-primary bg-primary/5 px-3 py-3 text-center">
+      <div className="flex flex-col items-center gap-1 rounded-md border border-primary bg-primary/5 px-3 py-3 text-center">
         <FileText size={18} className="text-primary" />
         <span className="text-sm font-medium text-ink">Solicitações</span>
         <span className="text-xs text-ink-muted">{itemCount} itens</span>
@@ -26,7 +26,7 @@ export function SourceCards({ itemCount, quotations, onAddQuotation }: SourceCar
           return (
             <div
               key={quotation.quotationId}
-              className={`flex flex-col items-center gap-1 rounded border px-3 py-3 text-center ${color.header}`}
+              className={`flex flex-col items-center gap-1 rounded-md border px-3 py-3 text-center ${color.header}`}
             >
               <FileText size={18} />
               <span className="text-sm font-medium">{quotation.supplierName}</span>
@@ -40,7 +40,7 @@ export function SourceCards({ itemCount, quotations, onAddQuotation }: SourceCar
             type="button"
             onClick={onAddQuotation}
             aria-label={`Fornecedor ${index + 1}`}
-            className="flex flex-col items-center gap-1 rounded border border-dashed border-line px-3 py-3 text-center text-ink-muted hover:bg-bg"
+            className="flex flex-col items-center gap-1 rounded-md border border-dashed border-line px-3 py-3 text-center text-ink-muted hover:bg-bg"
           >
             <Plus size={18} />
             <span className="text-sm font-medium">Fornecedor {index + 1}</span>

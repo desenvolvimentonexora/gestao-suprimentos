@@ -88,7 +88,7 @@ export function PendingApprovalsList({ rows, onApprove, onReject, isSubmitting }
                       id={`reject-reason-${row.comparisonId}`}
                       value={reasons[row.comparisonId] ?? ''}
                       onChange={(e) => setReasons((current) => ({ ...current, [row.comparisonId]: e.target.value }))}
-                      className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
+                      className="rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink"
                     />
                     {errors[row.comparisonId] && <p className="text-xs text-accent">{errors[row.comparisonId]}</p>}
                   </div>

@@ -182,7 +182,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
               const isEditable = request.comparisonStatus !== 'pending_approval'
 
               return (
-                <div key={request.requestId} className="overflow-hidden rounded border border-line">
+                <div key={request.requestId} className="overflow-hidden rounded-md border border-line">
                   <button
                     type="button"
                     onClick={() =>
