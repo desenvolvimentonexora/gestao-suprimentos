@@ -1,6 +1,31 @@
 import { supabase } from '../../lib/supabase'
 import type { SupplierFormValues } from './SupplierFormModal'
-import type { CategoryRow, MaterialRow, MaterialVariantRow, SupplierReportRow, SupplierRow } from './types'
+import type {
+  CategoryRow,
+  CompanyCandidate,
+  ContactInfo,
+  MaterialRow,
+  MaterialVariantRow,
+  ResolvedCnae,
+  SupplierReportRow,
+  SupplierRow,
+} from './types'
+
+// supabase.functions.invoke devolve um FunctionsHttpError genérico quando o
+// status não é 2xx, sem expor a mensagem que a Edge Function escreveu no
+// corpo — extrai essa mensagem pra manter os erros claros pro comprador
+// (seção 8 do CLAUDE.md), em vez do texto genérico do supabase-js.
+async function edgeFunctionErrorMessage(error: unknown): Promise<string> {
+  if (error && typeof error === 'object' && 'context' in error) {
+    try {
+      const body = await (error as { context: Response }).context.json()
+      if (typeof body?.error === 'string') return body.error
+    } catch {
+      // resposta sem corpo JSON — cai pra mensagem genérica abaixo
+    }
+  }
+  return error instanceof Error ? error.message : 'Erro desconhecido.'
+}
 
 export async function fetchCategories(): Promise<CategoryRow[]> {
   const { data, error } = await supabase
@@ -416,4 +441,33 @@ export async function createMaterial(
     icon: data.icon,
     supplierCount: 0,
   }
+}
+
+export async function fetchSupplierCnpjs(supplierId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('supplier_documents')
+    .select('cnpj')
+    .eq('supplier_id', supplierId)
+    .is('deleted_at', null)
+
+  if (error) throw error
+  return data.map((row) => row.cnpj)
+}
+
+export async function resolveSupplierCnae(cnpj: string): Promise<ResolvedCnae> {
+  const { data, error } = await supabase.functions.invoke('resolve-supplier-cnae', { body: { cnpj } })
+  if (error) throw new Error(await edgeFunctionErrorMessage(error))
+  return data
+}
+
+export async function discoverSimilarSuppliers(cnae: string, uf: string): Promise<CompanyCandidate[]> {
+  const { data, error } = await supabase.functions.invoke('discover-suppliers-by-cnae', { body: { cnae, uf } })
+  if (error) throw new Error(await edgeFunctionErrorMessage(error))
+  return data
+}
+
+export async function lookupSupplierContact(cnpj: string): Promise<ContactInfo | null> {
+  const { data, error } = await supabase.functions.invoke('lookup-supplier-contact', { body: { cnpj } })
+  if (error) throw new Error(await edgeFunctionErrorMessage(error))
+  return data
 }

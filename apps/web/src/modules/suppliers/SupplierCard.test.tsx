@@ -23,6 +23,7 @@ function baseProps() {
     onOpenPopup: vi.fn(),
     onEdit: vi.fn(),
     onDelete: vi.fn(),
+    onFindSimilar: vi.fn(),
   }
 }
 
@@ -67,6 +68,14 @@ describe('SupplierCard', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
     expect(props.onDelete).toHaveBeenCalledWith('s1')
+  })
+
+  it('chama onFindSimilar ao clicar em Buscar semelhantes', async () => {
+    const props = baseProps()
+    render(<SupplierCard {...props} />)
+
+    await userEvent.click(screen.getByRole('button', { name: /buscar semelhantes/i }))
+    expect(props.onFindSimilar).toHaveBeenCalledWith('s1')
   })
 
   it('mostra "Em breve" ao clicar em Copiar ou Copiar para setor', async () => {

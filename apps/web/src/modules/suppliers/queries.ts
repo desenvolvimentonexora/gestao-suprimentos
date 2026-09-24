@@ -5,15 +5,19 @@ import {
   createSupplier,
   deleteMaterial,
   deleteSupplier,
+  discoverSimilarSuppliers,
   fetchCategories,
   fetchFavoriteSupplierIds,
   fetchMaterials,
   fetchMaterialVariants,
+  fetchSupplierCnpjs,
   fetchSupplierDetail,
   fetchSupplierEmailsByMaterial,
   fetchSupplierReport,
   fetchSuppliersByMaterial,
   fetchUnits,
+  lookupSupplierContact,
+  resolveSupplierCnae,
   setFavoriteSupplier,
   updateMaterial,
   updateSupplier,
@@ -189,4 +193,26 @@ export function useToggleFavoriteSupplier(tenantId: string, userId: string) {
       queryClient.invalidateQueries({ queryKey: ['supplier-favorites'] })
     },
   })
+}
+
+export function useSupplierCnpjs(supplierId: string | null) {
+  return useQuery({
+    queryKey: ['supplier-cnpjs', supplierId],
+    queryFn: () => fetchSupplierCnpjs(supplierId!),
+    enabled: Boolean(supplierId),
+  })
+}
+
+export function useResolveSupplierCnae() {
+  return useMutation({ mutationFn: (cnpj: string) => resolveSupplierCnae(cnpj) })
+}
+
+export function useDiscoverSimilarSuppliers() {
+  return useMutation({
+    mutationFn: ({ cnae, uf }: { cnae: string; uf: string }) => discoverSimilarSuppliers(cnae, uf),
+  })
+}
+
+export function useLookupSupplierContact() {
+  return useMutation({ mutationFn: (cnpj: string) => lookupSupplierContact(cnpj) })
 }

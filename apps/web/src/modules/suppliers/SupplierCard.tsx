@@ -1,4 +1,4 @@
-import { Award, Clock, Mail, Package, Phone, Star, User, Users } from 'lucide-react'
+import { Award, Clock, Mail, Package, Phone, Search, Star, User, Users } from 'lucide-react'
 import { Badge, Button, ComingSoonButton } from '../../components'
 import { getSupplierColor } from './supplierColor'
 import type { SupplierRow } from './types'
@@ -12,6 +12,7 @@ export interface SupplierCardProps {
   onOpenPopup: (kind: SupplierPopupKind, supplierId: string) => void
   onEdit: (supplierId: string) => void
   onDelete: (supplierId: string) => void
+  onFindSimilar: (supplierId: string) => void
 }
 
 const INDICATORS: { kind: SupplierPopupKind; label: string; icon: typeof Award; iconClassName: string }[] = [
@@ -28,6 +29,7 @@ export function SupplierCard({
   onOpenPopup,
   onEdit,
   onDelete,
+  onFindSimilar,
 }: SupplierCardProps) {
   const avatarColor = getSupplierColor(supplier.id)
   const isActive = supplier.status === 'active'
@@ -129,6 +131,10 @@ export function SupplierCard({
         </Button>
         <Button variant="secondary" onClick={() => onOpenPopup('avaliacoes', supplier.id)}>
           Avaliar
+        </Button>
+        <Button variant="secondary" onClick={() => onFindSimilar(supplier.id)}>
+          <Search size={14} className="mr-1 inline" aria-hidden="true" />
+          Buscar semelhantes
         </Button>
         <ComingSoonButton label="Copiar" variant="secondary" />
         <ComingSoonButton label="Copiar para setor" variant="secondary" />

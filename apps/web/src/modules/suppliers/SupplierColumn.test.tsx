@@ -37,6 +37,7 @@ function baseProps() {
     onOpenPopup: vi.fn(),
     onEditSupplier: vi.fn(),
     onDeleteSupplier: vi.fn(),
+    onFindSimilarSuppliers: vi.fn(),
   }
 }
 

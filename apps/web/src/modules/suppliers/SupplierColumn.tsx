@@ -23,6 +23,7 @@ export interface SupplierColumnProps {
   onOpenPopup: (kind: SupplierPopupKind, supplierId: string) => void
   onEditSupplier: (supplierId: string) => void
   onDeleteSupplier: (supplierId: string) => void
+  onFindSimilarSuppliers: (supplierId: string) => void
   /** Vocabulário do cliente para esta entidade (settings.vocabulary.supplier) — "Fornecedor" se não vier. */
   supplierLabel?: string
 }
@@ -47,6 +48,7 @@ export function SupplierColumn({
   onOpenPopup,
   onEditSupplier,
   onDeleteSupplier,
+  onFindSimilarSuppliers,
   supplierLabel = 'Fornecedor',
 }: SupplierColumnProps) {
   if (!materialName) {
@@ -127,6 +129,7 @@ export function SupplierColumn({
                 onOpenPopup={onOpenPopup}
                 onEdit={onEditSupplier}
                 onDelete={onDeleteSupplier}
+                onFindSimilar={onFindSimilarSuppliers}
               />
             ))}
           </div>

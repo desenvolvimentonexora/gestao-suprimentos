@@ -5,6 +5,8 @@ import type { MaterialVariantRow } from './types'
 export interface SupplierFormState {
   mode: 'create' | 'edit'
   supplierId?: string
+  /** Pré-preenchimento pro modo "create" (ex.: vindo da busca de fornecedores semelhantes). O comprador ainda revisa e completa antes de salvar. */
+  prefill?: SupplierFormValues
 }
 
 export interface SupplierFormContainerProps {
@@ -36,7 +38,7 @@ export function SupplierFormContainer({
   }
 
   const initialValues: SupplierFormValues | undefined =
-    state.mode === 'edit' ? detailQuery.data : undefined
+    state.mode === 'edit' ? detailQuery.data : state.prefill
 
   return (
     <SupplierFormModal

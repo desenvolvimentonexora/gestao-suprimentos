@@ -44,3 +44,25 @@ export interface SupplierRow {
   mainContact: SupplierContactRow | null
   createdByName: string | null
 }
+
+export interface ResolvedCnae {
+  cnae: string
+  cnaeDescricao: string
+  uf: string
+}
+
+export interface CompanyCandidate {
+  razaoSocial: string
+  nomeFantasia: string | null
+  cnpj: string
+  cidade: string | null
+  uf: string | null
+  cnae: string | null
+  cnaeDescricao: string | null
+  porte: string | null
+}
+
+export interface ContactInfo {
+  phone: string | null
+  email: string | null
+}
