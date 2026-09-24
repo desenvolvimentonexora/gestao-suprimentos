@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '../../components'
 import { useSettings } from '../../core/config'
 import { CategoryColumn } from './CategoryColumn'
+import { CnpjLookupBlock } from './CnpjLookupBlock'
 import { MaterialColumn } from './MaterialColumn'
 import { SimilarSuppliersContainer } from './SimilarSuppliersContainer'
 import { SupplierColumn } from './SupplierColumn'
@@ -125,6 +126,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
               onSelect={setSelectedCategoryId}
             />
           </div>
+          <CnpjLookupBlock />
         </div>
 
         <div className="lg:h-full lg:overflow-y-auto">
