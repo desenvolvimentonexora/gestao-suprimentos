@@ -1,13 +1,21 @@
 import { Building2 } from 'lucide-react'
 import { useState } from 'react'
-import { Card, ComingSoonButton, Input } from '../../components'
+import { Button, Card, Input } from '../../components'
 
-// Placeholder visual da automação futura: buscar, a partir de um CNPJ já
-// conhecido, outras empresas do mesmo ramo (CNAE) pra sugerir como
-// fornecedor. Por enquanto só a interface — a busca em si (API externa +
-// popup de resultados) ainda não está implementada.
-export function CnpjLookupBlock() {
+export interface CnpjLookupBlockProps {
+  onSearch: (cnpj: string) => void
+}
+
+// Ponto de entrada manual da busca de "fornecedores semelhantes": o comprador
+// já sabe um CNPJ de cabeça (não precisa ser de um fornecedor cadastrado) e
+// busca outras empresas do mesmo ramo (CNAE) a partir dele. Mesmo fluxo do
+// botão "Buscar semelhantes" no card do fornecedor — só muda a origem do
+// CNPJ de referência (digitado aqui, em vez de já cadastrado).
+export function CnpjLookupBlock({ onSearch }: CnpjLookupBlockProps) {
   const [cnpj, setCnpj] = useState('')
+
+  const digits = cnpj.replace(/\D/g, '')
+  const isValid = digits.length === 14
 
   return (
     <Card className="mt-4 flex flex-col gap-3">
@@ -28,7 +36,9 @@ export function CnpjLookupBlock() {
         onChange={(e) => setCnpj(e.target.value)}
       />
 
-      <ComingSoonButton label="Buscar" variant="primary" className="w-full" />
+      <Button variant="primary" className="w-full" disabled={!isValid} onClick={() => onSearch(digits)}>
+        Buscar
+      </Button>
     </Card>
   )
 }

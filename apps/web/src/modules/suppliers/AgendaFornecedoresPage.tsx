@@ -49,6 +49,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [formState, setFormState] = useState<SupplierFormState | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
   const [similarSuppliersFor, setSimilarSuppliersFor] = useState<string | null>(null)
+  const [manualCnpjSearch, setManualCnpjSearch] = useState<string | null>(null)
 
   const settingsQuery = useSettings(tenantId)
   const supplierLabel = settingsQuery.data?.vocabulary.supplier
@@ -126,7 +127,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
               onSelect={setSelectedCategoryId}
             />
           </div>
-          <CnpjLookupBlock />
+          <CnpjLookupBlock onSearch={(cnpj) => setManualCnpjSearch(cnpj)} />
         </div>
 
         <div className="lg:h-full lg:overflow-y-auto">
@@ -217,11 +218,16 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
       />
 
       <SimilarSuppliersContainer
-        key={similarSuppliersFor ?? 'closed'}
+        key={similarSuppliersFor ?? manualCnpjSearch ?? 'closed'}
         supplierId={similarSuppliersFor}
-        onClose={() => setSimilarSuppliersFor(null)}
+        manualCnpj={manualCnpjSearch}
+        onClose={() => {
+          setSimilarSuppliersFor(null)
+          setManualCnpjSearch(null)
+        }}
         onRegisterCandidate={(prefill) => {
           setSimilarSuppliersFor(null)
+          setManualCnpjSearch(null)
           setFormState({ mode: 'create', prefill })
         }}
       />

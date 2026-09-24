@@ -10,17 +10,21 @@ import {
 import type { CompanyCandidate, ContactInfo } from './types'
 
 export interface SimilarSuppliersContainerProps {
+  /** Origem "a partir de um fornecedor já cadastrado" — busca os CNPJs dele. */
   supplierId: string | null
+  /** Origem "CNPJ digitado à mão" (bloco solto da Agenda) — um único CNPJ já pronto, sem precisar buscar. */
+  manualCnpj: string | null
   onClose: () => void
   onRegisterCandidate: (values: SupplierFormValues) => void
 }
 
 export function SimilarSuppliersContainer({
   supplierId,
+  manualCnpj,
   onClose,
   onRegisterCandidate,
 }: SimilarSuppliersContainerProps) {
-  const isOpen = Boolean(supplierId)
+  const isOpen = Boolean(supplierId) || Boolean(manualCnpj)
   const cnpjsQuery = useSupplierCnpjs(supplierId)
   const resolveCnae = useResolveSupplierCnae()
   const discover = useDiscoverSimilarSuppliers()
@@ -30,10 +34,12 @@ export function SimilarSuppliersContainer({
   const [checkingCnpj, setCheckingCnpj] = useState<string | null>(null)
   const [contactByCnpj, setContactByCnpj] = useState<Record<string, ContactInfo | null>>({})
 
-  const cnpjs = cnpjsQuery.data ?? []
-  // Só existe um CNPJ pra escolher: usa ele direto, sem exigir seleção manual.
-  // Este componente é remontado (key={supplierId} no container da página) a
-  // cada abertura, então não há estado obsoleto de uma consulta anterior.
+  const cnpjs = manualCnpj ? [manualCnpj] : (cnpjsQuery.data ?? [])
+  // Só existe um CNPJ pra escolher (ou porque foi digitado à mão, ou porque o
+  // fornecedor só tem um cadastrado): usa ele direto, sem exigir seleção
+  // manual. Este componente é remontado (key={supplierId ?? manualCnpj} no
+  // container da página) a cada abertura, então não há estado obsoleto de
+  // uma consulta anterior.
   const effectiveSelectedCnpj = selectedCnpj ?? (cnpjs.length === 1 ? cnpjs[0]! : null)
 
   async function handleSearch() {
