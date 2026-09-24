@@ -62,7 +62,9 @@ export interface CompanyCandidate {
   porte: string | null
 }
 
+// O actor de descoberta (Apify) não retorna e-mail, só telefone — e-mail
+// continua disponível pro comprador preencher manualmente no formulário, só
+// não vem pré-preenchido.
 export interface ContactInfo {
   phone: string | null
-  email: string | null
 }

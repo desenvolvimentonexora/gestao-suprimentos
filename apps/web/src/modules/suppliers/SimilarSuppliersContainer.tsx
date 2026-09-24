@@ -7,7 +7,7 @@ import {
   useResolveSupplierCnae,
   useSupplierCnpjs,
 } from './queries'
-import type { CompanyCandidate } from './types'
+import type { CompanyCandidate, ContactInfo } from './types'
 
 export interface SimilarSuppliersContainerProps {
   supplierId: string | null
@@ -27,7 +27,8 @@ export function SimilarSuppliersContainer({
   const lookupContact = useLookupSupplierContact()
 
   const [selectedCnpj, setSelectedCnpj] = useState<string | null>(null)
-  const [registeringCnpj, setRegisteringCnpj] = useState<string | null>(null)
+  const [checkingCnpj, setCheckingCnpj] = useState<string | null>(null)
+  const [contactByCnpj, setContactByCnpj] = useState<Record<string, ContactInfo | null>>({})
 
   const cnpjs = cnpjsQuery.data ?? []
   // Só existe um CNPJ pra escolher: usa ele direto, sem exigir seleção manual.
@@ -45,16 +46,20 @@ export function SimilarSuppliersContainer({
     }
   }
 
-  async function handleRegister(candidate: CompanyCandidate) {
-    setRegisteringCnpj(candidate.cnpj)
-    let contact: { phone: string | null; email: string | null } | null = null
+  async function handleLookupContact(candidate: CompanyCandidate) {
+    setCheckingCnpj(candidate.cnpj)
+    let contact: ContactInfo | null = null
     try {
       contact = await lookupContact.mutateAsync(candidate.cnpj)
     } catch {
-      contact = null // contato pontual indisponível não deve travar o cadastro
+      contact = null // busca pontual indisponível — trata como "sem telefone", não bloqueia o cadastro
     }
-    setRegisteringCnpj(null)
+    setContactByCnpj((current) => ({ ...current, [candidate.cnpj]: contact }))
+    setCheckingCnpj(null)
+  }
 
+  function handleConfirmRegister(candidate: CompanyCandidate) {
+    const contact = contactByCnpj[candidate.cnpj]
     onRegisterCandidate({
       name: candidate.razaoSocial,
       type: '',
@@ -64,7 +69,7 @@ export function SimilarSuppliersContainer({
       cnpjs: [candidate.cnpj],
       contactName: '',
       contactPhone: contact?.phone ?? '',
-      contactEmail: contact?.email ?? '',
+      contactEmail: '',
       materialVariantIds: [],
     })
   }
@@ -88,8 +93,10 @@ export function SimilarSuppliersContainer({
       isSearching={resolveCnae.isPending || discover.isPending}
       searchError={searchError}
       results={discover.data ?? null}
-      onRegister={handleRegister}
-      registeringCnpj={registeringCnpj}
+      contactByCnpj={contactByCnpj}
+      checkingCnpj={checkingCnpj}
+      onLookupContact={handleLookupContact}
+      onConfirmRegister={handleConfirmRegister}
     />
   )
 }

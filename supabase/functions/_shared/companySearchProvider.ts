@@ -8,10 +8,12 @@
 const ACTOR = 'jungle_synthesizer~brazil-cnpj-receita-federal-crawler'
 const RUN_SYNC_URL = `https://api.apify.com/v2/acts/${ACTOR}/run-sync-get-dataset-items`
 
-// Situação cadastral vem da mesma base (minhareceita.org/RFB) usada pela
-// BrasilAPI, que expõe o campo como "descricao_situacao_cadastral" (ex.:
-// "ATIVA", "BAIXADA", "SUSPENSA"). O actor NÃO filtra isso — precisamos
-// descartar tudo que não for ATIVA antes de sugerir ao comprador.
+// Situação cadastral, conforme documentado pelo próprio actor (confirmado
+// em 2026-09, corrigindo uma suposição anterior baseada no schema da
+// BrasilAPI): campo "situacao_cadastral" (sem "descricao_" no nome), valores
+// "ATIVA" | "SUSPENSA" | "INAPTA" | "BAIXADA" | "NULA". O actor NÃO filtra
+// isso — precisamos descartar tudo que não for ATIVA antes de sugerir ao
+// comprador.
 const ACTIVE_STATUS = 'ATIVA'
 
 export interface CompanyCandidate {
@@ -25,9 +27,11 @@ export interface CompanyCandidate {
   porte: string | null
 }
 
+// Confirmado que este actor não retorna e-mail — só telefone (e fax, que não
+// usamos). Só um provedor nesta V1: e-mail continua disponível pro comprador
+// preencher manualmente no formulário, só não vem pré-preenchido.
 export interface ContactInfo {
   phone: string | null
-  email: string | null
 }
 
 interface ApifyCompanyItem {
@@ -39,9 +43,8 @@ interface ApifyCompanyItem {
   cnae_fiscal?: string | number | null
   cnae_fiscal_descricao?: string | null
   porte?: string | null
-  descricao_situacao_cadastral?: string | null
-  ddd_telefone_1?: string | null
-  email?: string | null
+  situacao_cadastral?: string | null
+  telefone1?: string | null
 }
 
 function getApifyToken(): string {
@@ -82,19 +85,18 @@ export async function discoverByCnae(cnae: string, uf: string, maxItems = 100): 
   const items = await runActor({ uf, cnae, maxItems })
 
   return items
-    .filter((item) => item.descricao_situacao_cadastral === ACTIVE_STATUS)
+    .filter((item) => item.situacao_cadastral === ACTIVE_STATUS)
     .map(toCandidate)
     .filter((candidate): candidate is CompanyCandidate => candidate !== null)
 }
 
+// Devolve null só quando o actor não encontra o CNPJ; quando encontra mas
+// não tem telefone público, devolve { phone: null } — o chamador decide como
+// comunicar isso, em vez de tratar "sem telefone" como falha de busca.
 export async function lookupContact(cnpj: string): Promise<ContactInfo | null> {
   const items = await runActor({ cnpj })
   const item = items[0]
   if (!item) return null
 
-  const phone = item.ddd_telefone_1?.trim() || null
-  const email = item.email?.trim() || null
-  if (!phone && !email) return null
-
-  return { phone, email }
+  return { phone: item.telefone1?.trim() || null }
 }

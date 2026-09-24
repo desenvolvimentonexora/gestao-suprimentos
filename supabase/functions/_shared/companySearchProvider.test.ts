@@ -23,7 +23,7 @@ const ATIVA = {
   cnae_fiscal: 4711302,
   cnae_fiscal_descricao: 'Comércio varejista',
   porte: 'DEMAIS',
-  descricao_situacao_cadastral: 'ATIVA',
+  situacao_cadastral: 'ATIVA',
 }
 
 const BAIXADA = {
@@ -35,11 +35,14 @@ const BAIXADA = {
   cnae_fiscal: 4711302,
   cnae_fiscal_descricao: 'Comércio varejista',
   porte: 'DEMAIS',
-  descricao_situacao_cadastral: 'BAIXADA',
+  situacao_cadastral: 'BAIXADA',
 }
 
-Deno.test('discoverByCnae descarta empresas que não estão ATIVA', async () => {
-  const restore = stubFetch(new Response(JSON.stringify([ATIVA, BAIXADA]), { status: 200 }))
+Deno.test('discoverByCnae descarta empresas que não estão ATIVA (BAIXADA, SUSPENSA, INAPTA, NULA)', async () => {
+  const SUSPENSA = { ...BAIXADA, cnpj: '33333333000133', situacao_cadastral: 'SUSPENSA' }
+  const INAPTA = { ...BAIXADA, cnpj: '44444444000144', situacao_cadastral: 'INAPTA' }
+  const NULA = { ...BAIXADA, cnpj: '55555555000155', situacao_cadastral: 'NULA' }
+  const restore = stubFetch(new Response(JSON.stringify([ATIVA, BAIXADA, SUSPENSA, INAPTA, NULA]), { status: 200 }))
   try {
     const result = await withToken(() => discoverByCnae('4711302', 'SP'))
     assertEquals(result.length, 1)
@@ -91,25 +94,21 @@ Deno.test('discoverByCnae lança erro claro quando APIFY_TOKEN não está config
   await assertRejects(() => discoverByCnae('4711302', 'SP'), Error, 'APIFY_TOKEN')
 })
 
-Deno.test('lookupContact devolve telefone e e-mail quando o actor retorna', async () => {
-  const restore = stubFetch(
-    new Response(JSON.stringify([{ ...ATIVA, ddd_telefone_1: '1140028922', email: 'contato@ativa.com' }]), {
-      status: 200,
-    }),
-  )
+Deno.test('lookupContact devolve o telefone quando o actor retorna', async () => {
+  const restore = stubFetch(new Response(JSON.stringify([{ ...ATIVA, telefone1: '1140028922' }]), { status: 200 }))
   try {
     const result = await withToken(() => lookupContact('11111111000111'))
-    assertEquals(result, { phone: '1140028922', email: 'contato@ativa.com' })
+    assertEquals(result, { phone: '1140028922' })
   } finally {
     restore()
   }
 })
 
-Deno.test('lookupContact devolve null quando o actor não traz telefone nem e-mail', async () => {
+Deno.test('lookupContact devolve { phone: null } (não null) quando o CNPJ é encontrado mas sem telefone público', async () => {
   const restore = stubFetch(new Response(JSON.stringify([ATIVA]), { status: 200 }))
   try {
     const result = await withToken(() => lookupContact('11111111000111'))
-    assertEquals(result, null)
+    assertEquals(result, { phone: null })
   } finally {
     restore()
   }

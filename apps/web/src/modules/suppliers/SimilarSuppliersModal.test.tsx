@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { SimilarSuppliersModal } from './SimilarSuppliersModal'
-import type { CompanyCandidate } from './types'
+import type { CompanyCandidate, ContactInfo } from './types'
 
 function makeCandidate(overrides: Partial<CompanyCandidate> = {}): CompanyCandidate {
   return {
@@ -30,8 +30,10 @@ function baseProps() {
     isSearching: false,
     searchError: null as string | null,
     results: null as CompanyCandidate[] | null,
-    onRegister: vi.fn(),
-    registeringCnpj: null as string | null,
+    contactByCnpj: {} as Record<string, ContactInfo | null>,
+    checkingCnpj: null as string | null,
+    onLookupContact: vi.fn(),
+    onConfirmRegister: vi.fn(),
   }
 }
 
@@ -106,27 +108,60 @@ describe('SimilarSuppliersModal', () => {
     expect(screen.getByText(/DEMAIS/)).toBeInTheDocument()
   })
 
-  it('chama onRegister com o candidato ao clicar em Cadastrar', async () => {
+  it('chama onLookupContact com o candidato ao clicar em Cadastrar (1º passo)', async () => {
     const user = userEvent.setup()
-    const onRegister = vi.fn()
+    const onLookupContact = vi.fn()
     const candidate = makeCandidate()
-    render(<SimilarSuppliersModal {...baseProps()} results={[candidate]} onRegister={onRegister} />)
+    render(<SimilarSuppliersModal {...baseProps()} results={[candidate]} onLookupContact={onLookupContact} />)
     await user.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(onRegister).toHaveBeenCalledWith(candidate)
+    expect(onLookupContact).toHaveBeenCalledWith(candidate)
   })
 
-  it('mostra o botão de cadastrar em carregamento só pro item sendo registrado', () => {
+  it('mostra o botão de cadastrar em carregamento só pro item sendo verificado', () => {
     const candidateA = makeCandidate({ cnpj: '11222333000181' })
     const candidateB = makeCandidate({ cnpj: '99888777000166', razaoSocial: 'Outra Empresa Ltda' })
     render(
-      <SimilarSuppliersModal
-        {...baseProps()}
-        results={[candidateA, candidateB]}
-        registeringCnpj="11222333000181"
-      />,
+      <SimilarSuppliersModal {...baseProps()} results={[candidateA, candidateB]} checkingCnpj="11222333000181" />,
     )
     const buttons = screen.getAllByRole('button', { name: /cadastrar/i })
     expect(buttons[0]).toBeDisabled()
     expect(buttons[1]).not.toBeDisabled()
+  })
+
+  it('mostra o telefone encontrado e o botão de continuar, após a verificação de contato', async () => {
+    const user = userEvent.setup()
+    const onConfirmRegister = vi.fn()
+    const candidate = makeCandidate()
+    render(
+      <SimilarSuppliersModal
+        {...baseProps()}
+        results={[candidate]}
+        contactByCnpj={{ [candidate.cnpj]: { phone: '1140028922' } }}
+        onConfirmRegister={onConfirmRegister}
+      />,
+    )
+    expect(screen.getByText(/telefone encontrado: 1140028922/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Cadastrar' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /continuar cadastro/i }))
+    expect(onConfirmRegister).toHaveBeenCalledWith(candidate)
+  })
+
+  it('mostra "sem telefone público" de forma clara quando a verificação não encontra telefone, sem travar o cadastro', async () => {
+    const user = userEvent.setup()
+    const onConfirmRegister = vi.fn()
+    const candidate = makeCandidate()
+    render(
+      <SimilarSuppliersModal
+        {...baseProps()}
+        results={[candidate]}
+        contactByCnpj={{ [candidate.cnpj]: { phone: null } }}
+        onConfirmRegister={onConfirmRegister}
+      />,
+    )
+    expect(screen.getByText(/sem telefone público encontrado/i)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /continuar cadastro/i }))
+    expect(onConfirmRegister).toHaveBeenCalledWith(candidate)
   })
 })
