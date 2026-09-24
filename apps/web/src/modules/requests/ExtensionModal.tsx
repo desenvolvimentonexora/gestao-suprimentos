@@ -72,7 +72,7 @@ export function ExtensionModal({
         {submitError && <p className="text-sm text-accent">{submitError}</p>}
 
         <Button type="submit" disabled={isSubmitting}>
-          Enviar pedido de prorrogação
+          Enviar
         </Button>
       </form>
     </Modal>

@@ -25,7 +25,7 @@ describe('ExtensionModal', () => {
     const onSubmit = vi.fn()
     render(<ExtensionModal {...baseProps()} onSubmit={onSubmit} />)
 
-    await user.click(screen.getByRole('button', { name: /enviar pedido de prorrogação/i }))
+    await user.click(screen.getByRole('button', { name: /enviar/i }))
 
     expect(await screen.findByText('Informe a nova data de entrega proposta.')).toBeInTheDocument()
     expect(screen.getByText('Informe o motivo da prorrogação.')).toBeInTheDocument()
@@ -39,7 +39,7 @@ describe('ExtensionModal', () => {
 
     await user.type(screen.getByLabelText('Nova data proposta'), '2026-09-25')
     await user.type(screen.getByLabelText('Motivo'), 'Fornecedor sem estoque até lá')
-    await user.click(screen.getByRole('button', { name: /enviar pedido de prorrogação/i }))
+    await user.click(screen.getByRole('button', { name: /enviar/i }))
 
     expect(onSubmit).toHaveBeenCalledWith({
       newNeededBy: '2026-09-25',
