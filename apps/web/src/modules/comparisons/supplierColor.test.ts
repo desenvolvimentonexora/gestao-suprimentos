@@ -25,4 +25,10 @@ describe('getSupplierColor', () => {
     expect(color.tableHeader).toContain('bg-')
     expect(color.tableHeader).toContain('text-white')
   })
+
+  it('expõe uma cor de texto e um destaque leve de célula para usar sobre fundo claro', () => {
+    const color = getSupplierColor('supplier-sika')
+    expect(color.cellText).toContain('text-')
+    expect(color.cellHighlight).toContain('bg-')
+  })
 })

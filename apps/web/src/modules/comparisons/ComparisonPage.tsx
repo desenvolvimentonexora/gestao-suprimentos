@@ -137,7 +137,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
         </Modal>
       )}
 
-      <OrdersQueueModal isOpen={queueView === 'orders'} onClose={() => setQueueView(null)} tenantId={tenantId} />
+      <OrdersQueueModal isOpen={queueView === 'orders'} onClose={() => setQueueView(null)} />
 
       <Modal isOpen={queueView === 'history'} onClose={() => setQueueView(null)} title="Histórico">
         <HistoryList rows={historyQuery.data ?? []} />

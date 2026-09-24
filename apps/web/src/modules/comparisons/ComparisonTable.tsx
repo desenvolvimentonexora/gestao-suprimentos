@@ -48,13 +48,15 @@ export function ComparisonTable({
     return prices.length > 0 ? Math.min(...prices) : null
   }
 
-  function cheapestSupplierFor(requestItemId: string): { supplierName: string; unitPrice: number } | null {
-    let cheapest: { supplierName: string; unitPrice: number } | null = null
+  function cheapestSupplierFor(
+    requestItemId: string,
+  ): { quotationId: string; supplierName: string; unitPrice: number } | null {
+    let cheapest: { quotationId: string; supplierName: string; unitPrice: number } | null = null
     for (const quotation of quotations) {
       const price = priceFor(quotation, requestItemId)
       if (price?.unitPrice == null) continue
       if (!cheapest || price.unitPrice < cheapest.unitPrice) {
-        cheapest = { supplierName: quotation.supplierName, unitPrice: price.unitPrice }
+        cheapest = { quotationId: quotation.quotationId, supplierName: quotation.supplierName, unitPrice: price.unitPrice }
       }
     }
     return cheapest
@@ -156,7 +158,8 @@ export function ComparisonTable({
                     const isCheapest =
                       price?.unitPrice !== null && price?.unitPrice !== undefined && price.unitPrice === cheapest
                     const itemTotal = price?.unitPrice != null ? price.unitPrice * item.quantity : null
-                    const cellClasses = `${isExcluded ? 'opacity-40' : ''} ${isCheapest ? 'bg-badge-available/30 font-semibold text-ink' : 'text-ink-muted'}`
+                    const cheapestColor = getSupplierColor(quotation.quotationId)
+                    const cellClasses = `${isExcluded ? 'opacity-40' : ''} ${isCheapest ? `${cheapestColor.cellHighlight} font-semibold` : 'text-ink-muted'}`
                     return (
                       <Fragment key={quotation.quotationId}>
                         <td
@@ -176,7 +179,7 @@ export function ComparisonTable({
                   })}
                   <td
                     data-testid={`best-${item.id}`}
-                    className={`${COLUMN_DIVIDER} bg-ink px-3 py-2.5 font-medium text-white`}
+                    className={`${COLUMN_DIVIDER} bg-surface px-3 py-2.5 font-semibold ${bestSupplier ? getSupplierColor(bestSupplier.quotationId).cellText : 'text-ink-muted'}`}
                   >
                     {bestSupplier
                       ? `${bestSupplier.supplierName} — ${currencyFormatter.format(bestSupplier.unitPrice)}`

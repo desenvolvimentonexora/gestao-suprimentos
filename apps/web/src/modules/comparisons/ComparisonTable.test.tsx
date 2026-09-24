@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ComparisonTable } from './ComparisonTable'
+import { getSupplierColor } from './supplierColor'
 import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
 
 const requestItems: ComparisonRequestItemRow[] = [
@@ -95,12 +96,13 @@ describe('ComparisonTable', () => {
     expect(screen.getByText('Argamassa')).toBeInTheDocument()
   })
 
-  it('destaca visualmente a célula de menor preço unitário da linha', () => {
+  it('destaca visualmente a célula de menor preço unitário da linha, com a cor do próprio fornecedor vencedor', () => {
     render(<ComparisonTable {...baseProps()} />)
     const cheapestCell = screen.getByTestId('price-q2-ri1')
     const pricierCell = screen.getByTestId('price-q1-ri1')
-    expect(cheapestCell.className).toContain('bg-badge-available/30')
-    expect(pricierCell.className).not.toContain('bg-badge-available/30')
+    const winnerHighlight = getSupplierColor('q2').cellHighlight.split(' ')[0]!
+    expect(cheapestCell.className).toContain(winnerHighlight)
+    expect(pricierCell.className).not.toContain(winnerHighlight)
   })
 
   it('mostra o total por item (preço unitário × quantidade) na subcoluna Total', () => {

@@ -15,6 +15,17 @@ export interface PendingApprovalsListProps {
 export function PendingApprovalsList({ rows, onApprove, onReject, isSubmitting }: PendingApprovalsListProps) {
   const [reasons, setReasons] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [rejectingId, setRejectingId] = useState<string | null>(null)
+
+  function startReject(comparisonId: string) {
+    setErrors((current) => ({ ...current, [comparisonId]: '' }))
+    setRejectingId(comparisonId)
+  }
+
+  function cancelReject(comparisonId: string) {
+    setErrors((current) => ({ ...current, [comparisonId]: '' }))
+    setRejectingId(null)
+  }
 
   function handleReject(comparisonId: string) {
     const reason = (reasons[comparisonId] ?? '').trim()
@@ -23,6 +34,7 @@ export function PendingApprovalsList({ rows, onApprove, onReject, isSubmitting }
       return
     }
     setErrors((current) => ({ ...current, [comparisonId]: '' }))
+    setRejectingId(null)
     onReject(comparisonId, reason)
   }
 
@@ -67,28 +79,43 @@ export function PendingApprovalsList({ rows, onApprove, onReject, isSubmitting }
 
                 {row.note && <p className="text-sm text-blue-700">💬 Obs.: {row.note}</p>}
 
-                <div className="flex flex-col gap-1 pt-1">
-                  <label htmlFor={`reject-reason-${row.comparisonId}`} className="text-xs text-ink-muted">
-                    Motivo da rejeição (obrigatório para rejeitar)
-                  </label>
-                  <input
-                    id={`reject-reason-${row.comparisonId}`}
-                    value={reasons[row.comparisonId] ?? ''}
-                    onChange={(e) => setReasons((current) => ({ ...current, [row.comparisonId]: e.target.value }))}
-                    className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
-                  />
-                  {errors[row.comparisonId] && <p className="text-xs text-accent">{errors[row.comparisonId]}</p>}
-                </div>
+                {rejectingId === row.comparisonId && (
+                  <div className="flex flex-col gap-1 pt-1">
+                    <label htmlFor={`reject-reason-${row.comparisonId}`} className="text-xs text-ink-muted">
+                      Motivo da rejeição (obrigatório para rejeitar)
+                    </label>
+                    <input
+                      id={`reject-reason-${row.comparisonId}`}
+                      value={reasons[row.comparisonId] ?? ''}
+                      onChange={(e) => setReasons((current) => ({ ...current, [row.comparisonId]: e.target.value }))}
+                      className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
+                    />
+                    {errors[row.comparisonId] && <p className="text-xs text-accent">{errors[row.comparisonId]}</p>}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-2">
-                <ComingSoonButton label="Ver" variant="info" />
-                <Button disabled={isSubmitting} onClick={() => onApprove(row.comparisonId)}>
-                  Aprovar
-                </Button>
-                <Button variant="warning" disabled={isSubmitting} onClick={() => handleReject(row.comparisonId)}>
-                  Rejeitar
-                </Button>
+                {rejectingId === row.comparisonId ? (
+                  <>
+                    <Button variant="warning" disabled={isSubmitting} onClick={() => handleReject(row.comparisonId)}>
+                      Confirmar rejeição
+                    </Button>
+                    <Button variant="secondary" disabled={isSubmitting} onClick={() => cancelReject(row.comparisonId)}>
+                      Cancelar
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <ComingSoonButton label="Ver" variant="info" />
+                    <Button disabled={isSubmitting} onClick={() => onApprove(row.comparisonId)}>
+                      Aprovar
+                    </Button>
+                    <Button variant="warning" disabled={isSubmitting} onClick={() => startReject(row.comparisonId)}>
+                      Rejeitar
+                    </Button>
+                  </>
+                )}
               </div>
             </Card>
           ))}

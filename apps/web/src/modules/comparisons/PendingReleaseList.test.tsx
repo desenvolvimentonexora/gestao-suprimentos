@@ -151,13 +151,56 @@ describe('PendingReleaseList', () => {
     expect(onRelease).toHaveBeenCalledWith('c1')
   })
 
-  it('exige motivo para não liberar', async () => {
+  it('não mostra o campo de motivo em repouso — só depois de clicar em Não liberar', () => {
+    render(<PendingReleaseList {...baseProps()} />)
+    expect(screen.queryByLabelText(/motivo/i)).not.toBeInTheDocument()
+  })
+
+  it('clicar em Não liberar abre o campo de motivo e troca os botões pela confirmação', async () => {
+    const user = userEvent.setup()
+    render(<PendingReleaseList {...baseProps()} />)
+
+    await user.click(screen.getByRole('button', { name: 'Não liberar' }))
+
+    expect(screen.getByLabelText(/motivo/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Confirmar não liberar' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Não liberar' })).not.toBeInTheDocument()
+  })
+
+  it('exige motivo para confirmar não liberar', async () => {
     const user = userEvent.setup()
     const onReject = vi.fn()
     render(<PendingReleaseList {...baseProps()} onReject={onReject} />)
+
     await user.click(screen.getByRole('button', { name: 'Não liberar' }))
+    await user.click(screen.getByRole('button', { name: 'Confirmar não liberar' }))
+
     expect(await screen.findByText(/informe o motivo/i)).toBeInTheDocument()
     expect(onReject).not.toHaveBeenCalled()
+  })
+
+  it('chama onReject com o motivo preenchido ao confirmar', async () => {
+    const user = userEvent.setup()
+    const onReject = vi.fn()
+    render(<PendingReleaseList {...baseProps()} onReject={onReject} />)
+
+    await user.click(screen.getByRole('button', { name: 'Não liberar' }))
+    await user.type(screen.getByLabelText(/motivo/i), 'Fornecedor ainda não confirmou o prazo.')
+    await user.click(screen.getByRole('button', { name: 'Confirmar não liberar' }))
+
+    expect(onReject).toHaveBeenCalledWith('c1', 'Fornecedor ainda não confirmou o prazo.')
+  })
+
+  it('cancelar fecha o campo de motivo e volta aos botões normais', async () => {
+    const user = userEvent.setup()
+    render(<PendingReleaseList {...baseProps()} />)
+
+    await user.click(screen.getByRole('button', { name: 'Não liberar' }))
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(screen.queryByLabelText(/motivo/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Não liberar' })).toBeInTheDocument()
   })
 
   it('mostra mensagem de estado vazio quando não há comparações aguardando liberação', () => {
