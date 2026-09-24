@@ -67,16 +67,24 @@ export async function updateRequestNotes(requestId: string, notes: string): Prom
 export async function fetchMaterialsWithSupplierCount(): Promise<MaterialWithSupplierCount[]> {
   const { data, error } = await supabase
     .from('material_variants')
-    .select('id, code, materials(name), supplier_materials(count)')
+    .select(
+      'id, code, materials(name, category_id, supply_categories(name)), supplier_materials(supplier_id)',
+    )
     .is('deleted_at', null)
     .order('code')
   if (error) throw error
-  return data.map((row) => ({
-    id: row.id,
-    name: row.materials?.name ?? '',
-    code: row.code,
-    supplierCount: row.supplier_materials[0]?.count ?? 0,
-  }))
+  return data.map((row) => {
+    const supplierIds = row.supplier_materials.map((link) => link.supplier_id)
+    return {
+      id: row.id,
+      name: row.materials?.name ?? '',
+      code: row.code,
+      categoryId: row.materials?.category_id ?? '',
+      categoryName: row.materials?.supply_categories?.name ?? 'Outros',
+      supplierCount: supplierIds.length,
+      supplierIds,
+    }
+  })
 }
 
 export interface DispatchDetailsValues {

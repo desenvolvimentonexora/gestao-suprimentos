@@ -49,6 +49,10 @@ export interface MaterialWithSupplierCount {
   name: string
   supplierCount: number
   code: string | null
+  categoryId: string
+  categoryName: string
+  /** Ids dos fornecedores desta variante — usado só pra somar sem duplicar ao agrupar por categoria. */
+  supplierIds: string[]
 }
 
 export interface RequestItemFormValues {

@@ -2,16 +2,27 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { DisparoSolModal } from './DisparoSolModal'
-import type { MaterialWithSupplierCount, RequestRow, UnitOption } from './types'
-
-const units: UnitOption[] = [
-  { id: 'u1', name: 'UP Graça' },
-  { id: 'u2', name: 'UP Barra' },
-]
+import type { MaterialWithSupplierCount, RequestRow } from './types'
 
 const materials: MaterialWithSupplierCount[] = [
-  { id: 'm1', name: 'Argamassa', supplierCount: 3, code: '1023' },
-  { id: 'm2', name: 'Tintas', supplierCount: 5, code: null },
+  {
+    id: 'm1',
+    name: 'Argamassa',
+    supplierCount: 3,
+    code: '1023',
+    categoryId: 'c1',
+    categoryName: 'Ferramentas',
+    supplierIds: ['s1', 's2', 's3'],
+  },
+  {
+    id: 'm2',
+    name: 'Tintas',
+    supplierCount: 5,
+    code: null,
+    categoryId: 'c2',
+    categoryName: 'EPI',
+    supplierIds: ['s1', 's2', 's3', 's4', 's5'],
+  },
 ]
 
 const request: RequestRow = {
@@ -52,7 +63,6 @@ function baseProps() {
     isOpen: true,
     onClose: vi.fn(),
     request,
-    units,
     materials,
     onSubmit: vi.fn(),
     isSubmitting: false,
@@ -60,15 +70,44 @@ function baseProps() {
 }
 
 describe('DisparoSolModal', () => {
-  it('mostra o número da SOL e a contagem de itens no cabeçalho', () => {
+  it('mostra o número amigável da SOL no título, nunca o uuid interno', () => {
     render(<DisparoSolModal {...baseProps()} />)
-    expect(screen.getByText(/disparar sol sol-42/i)).toBeInTheDocument()
+    expect(screen.getByText('Disparar SOL-42')).toBeInTheDocument()
+    expect(screen.queryByText(request.id)).not.toBeInTheDocument()
+  })
+
+  it('usa "SOL {sequência}" sem duplicar a palavra SOL quando não há número externo', () => {
+    render(<DisparoSolModal {...baseProps()} request={{ ...request, externalRef: null }} />)
+    expect(screen.getByText('Disparar SOL 1')).toBeInTheDocument()
+  })
+
+  it('mostra o cabeçalho com a contagem de itens', () => {
+    render(<DisparoSolModal {...baseProps()} />)
     expect(screen.getByText(/1 item/i)).toBeInTheDocument()
   })
 
-  it('pré-seleciona a unidade atual da requisição na faixa de obra', () => {
+  it('mostra a obra detectada como informação fixa, não editável', () => {
     render(<DisparoSolModal {...baseProps()} />)
-    expect(screen.getByLabelText(/obra/i)).toHaveValue('u1')
+    expect(screen.getByText(/obra detectada:/i)).toBeInTheDocument()
+    expect(screen.getByText('UP Graça')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/obra/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  })
+
+  it('marca o campo de insumos como obrigatório e mostra o texto de ajuda', () => {
+    render(<DisparoSolModal {...baseProps()} />)
+    expect(screen.getByText(/insumos relacionados a esta sol/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/selecione os insumos da agenda que correspondem aos itens desta sol/i),
+    ).toBeInTheDocument()
+  })
+
+  it('agrupa os insumos por categoria, com a contagem de fornecedores da categoria', () => {
+    render(<DisparoSolModal {...baseProps()} />)
+    expect(screen.getByText('Ferramentas')).toBeInTheDocument()
+    expect(screen.getByText('EPI')).toBeInTheDocument()
+    expect(screen.getByText('3 fornecedores cadastrados')).toBeInTheDocument()
+    expect(screen.getByText('5 fornecedores cadastrados')).toBeInTheDocument()
   })
 
   it('pré-marca os materiais que já são itens da requisição', () => {
@@ -79,7 +118,7 @@ describe('DisparoSolModal', () => {
 
   it('mostra a contagem de fornecedores por material', () => {
     render(<DisparoSolModal {...baseProps()} />)
-    expect(screen.getByText(/3 fornecedores/i)).toBeInTheDocument()
+    expect(screen.getByText(/3 fornecedores$/i)).toBeInTheDocument()
   })
 
   it('mostra o código do material no checklist, quando existe', () => {
@@ -107,7 +146,7 @@ describe('DisparoSolModal', () => {
     expect(decodeURIComponent(link.getAttribute('href') ?? '')).toContain('SOL-42')
   })
 
-  it('chama onSubmit com os valores preenchidos ao clicar em disparar', async () => {
+  it('chama onSubmit com a obra da requisição e os valores preenchidos ao clicar em disparar', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
     render(<DisparoSolModal {...baseProps()} onSubmit={onSubmit} />)

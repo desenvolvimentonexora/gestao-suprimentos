@@ -102,7 +102,7 @@ describe('RequestCard', () => {
 
     expect(screen.getByText('1023')).toBeInTheDocument()
     expect(screen.getByText('Areia')).toBeInTheDocument()
-    expect(screen.getByLabelText('Observação')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Adicionar observação...')).toBeInTheDocument()
   })
 
   it('mostra o código do material na coluna Insumo-Sub, com o nome como reserva sem código', async () => {
@@ -144,15 +144,20 @@ describe('RequestCard', () => {
     expect(screen.queryByText('1023')).not.toBeInTheDocument()
   })
 
-  it('não expande ao clicar nos ícones de ação (Editar/Cancelar)', async () => {
+  it('mostra Editar/Cancelar só no rodapé expandido, não no cabeçalho fechado', () => {
+    render(<RequestCard {...baseProps()} />)
+    expect(screen.queryByRole('button', { name: /editar requisição/i })).not.toBeInTheDocument()
+  })
+
+  it('chama onEditRequest ao clicar em Editar no rodapé expandido', async () => {
     const user = userEvent.setup()
     const onEditRequest = vi.fn()
     render(<RequestCard {...baseProps()} onEditRequest={onEditRequest} />)
+    await user.click(screen.getByText('1243'))
 
     await user.click(screen.getByRole('button', { name: /editar requisição/i }))
 
     expect(onEditRequest).toHaveBeenCalledWith('r1')
-    expect(screen.queryByText('1023')).not.toBeInTheDocument()
   })
 
   it('chama onUpdateNotes ao sair do campo de observação', async () => {
@@ -161,7 +166,7 @@ describe('RequestCard', () => {
     render(<RequestCard {...baseProps()} onUpdateNotes={onUpdateNotes} />)
     await user.click(screen.getByText('1243'))
 
-    await user.type(screen.getByLabelText('Observação'), 'Confirmar com o fornecedor')
+    await user.type(screen.getByPlaceholderText('Adicionar observação...'), 'Confirmar com o fornecedor')
     await user.tab()
 
     expect(onUpdateNotes).toHaveBeenCalledWith('r1', 'Confirmar com o fornecedor')

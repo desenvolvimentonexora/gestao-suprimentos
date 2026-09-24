@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { CalendarDays, MapPin, Trash2, Truck } from 'lucide-react'
 import { Badge, Button } from '../../components'
-import { formatItemReference } from './formatItemReference'
 import { formatRequestNumber } from './formatRequestNumber'
 import { getUrgencyTier } from './getUrgencyTier'
+import { RequestItemsTable } from './RequestItemsTable'
+import { RequestNotesField } from './RequestNotesField'
 import type { RequestRow } from './types'
 
 const TIER_BADGE_CLASSES = {
@@ -50,7 +51,6 @@ export function AnalysisRequestCard({
   onReleaseToDispatch,
 }: AnalysisRequestCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [notesDraft, setNotesDraft] = useState(request.notes ?? '')
 
   const urgency = getUrgencyTier(request.neededBy, today)
   const displayNumber = formatRequestNumber(request.externalRef, request.sequenceNumber)
@@ -107,61 +107,20 @@ export function AnalysisRequestCard({
 
       {isExpanded && (
         <div className="flex flex-col gap-3 border-t border-line pt-3">
-          <div className="overflow-x-auto rounded-lg border border-line">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead className="bg-bg">
-                <tr className="divide-x divide-ink-muted/20 border-b-2 border-ink-muted/30 text-ink">
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Centro</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Insumo-Sub</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Sit</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Especificação</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Unid</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Qtd</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Solicitação</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Entrega SOL.</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Data Solic.</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Data Aut.</th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">Dias</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-ink-muted/20">
-                {request.items.map((item, index) => (
-                  <tr key={item.id} className="divide-x divide-ink-muted/20 text-ink">
-                    <td className="px-3 py-2">{request.unitName}</td>
-                    <td className="px-3 py-2">{item.materialCode ?? item.materialName}</td>
-                    <td className="px-3 py-2">{item.statusCode ?? '—'}</td>
-                    <td className="px-3 py-2">{item.materialDescription ?? '—'}</td>
-                    <td className="px-3 py-2">{item.unitOfMeasure ?? '—'}</td>
-                    <td className="px-3 py-2">{item.quantity}</td>
-                    <td className="px-3 py-2">{formatItemReference(displayNumber, index)}</td>
-                    <td className="px-3 py-2">{request.neededBy ? formatDateOnly(request.neededBy) : '—'}</td>
-                    <td className="px-3 py-2">{formatDate(request.createdAt)}</td>
-                    <td className="px-3 py-2">{item.authorizedAt ? formatDateOnly(item.authorizedAt) : '—'}</td>
-                    <td className="px-3 py-2">{urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <RequestItemsTable
+            displayNumber={displayNumber}
+            unitName={request.unitName}
+            items={request.items}
+            neededBy={request.neededBy}
+            createdAt={request.createdAt}
+            diasValue={urgency.tier === 'ag_aprovacao' ? '—' : urgency.label}
+          />
 
-          <div className="flex flex-col gap-1">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <label
-                htmlFor={`notes-${request.id}`}
-                className="text-xs font-medium uppercase tracking-wide text-ink-muted"
-              >
-                Observações
-              </label>
-              <span className="text-xs text-ink-muted">Ficam registradas até a SOL ser aprovada.</span>
-            </div>
-            <textarea
-              id={`notes-${request.id}`}
-              value={notesDraft}
-              onChange={(e) => setNotesDraft(e.target.value)}
-              onBlur={() => onUpdateNotes(request.id, notesDraft)}
-              className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
-            />
-          </div>
+          <RequestNotesField
+            requestId={request.id}
+            initialValue={request.notes ?? ''}
+            onSave={onUpdateNotes}
+          />
 
           <div className="flex flex-wrap gap-2">
             <Button

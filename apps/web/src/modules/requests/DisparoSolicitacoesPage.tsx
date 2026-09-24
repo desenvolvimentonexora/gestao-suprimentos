@@ -193,7 +193,6 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
           isOpen
           onClose={() => setDispatchRequestId(null)}
           request={dispatchingRequest}
-          units={units}
           materials={materialsWithSupplierCount}
           onSubmit={(values) =>
             dispatchRequest.mutate(

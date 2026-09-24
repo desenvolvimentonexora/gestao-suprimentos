@@ -97,6 +97,7 @@ describe('RequestsTable', () => {
         onDispatch={onDispatch}
       />,
     )
+    await user.click(screen.getByText('SOL-1'))
     await user.click(screen.getByRole('button', { name: /disparar/i }))
     expect(onDispatch).toHaveBeenCalledWith('r1')
   })
