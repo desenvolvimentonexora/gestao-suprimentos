@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   Coins,
   FileText,
+  FolderOpen,
   Handshake,
   Home as HomeIcon,
   Landmark,
@@ -122,6 +123,14 @@ export const suprimentosRegistry: ModuleCardData[] = [
     icon: Send,
     status: 'disponivel',
     route: '/suprimentos/disparo-solicitacoes',
+  },
+  {
+    id: 'documentos',
+    label: 'Documentos',
+    description: 'PDF das SOLs e cotações recebidas, por obra',
+    icon: FolderOpen,
+    status: 'disponivel',
+    route: '/suprimentos/documentos',
   },
   {
     id: 'em-negociacao',

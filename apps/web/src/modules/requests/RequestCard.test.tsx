@@ -61,6 +61,7 @@ function baseProps() {
     onUpdateNotes: vi.fn(),
     onRetryDispatch: vi.fn(),
     isRetryingDispatch: false,
+    onOpenAttachments: vi.fn(),
   }
 }
 
@@ -91,6 +92,17 @@ describe('RequestCard', () => {
 
   it('não mostra a expansão por padrão', () => {
     render(<RequestCard {...baseProps()} />)
+    expect(screen.queryByText('1023')).not.toBeInTheDocument()
+  })
+
+  it('chama onOpenAttachments ao clicar no ícone de pasta, sem expandir o card', async () => {
+    const user = userEvent.setup()
+    const onOpenAttachments = vi.fn()
+    render(<RequestCard {...baseProps()} onOpenAttachments={onOpenAttachments} />)
+
+    await user.click(screen.getByRole('button', { name: 'Ver arquivos de 1243' }))
+
+    expect(onOpenAttachments).toHaveBeenCalledWith('r1')
     expect(screen.queryByText('1023')).not.toBeInTheDocument()
   })
 

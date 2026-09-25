@@ -1,8 +1,10 @@
 import { supabase } from '../../lib/supabase'
 import type {
+  ExtractedRequestData,
   ImportColumnMapping,
   MaterialOption,
   MaterialWithSupplierCount,
+  RequestAttachmentRow,
   RequestFormValues,
   RequestRow,
   RequestStatus,
@@ -10,6 +12,7 @@ import type {
 } from './types'
 
 const IMPORT_TYPE_REQUESTS = 'requests'
+const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
 
 export async function fetchRequests(): Promise<RequestRow[]> {
   const { data, error } = await supabase
@@ -131,7 +134,7 @@ export async function fetchMaterialOptions(): Promise<MaterialOption[]> {
   }))
 }
 
-export async function createRequest(tenantId: string, values: RequestFormValues): Promise<void> {
+export async function createRequest(tenantId: string, values: RequestFormValues): Promise<string> {
   const { data, error } = await supabase
     .from('requests')
     .insert({
@@ -154,6 +157,8 @@ export async function createRequest(tenantId: string, values: RequestFormValues)
     })),
   )
   if (itemsError) throw itemsError
+
+  return data.id
 }
 
 export async function updateRequest(
@@ -272,4 +277,107 @@ export async function retryDispatch(requestId: string): Promise<{ dispatched: bo
   })
   if (error) throw await parseReviewError(error)
   return { dispatched: Boolean((data as { dispatched?: boolean } | null)?.dispatched) }
+}
+
+export async function fetchRequestAttachments(requestId: string): Promise<RequestAttachmentRow[]> {
+  const [solResult, quotationResult] = await Promise.all([
+    supabase.from('request_attachments').select('id, file_name').eq('request_id', requestId),
+    supabase
+      .from('quotation_attachments')
+      .select('id, file_name, quotations!inner(request_id, suppliers(name))')
+      .eq('quotations.request_id', requestId),
+  ])
+  if (solResult.error) throw solResult.error
+  if (quotationResult.error) throw quotationResult.error
+
+  const solRows: RequestAttachmentRow[] = solResult.data.map((row) => ({
+    id: row.id,
+    fileName: row.file_name,
+    kind: 'sol',
+    supplierName: null,
+  }))
+
+  const quotationRows: RequestAttachmentRow[] = quotationResult.data.map((row) => ({
+    id: row.id,
+    fileName: row.file_name,
+    kind: 'quotation',
+    supplierName: row.quotations?.suppliers?.name ?? null,
+  }))
+
+  return [...solRows, ...quotationRows]
+}
+
+export async function fetchRequestAttachmentUrl(attachment: {
+  id: string
+  kind: 'sol' | 'quotation'
+}): Promise<string | null> {
+  if (attachment.kind === 'sol') {
+    const { data: row, error } = await supabase
+      .from('request_attachments')
+      .select('storage_path')
+      .eq('id', attachment.id)
+      .maybeSingle()
+    if (error) throw error
+    if (!row) return null
+
+    const { data: signed, error: signError } = await supabase.storage
+      .from('request-attachments')
+      .createSignedUrl(row.storage_path, SIGNED_URL_EXPIRES_IN_SECONDS)
+    if (signError) throw signError
+    return signed?.signedUrl ?? null
+  }
+
+  const { data: row, error } = await supabase
+    .from('quotation_attachments')
+    .select('storage_path')
+    .eq('id', attachment.id)
+    .maybeSingle()
+  if (error) throw error
+  if (!row) return null
+
+  const { data: signed, error: signError } = await supabase.storage
+    .from('quotation-attachments')
+    .createSignedUrl(row.storage_path, SIGNED_URL_EXPIRES_IN_SECONDS)
+  if (signError) throw signError
+  return signed?.signedUrl ?? null
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      resolve(result.slice(result.indexOf(',') + 1))
+    }
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
+export async function extractRequestPdf(file: File): Promise<ExtractedRequestData> {
+  const pdfBase64 = await fileToBase64(file)
+  const { data, error } = await supabase.functions.invoke('extract-request-pdf', { body: { pdfBase64 } })
+  if (error) throw await parseReviewError(error)
+  return data as ExtractedRequestData
+}
+
+// Anexa o PDF original da SOL (fonte, não gerado por nós) depois que a
+// requisição já foi criada — mesmo bucket/tabela usados pelo PDF gerado no
+// Disparo (review-request), só com source diferente.
+export async function attachUploadedRequestPdf(tenantId: string, requestId: string, file: File): Promise<void> {
+  const storagePath = `${tenantId}/${requestId}/${file.name}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('request-attachments')
+    .upload(storagePath, file, { contentType: 'application/pdf' })
+  if (uploadError) throw uploadError
+
+  const { error: insertError } = await supabase.from('request_attachments').insert({
+    tenant_id: tenantId,
+    request_id: requestId,
+    file_name: file.name,
+    storage_path: storagePath,
+    source: 'uploaded',
+  })
+  if (insertError) throw insertError
 }

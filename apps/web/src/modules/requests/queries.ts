@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  attachUploadedRequestPdf,
   bulkCreateRequests,
   cancelRequest,
   createRequest,
   dispatchRequest,
+  extractRequestPdf,
   fetchImportMapping,
   fetchMaterialOptions,
   fetchMaterialsWithSupplierCount,
+  fetchRequestAttachments,
+  fetchRequestAttachmentUrl,
   fetchRequests,
   fetchUnitOptions,
   releaseRequestToDispatch,
@@ -39,6 +43,17 @@ export function useCreateRequest(tenantId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
+  })
+}
+
+export function useExtractRequestPdf() {
+  return useMutation({ mutationFn: (file: File) => extractRequestPdf(file) })
+}
+
+export function useAttachUploadedRequestPdf(tenantId: string) {
+  return useMutation({
+    mutationFn: ({ requestId, file }: { requestId: string; file: File }) =>
+      attachUploadedRequestPdf(tenantId, requestId, file),
   })
 }
 
@@ -158,6 +173,30 @@ export function useRetryDispatch() {
     mutationFn: (requestId: string) => retryDispatch(requestId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+    },
+  })
+}
+
+export function useRequestAttachments(requestId: string | null) {
+  return useQuery({
+    queryKey: ['request-attachments', requestId],
+    queryFn: () => fetchRequestAttachments(requestId!),
+    enabled: Boolean(requestId),
+  })
+}
+
+export function useViewRequestAttachment() {
+  return useMutation({
+    mutationFn: (attachment: { id: string; kind: 'sol' | 'quotation' }) => fetchRequestAttachmentUrl(attachment),
+    onSuccess: (url) => {
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      } else {
+        window.alert('Arquivo não encontrado.')
+      }
+    },
+    onError: (error) => {
+      window.alert(error instanceof Error ? error.message : 'Não foi possível abrir o arquivo. Tente novamente.')
     },
   })
 }

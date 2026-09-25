@@ -31,13 +31,16 @@ Não invente valores de frete ou condição de pagamento — se o PDF não troux
 
 Responda apenas com um JSON no formato {"items": [...], "freight": ..., "paymentTerms": ...}, sem nenhum texto adicional antes ou depois.`
 
-export function parseExtractionResponse(text: string): ExtractedQuoteData {
+function stripCodeFence(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-  const jsonText = fenced ? fenced[1] : text
-  return JSON.parse(jsonText) as ExtractedQuoteData
+  return fenced ? fenced[1] : text
 }
 
-export async function extractQuoteDataFromPdf(pdfBase64: string): Promise<ExtractedQuoteData> {
+export function parseExtractionResponse(text: string): ExtractedQuoteData {
+  return JSON.parse(stripCodeFence(text)) as ExtractedQuoteData
+}
+
+async function extractPdfDataWithPrompt(pdfBase64: string, prompt: string): Promise<string> {
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY não configurada.')
 
@@ -54,7 +57,7 @@ export async function extractQuoteDataFromPdf(pdfBase64: string): Promise<Extrac
             type: 'document',
             source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 },
           },
-          { type: 'text', text: EXTRACTION_PROMPT },
+          { type: 'text', text: prompt },
         ],
       },
     ],
@@ -64,6 +67,57 @@ export async function extractQuoteDataFromPdf(pdfBase64: string): Promise<Extrac
   if (!textBlock || textBlock.type !== 'text') {
     throw new Error('Resposta inesperada da API da Anthropic: nenhum bloco de texto retornado.')
   }
+  return textBlock.text
+}
 
-  return parseExtractionResponse(textBlock.text)
+export async function extractQuoteDataFromPdf(pdfBase64: string): Promise<ExtractedQuoteData> {
+  const text = await extractPdfDataWithPrompt(pdfBase64, EXTRACTION_PROMPT)
+  return parseExtractionResponse(text)
+}
+
+// Extração do PDF da própria Solicitação (SOL) — usada pelo caminho de
+// importação alternativo (upload de PDF em vez de planilha). O comprador
+// sempre revisa/completa os dados extraídos no formulário de cadastro antes
+// de salvar; por isso, unitNameGuess e o código de cada item são só palpites
+// — casados com unidades/materiais já cadastrados no front, nunca criados
+// direto a partir do texto extraído.
+
+export interface ExtractedRequestItem {
+  code: string | null
+  description: string
+  quantity: number | null
+  unitOfMeasure: string | null
+}
+
+export interface ExtractedRequestData {
+  requestNumber: string | null
+  unitNameGuess: string | null
+  neededBy: string | null
+  notes: string | null
+  items: ExtractedRequestItem[]
+}
+
+const REQUEST_EXTRACTION_PROMPT = `Extraia os dados desta Solicitação de Compra (SOL, PDF) em JSON:
+- requestNumber: número da solicitação, como texto (ex.: "1026"), ou null se não encontrar
+- unitNameGuess: nome da obra/unidade/centro de custo mencionado no documento, como texto, ou null se não encontrar
+- neededBy: data de entrega desejada, no formato AAAA-MM-DD, ou null se não houver
+- notes: observação do documento, como texto, ou null se não houver
+
+Para cada item da lista, retorne:
+- code: código do insumo, como texto (ex.: "027818-005"), ou null se não houver
+- description: descrição/discriminação do item, como texto
+- quantity: quantidade, como número, ou null se não estiver informada
+- unitOfMeasure: unidade de medida (ex.: "UN", "sc", "m³"), ou null se não houver
+
+Não invente nenhum valor — se o PDF não trouxer uma informação de forma clara, retorne null.
+
+Responda apenas com um JSON no formato {"requestNumber": ..., "unitNameGuess": ..., "neededBy": ..., "notes": ..., "items": [...]}, sem nenhum texto adicional antes ou depois.`
+
+export function parseRequestExtractionResponse(text: string): ExtractedRequestData {
+  return JSON.parse(stripCodeFence(text)) as ExtractedRequestData
+}
+
+export async function extractRequestDataFromPdf(pdfBase64: string): Promise<ExtractedRequestData> {
+  const text = await extractPdfDataWithPrompt(pdfBase64, REQUEST_EXTRACTION_PROMPT)
+  return parseRequestExtractionResponse(text)
 }

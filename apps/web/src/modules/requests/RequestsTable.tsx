@@ -43,6 +43,7 @@ export interface RequestsTableProps {
   onUpdateNotes: (requestId: string, notes: string) => void
   onRetryDispatch: (requestId: string) => void
   isRetryingDispatch: (requestId: string) => boolean
+  onOpenAttachments: (requestId: string) => void
 }
 
 export function RequestsTable({
@@ -63,6 +64,7 @@ export function RequestsTable({
   onUpdateNotes,
   onRetryDispatch,
   isRetryingDispatch,
+  onOpenAttachments,
 }: RequestsTableProps) {
   function handleCancel(request: RequestRow) {
     if (window.confirm(`Cancelar a requisição de "${request.unitName}"?`)) {
@@ -129,6 +131,7 @@ export function RequestsTable({
               onUpdateNotes={onUpdateNotes}
               onRetryDispatch={onRetryDispatch}
               isRetryingDispatch={isRetryingDispatch(request.id)}
+              onOpenAttachments={onOpenAttachments}
             />
           ))}
         </div>

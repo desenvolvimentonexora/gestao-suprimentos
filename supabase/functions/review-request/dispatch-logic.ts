@@ -1,5 +1,6 @@
 export interface DispatchRequestItem {
   materialId: string
+  materialCode: string | null
   materialName: string
   quantity: number
   unitOfMeasure: string | null

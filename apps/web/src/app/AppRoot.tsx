@@ -15,6 +15,7 @@ import { AgendaFornecedoresPage } from '../modules/suppliers/AgendaFornecedoresP
 import { UnitsPage } from '../modules/units/UnitsPage'
 import { AnaliseSolicitacoesPage } from '../modules/requests/AnaliseSolicitacoesPage'
 import { DisparoSolicitacoesPage } from '../modules/requests/DisparoSolicitacoesPage'
+import { RequestDocumentsPage } from '../modules/requests/RequestDocumentsPage'
 import { EmNegociacaoPage } from '../modules/quotations/EmNegociacaoPage'
 import { ComparisonPage } from '../modules/comparisons/ComparisonPage'
 import { DeliveryCalendarPage } from '../modules/deliveries/DeliveryCalendarPage'
@@ -215,6 +216,7 @@ export function AppRoot() {
             path="/suprimentos/disparo-solicitacoes"
             element={<DisparoSolicitacoesRoute tenantId={tenant.tenantId} />}
           />
+          <Route path="/suprimentos/documentos" element={<RequestDocumentsPage />} />
           <Route
             path="/suprimentos/em-negociacao"
             element={<EmNegociacaoRoute tenantId={tenant.tenantId} />}

@@ -5,9 +5,11 @@ import { useSettings } from '../../core/config'
 import { DisparoSolModal } from './DisparoSolModal'
 import { ANALYSIS_STATUSES } from './filterAnalysisRequests'
 import { filterRequests } from './filterRequests'
+import { formatRequestNumber } from './formatRequestNumber'
 import { ImportRequestsModal } from './ImportRequestsModal'
 import { IndicatorCards } from './IndicatorCards'
 import { getRequestIndicators } from './requestIndicators'
+import { RequestAttachmentsModal } from './RequestAttachmentsModal'
 import { RequestFormModal } from './RequestFormModal'
 import { RequestsTable } from './RequestsTable'
 import {
@@ -16,12 +18,14 @@ import {
   useDispatchRequest,
   useMaterialOptions,
   useMaterialsWithSupplierCount,
+  useRequestAttachments,
   useRequests,
   useRetryDispatch,
   useUnitOptions,
   useUpdateRequest,
   useUpdateRequestNotes,
   useUpdateRequestStatus,
+  useViewRequestAttachment,
 } from './queries'
 import type { RequestFormValues, RequestStatus } from './types'
 
@@ -43,6 +47,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   >(null)
   const [importOpen, setImportOpen] = useState(false)
   const [dispatchRequestId, setDispatchRequestId] = useState<string | null>(null)
+  const [attachmentsRequestId, setAttachmentsRequestId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ variant: ToastVariant; message: string } | null>(null)
 
   useEffect(() => {
@@ -65,6 +70,8 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const updateRequestStatus = useUpdateRequestStatus()
   const updateRequestNotes = useUpdateRequestNotes()
   const retryDispatch = useRetryDispatch()
+  const attachmentsQuery = useRequestAttachments(attachmentsRequestId)
+  const viewAttachment = useViewRequestAttachment()
 
   const requests = requestsQuery.data ?? []
   const units = unitsQuery.data ?? []
@@ -82,6 +89,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const editingRequest =
     formState?.mode === 'edit' ? requests.find((request) => request.id === formState.requestId) : undefined
   const dispatchingRequest = requests.find((request) => request.id === dispatchRequestId)
+  const attachmentsRequest = requests.find((request) => request.id === attachmentsRequestId)
 
   function handleSubmit(values: RequestFormValues) {
     if (formState?.mode === 'edit') {
@@ -157,6 +165,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
             })
           }
           isRetryingDispatch={(requestId) => retryDispatch.isPending && retryDispatch.variables === requestId}
+          onOpenAttachments={setAttachmentsRequestId}
         />
       </div>
 
@@ -205,6 +214,19 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
       )}
 
       <ImportRequestsModal isOpen={importOpen} onClose={() => setImportOpen(false)} tenantId={tenantId} />
+
+      <RequestAttachmentsModal
+        isOpen={Boolean(attachmentsRequest)}
+        onClose={() => setAttachmentsRequestId(null)}
+        requestLabel={
+          attachmentsRequest
+            ? formatRequestNumber(attachmentsRequest.externalRef, attachmentsRequest.sequenceNumber)
+            : ''
+        }
+        attachments={attachmentsQuery.data ?? []}
+        isLoading={attachmentsQuery.isLoading}
+        onView={(attachment) => viewAttachment.mutate(attachment)}
+      />
     </div>
   )
 }

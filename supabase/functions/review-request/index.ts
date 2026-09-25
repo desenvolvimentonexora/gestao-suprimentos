@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supa
 import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
 import { userHasPermission } from '../_shared/checkPermission.ts'
+import { generateRequestPdf } from '../_shared/requestPdf.ts'
 import {
   buildBlockedReason,
   buildDispatchEmail,
@@ -11,6 +12,8 @@ import {
   type DispatchRequestItem,
   type SupplierEmailOption,
 } from './dispatch-logic.ts'
+
+const REQUEST_ATTACHMENTS_BUCKET = 'request-attachments'
 
 type ReviewAction = 'request_clarification' | 'request_extension' | 'release_to_dispatch' | 'retry_dispatch'
 
@@ -25,7 +28,10 @@ interface RequestForDispatch {
   tenantId: string
   requestNumber: string
   unitName: string
+  requesterName: string | null
+  createdAt: string
   neededBy: string | null
+  notes: string | null
   items: DispatchRequestItem[]
 }
 
@@ -36,7 +42,7 @@ async function fetchRequestForDispatch(
   const { data, error } = await adminClient
     .from('requests')
     .select(
-      'tenant_id, external_ref, sequence_number, needed_by, units(name), request_items(material_variant_id, quantity, unit_of_measure, deleted_at, material_variants(materials(name)))',
+      'tenant_id, external_ref, sequence_number, needed_by, created_at, notes, units(name), users(full_name), request_items(material_variant_id, quantity, unit_of_measure, deleted_at, material_variants(materials(name, code)))',
     )
     .eq('id', requestId)
     .single()
@@ -48,12 +54,13 @@ async function fetchRequestForDispatch(
       quantity: number
       unit_of_measure: string | null
       deleted_at: string | null
-      material_variants: { materials: { name: string } | null } | null
+      material_variants: { materials: { name: string; code: string | null } | null } | null
     }[]
   )
     .filter((item) => !item.deleted_at)
     .map((item) => ({
       materialId: item.material_variant_id,
+      materialCode: item.material_variants?.materials?.code ?? null,
       materialName: item.material_variants?.materials?.name ?? '',
       quantity: item.quantity,
       unitOfMeasure: item.unit_of_measure,
@@ -63,9 +70,73 @@ async function fetchRequestForDispatch(
     tenantId: data.tenant_id,
     requestNumber: formatRequestNumber(data.external_ref, data.sequence_number),
     unitName: (data.units as unknown as { name: string } | null)?.name ?? '',
+    requesterName: (data.users as unknown as { full_name: string } | null)?.full_name ?? null,
+    createdAt: data.created_at,
     neededBy: data.needed_by,
+    notes: data.notes,
     items,
   }
+}
+
+function sanitizeFileNamePart(value: string): string {
+  return value.replace(/[^\w-]+/g, '_')
+}
+
+// Garante que a SOL tenha um PDF anexado antes do disparo: se já tem (upload
+// manual ou, no futuro, vindo de uma API do ERP), reaproveita esse original;
+// senão, gera um a partir dos dados que já temos salvos (pdf-lib). Idempotente
+// — uma "tentar de novo" (retry_dispatch) não gera/sobe um segundo arquivo.
+async function ensureRequestAttachment(
+  adminClient: SupabaseClient,
+  tenantId: string,
+  requestId: string,
+  request: RequestForDispatch,
+): Promise<{ bytes: Uint8Array; fileName: string }> {
+  const { data: existing, error: existingError } = await adminClient
+    .from('request_attachments')
+    .select('storage_path, file_name')
+    .eq('request_id', requestId)
+    .limit(1)
+    .maybeSingle()
+  if (existingError) throw existingError
+
+  if (existing) {
+    const { data: file, error: downloadError } = await adminClient.storage
+      .from(REQUEST_ATTACHMENTS_BUCKET)
+      .download(existing.storage_path)
+    if (downloadError || !file) {
+      throw new Error('Falha ao baixar o PDF da solicitação já anexado.')
+    }
+    return { bytes: new Uint8Array(await file.arrayBuffer()), fileName: existing.file_name }
+  }
+
+  const fileName = `${sanitizeFileNamePart(request.requestNumber)}.pdf`
+  const bytes = await generateRequestPdf({
+    requestNumber: request.requestNumber,
+    unitName: request.unitName,
+    requesterName: request.requesterName,
+    createdAt: request.createdAt,
+    neededBy: request.neededBy,
+    notes: request.notes,
+    items: request.items,
+  })
+  const storagePath = `${tenantId}/${requestId}/${fileName}`
+
+  const { error: uploadError } = await adminClient.storage
+    .from(REQUEST_ATTACHMENTS_BUCKET)
+    .upload(storagePath, bytes, { contentType: 'application/pdf' })
+  if (uploadError) throw uploadError
+
+  const { error: insertError } = await adminClient.from('request_attachments').insert({
+    tenant_id: tenantId,
+    request_id: requestId,
+    file_name: fileName,
+    storage_path: storagePath,
+    source: 'generated',
+  })
+  if (insertError) throw insertError
+
+  return { bytes, fileName }
 }
 
 async function fetchSuppliersForMaterial(
@@ -101,6 +172,7 @@ async function fetchUnitLabel(adminClient: SupabaseClient, tenantId: string): Pr
 
 async function sendDispatchEmails(
   emails: { to: string; subject: string; body: string }[],
+  attachment: { bytes: Uint8Array; fileName: string },
 ): Promise<{ sentCount: number; failedAt: number | null }> {
   const gmailUser = Deno.env.get('GMAIL_USER')!
   const gmailAppPassword = Deno.env.get('GMAIL_APP_PASSWORD')!
@@ -117,7 +189,20 @@ async function sendDispatchEmails(
     for (let i = 0; i < emails.length; i++) {
       const email = emails[i]
       try {
-        await client.send({ from: gmailUser, to: email.to, subject: email.subject, content: email.body })
+        await client.send({
+          from: gmailUser,
+          to: email.to,
+          subject: email.subject,
+          content: email.body,
+          attachments: [
+            {
+              filename: attachment.fileName,
+              contentType: 'application/pdf',
+              encoding: 'binary',
+              content: attachment.bytes,
+            },
+          ],
+        })
       } catch (error) {
         console.error(`Falha ao enviar e-mail de disparo pra ${email.to}:`, error)
         return { sentCount: i, failedAt: i }
@@ -154,6 +239,8 @@ async function attemptAutoDispatch(
     return { dispatched: false }
   }
 
+  const attachment = await ensureRequestAttachment(adminClient, request.tenantId, requestId, request)
+
   const emails = groupResult.groups.map((group) =>
     buildDispatchEmail(group, {
       requestNumber: request.requestNumber,
@@ -162,7 +249,7 @@ async function attemptAutoDispatch(
       neededBy: request.neededBy,
     }),
   )
-  const { failedAt } = await sendDispatchEmails(emails)
+  const { failedAt } = await sendDispatchEmails(emails, attachment)
 
   if (failedAt !== null) {
     const failedGroup = groupResult.groups[failedAt]

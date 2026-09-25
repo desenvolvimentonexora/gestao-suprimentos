@@ -61,6 +61,7 @@ function baseProps() {
     onUpdateNotes: vi.fn(),
     onRetryDispatch: vi.fn(),
     isRetryingDispatch: () => false,
+    onOpenAttachments: vi.fn(),
   }
 }
 

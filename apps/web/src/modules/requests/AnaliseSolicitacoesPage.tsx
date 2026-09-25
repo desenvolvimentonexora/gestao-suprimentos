@@ -13,10 +13,12 @@ import { openMailto } from './buildMailtoUrl'
 import { ExtensionModal } from './ExtensionModal'
 import { filterAnalysisRequests } from './filterAnalysisRequests'
 import { formatRequestNumber } from './formatRequestNumber'
+import { ImportRequestPdfModal } from './ImportRequestPdfModal'
 import { ImportRequestsModal } from './ImportRequestsModal'
 import { RequestFormModal } from './RequestFormModal'
 import type { UrgencyTier } from './getUrgencyTier'
 import {
+  useAttachUploadedRequestPdf,
   useCancelRequest,
   useCreateRequest,
   useMaterialOptions,
@@ -44,7 +46,8 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   const [tierFilter, setTierFilter] = useState<UrgencyTier | null>(null)
   const [extensionRequestId, setExtensionRequestId] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
-  const [formOpen, setFormOpen] = useState(false)
+  const [importPdfOpen, setImportPdfOpen] = useState(false)
+  const [formState, setFormState] = useState<{ prefill?: RequestFormValues; pendingPdfFile?: File } | null>(null)
   const [toast, setToast] = useState<{ variant: ToastVariant; message: string } | null>(null)
 
   const today = new Date()
@@ -70,6 +73,7 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   const requestExtension = useRequestExtension()
   const releaseToDispatch = useReleaseRequestToDispatch()
   const createRequest = useCreateRequest(tenantId)
+  const attachUploadedPdf = useAttachUploadedRequestPdf(tenantId)
 
   useEffect(() => {
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ['requests'] })
@@ -102,7 +106,13 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
   }
 
   function handleCreateSubmit(values: RequestFormValues) {
-    createRequest.mutate(values, { onSuccess: () => setFormOpen(false) })
+    const pendingPdfFile = formState?.pendingPdfFile
+    createRequest.mutate(values, {
+      onSuccess: (requestId) => {
+        if (pendingPdfFile) attachUploadedPdf.mutate({ requestId, file: pendingPdfFile })
+        setFormState(null)
+      },
+    })
   }
 
   return (
@@ -124,6 +134,9 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
               <ComingSoonButton label="Engenheiros" variant="on-primary" />
               <Button variant="on-primary" onClick={() => setImportOpen(true)}>
                 Importar Solicitações do Dia
+              </Button>
+              <Button variant="on-primary" onClick={() => setImportPdfOpen(true)}>
+                Importar PDF da Solicitação
               </Button>
             </div>
           </div>
@@ -160,7 +173,7 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
               </option>
             ))}
           </select>
-          <Button onClick={() => setFormOpen(true)}>+ Nova solicitação</Button>
+          <Button onClick={() => setFormState({})}>+ Nova solicitação</Button>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
@@ -233,13 +246,23 @@ export function AnaliseSolicitacoesPage({ tenantId, userId }: AnaliseSolicitacoe
 
       <ImportRequestsModal isOpen={importOpen} onClose={() => setImportOpen(false)} tenantId={tenantId} />
 
-      {formOpen && (
+      <ImportRequestPdfModal
+        isOpen={importPdfOpen}
+        onClose={() => setImportPdfOpen(false)}
+        onImported={(prefill, file) => {
+          setImportPdfOpen(false)
+          setFormState({ prefill, pendingPdfFile: file })
+        }}
+      />
+
+      {formState && (
         <RequestFormModal
           isOpen
-          onClose={() => setFormOpen(false)}
+          onClose={() => setFormState(null)}
           mode="create"
           units={units}
           materials={materials}
+          initialValues={formState.prefill}
           onSubmit={handleCreateSubmit}
           isSubmitting={createRequest.isPending}
         />

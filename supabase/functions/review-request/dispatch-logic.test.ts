@@ -11,12 +11,14 @@ import {
 
 const cimento: DispatchRequestItem = {
   materialId: 'mat-cimento',
+  materialCode: 'CIM-32',
   materialName: 'Cimento CP-32',
   quantity: 50,
   unitOfMeasure: 'saco',
 }
 const areia: DispatchRequestItem = {
   materialId: 'mat-areia',
+  materialCode: null,
   materialName: 'Areia',
   quantity: 10,
   unitOfMeasure: 'm³',

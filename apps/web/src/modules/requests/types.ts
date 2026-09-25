@@ -43,6 +43,28 @@ export interface RequestRow {
   items: RequestItemRow[]
 }
 
+export interface RequestAttachmentRow {
+  id: string
+  fileName: string
+  kind: 'sol' | 'quotation'
+  supplierName: string | null
+}
+
+export interface ExtractedRequestItem {
+  code: string | null
+  description: string
+  quantity: number | null
+  unitOfMeasure: string | null
+}
+
+export interface ExtractedRequestData {
+  requestNumber: string | null
+  unitNameGuess: string | null
+  neededBy: string | null
+  notes: string | null
+  items: ExtractedRequestItem[]
+}
+
 /** id é o da variante (material_variants.id); name é o nome do material genérico. */
 export interface MaterialWithSupplierCount {
   id: string

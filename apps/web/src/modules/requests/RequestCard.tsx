@@ -4,21 +4,10 @@ import { Badge, Button } from '../../components'
 import { getDeadlineBadge } from './deadlineBadge'
 import { formatRequestNumber } from './formatRequestNumber'
 import { isOverdue } from './requestIndicators'
+import { STATUS_LABELS } from './requestStatusLabels'
 import { RequestItemsTable } from './RequestItemsTable'
 import { RequestNotesField } from './RequestNotesField'
-import type { RequestRow, RequestStatus } from './types'
-
-const STATUS_LABELS: Record<RequestStatus, string> = {
-  draft: 'Rascunho',
-  open: 'Aberta',
-  negotiating: 'Em negociação',
-  quoted: 'Cotada',
-  cancelled: 'Cancelada',
-  pending_review: 'Em análise',
-  clarification_requested: 'Aguardando esclarecimento',
-  extension_requested: 'Prorrogação solicitada',
-  released_to_dispatch: 'Liberada pro Disparo',
-}
+import type { RequestRow } from './types'
 
 const DEADLINE_BADGE_CLASSES: Record<'restante' | 'atrasada', string> = {
   restante: 'border-amber-200 bg-amber-50 text-amber-700',
@@ -43,6 +32,7 @@ export interface RequestCardProps {
   onUpdateNotes: (requestId: string, notes: string) => void
   onRetryDispatch: (requestId: string) => void
   isRetryingDispatch: boolean
+  onOpenAttachments: (requestId: string) => void
 }
 
 export function RequestCard({
@@ -55,6 +45,7 @@ export function RequestCard({
   onUpdateNotes,
   onRetryDispatch,
   isRetryingDispatch,
+  onOpenAttachments,
 }: RequestCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -72,11 +63,19 @@ export function RequestCard({
       <div className="flex items-center gap-2">
         <button
           type="button"
+          aria-label={`Ver arquivos de ${displayNumber}`}
+          onClick={() => onOpenAttachments(request.id)}
+          className="shrink-0 text-ink-muted hover:text-ink"
+        >
+          <Folder size={18} aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
           aria-expanded={isExpanded}
           onClick={() => setIsExpanded((current) => !current)}
           className="flex flex-1 items-center gap-4 overflow-x-auto text-left"
         >
-          <Folder size={18} className="shrink-0 text-ink-muted" aria-hidden="true" />
           <Lock size={16} className="shrink-0 text-ink-muted" aria-hidden="true" />
 
           <span className="shrink-0 whitespace-nowrap font-semibold text-ink">{displayNumber}</span>
