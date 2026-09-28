@@ -16,11 +16,12 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
 
 // SOLs em análise não aparecem nesta tela (a página já as filtra fora antes
 // de chegar aqui), então não faz sentido oferecê-las como opção de filtro.
+// O mesmo vale pra "Em negociação": uma vez enviada manualmente pra lá, a
+// SOL sai da lista do Disparo (só continua existindo em Em Negociação).
 const DISPATCH_STATUS_FILTER_OPTIONS: RequestStatus[] = [
   'draft',
   'open',
   'released_to_dispatch',
-  'negotiating',
   'quoted',
   'cancelled',
 ]

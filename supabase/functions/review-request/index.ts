@@ -16,7 +16,12 @@ import {
 
 const REQUEST_ATTACHMENTS_BUCKET = 'request-attachments'
 
-type ReviewAction = 'request_clarification' | 'request_extension' | 'release_to_dispatch' | 'retry_dispatch'
+type ReviewAction =
+  | 'request_clarification'
+  | 'request_extension'
+  | 'release_to_dispatch'
+  | 'retry_dispatch'
+  | 'send_to_negotiation'
 
 interface ReviewBody {
   requestId: string
@@ -274,11 +279,24 @@ async function attemptAutoDispatch(
   const { error: recipientsError } = await adminClient.from('request_dispatch_recipients').insert(recipients)
   if (recipientsError) throw recipientsError
 
-  const { error: negotiatingError } = await adminClient.rpc('fn_mark_request_negotiating', {
-    p_request_id: requestId,
-    p_reviewer_id: reviewerId,
+  // Disparo não move mais a SOL pra negotiating sozinho — ela continua em
+  // released_to_dispatch recebendo cotações, e só um humano decide levá-la
+  // pra negociação manualmente (fn_send_request_to_negotiation). Só registra
+  // que o disparo aconteceu, pra linha do tempo.
+  const { error: reviewError } = await adminClient.from('request_reviews').insert({
+    tenant_id: request.tenantId,
+    request_id: requestId,
+    type: 'dispatched_to_suppliers',
+    reviewer_id: reviewerId,
+    created_by: reviewerId,
   })
-  if (negotiatingError) throw negotiatingError
+  if (reviewError) throw reviewError
+
+  const { error: clearBlockedError } = await adminClient
+    .from('requests')
+    .update({ dispatch_blocked_reason: null })
+    .eq('id', requestId)
+  if (clearBlockedError) throw clearBlockedError
 
   return { dispatched: true }
 }
@@ -300,6 +318,7 @@ Deno.serve(async (req) => {
       'request_extension',
       'release_to_dispatch',
       'retry_dispatch',
+      'send_to_negotiation',
     ]
     if (!requestId || !action || !validActions.includes(action)) {
       return jsonResponse({ error: 'Parâmetros inválidos.' }, 400)
@@ -362,6 +381,15 @@ Deno.serve(async (req) => {
           .eq('id', requestId)
         return jsonResponse({ ok: true, dispatched: false }, 200)
       }
+    }
+
+    if (action === 'send_to_negotiation') {
+      const { error: negotiationError } = await adminClient.rpc('fn_send_request_to_negotiation', {
+        p_request_id: requestId,
+        p_reviewer_id: userId,
+      })
+      if (negotiationError) return jsonResponse({ error: negotiationError.message }, 500)
+      return jsonResponse({ ok: true }, 200)
     }
 
     const rpcCall =

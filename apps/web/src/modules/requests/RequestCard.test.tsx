@@ -218,10 +218,18 @@ describe('RequestCard', () => {
     render(<RequestCard {...baseProps()} />)
     await user.click(screen.getByText('1243'))
 
-    expect(screen.queryByText(/negociar/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/negociação/i)).not.toBeInTheDocument()
   })
 
-  it('mostra e aciona o atalho de negociar quando há cotações registradas', async () => {
+  it('não mostra o atalho de negociar com menos de 3 cotações recebidas', async () => {
+    const user = userEvent.setup()
+    render(<RequestCard {...baseProps()} request={{ ...baseRequest, quotationsCount: 2 }} />)
+    await user.click(screen.getByText('1243'))
+
+    expect(screen.queryByText(/negociação/i)).not.toBeInTheDocument()
+  })
+
+  it('mostra e aciona o atalho de negociar a partir de 3 cotações recebidas', async () => {
     const user = userEvent.setup()
     const onNegotiateDirectly = vi.fn()
     render(

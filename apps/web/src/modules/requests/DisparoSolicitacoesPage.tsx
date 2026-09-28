@@ -21,10 +21,10 @@ import {
   useRequestAttachments,
   useRequests,
   useRetryDispatch,
+  useSendRequestToNegotiation,
   useUnitOptions,
   useUpdateRequest,
   useUpdateRequestNotes,
-  useUpdateRequestStatus,
   useViewRequestAttachment,
 } from './queries'
 import type { RequestFormValues, RequestStatus } from './types'
@@ -67,7 +67,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const updateRequest = useUpdateRequest(tenantId)
   const dispatchRequest = useDispatchRequest()
   const cancelRequest = useCancelRequest()
-  const updateRequestStatus = useUpdateRequestStatus()
+  const sendToNegotiation = useSendRequestToNegotiation()
   const updateRequestNotes = useUpdateRequestNotes()
   const retryDispatch = useRetryDispatch()
   const attachmentsQuery = useRequestAttachments(attachmentsRequestId)
@@ -79,9 +79,13 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const materialsWithSupplierCount = materialsWithSupplierCountQuery.data ?? []
   // SOLs em análise (aguardando triagem, esclarecimento ou prorrogação) só
   // aparecem no Disparo depois de liberadas — antes disso, ficam só na
-  // tela de Análise de Solicitações.
+  // tela de Análise de Solicitações. Usado pelos indicadores (inclui
+  // "Enviadas", que conta quem já foi pra negociação).
   const dispatchableRequests = requests.filter((request) => !ANALYSIS_STATUSES.includes(request.status))
-  const filteredRequests = filterRequests(dispatchableRequests, {
+  // Uma vez enviada manualmente pra negociação, a SOL sai da lista do
+  // Disparo — só continua existindo na tela de Em Negociação.
+  const visibleRequests = dispatchableRequests.filter((request) => request.status !== 'negotiating')
+  const filteredRequests = filterRequests(visibleRequests, {
     search,
     status: statusFilter,
     unitId: unitFilter,
@@ -148,7 +152,9 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
           onDispatch={setDispatchRequestId}
           onCancelRequest={(requestId) => cancelRequest.mutate(requestId)}
           onNegotiateDirectly={(requestId) =>
-            updateRequestStatus.mutate({ requestId, status: 'negotiating' })
+            sendToNegotiation.mutate(requestId, {
+              onError: (error) => setToast({ variant: 'error', message: errorMessage(error) ?? '' }),
+            })
           }
           onUpdateNotes={(requestId, notes) => updateRequestNotes.mutate({ requestId, notes })}
           onRetryDispatch={(requestId) =>

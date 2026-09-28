@@ -17,12 +17,12 @@ import {
   requestExtension,
   retryDispatch,
   saveImportMapping,
+  sendRequestToNegotiation,
   updateRequest,
   updateRequestNotes,
-  updateRequestStatus,
   type DispatchDetailsValues,
 } from './api'
-import type { ImportColumnMapping, RequestFormValues, RequestStatus } from './types'
+import type { ImportColumnMapping, RequestFormValues } from './types'
 
 export function useRequests() {
   return useQuery({ queryKey: ['requests'], queryFn: fetchRequests })
@@ -68,11 +68,10 @@ export function useUpdateRequest(tenantId: string) {
   })
 }
 
-export function useUpdateRequestStatus() {
+export function useSendRequestToNegotiation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ requestId, status }: { requestId: string; status: RequestStatus }) =>
-      updateRequestStatus(requestId, status),
+    mutationFn: (requestId: string) => sendRequestToNegotiation(requestId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },

@@ -21,6 +21,13 @@ const DEADLINE_BORDER_CLASSES: Record<'restante' | 'atrasada', string> = {
   atrasada: 'border-l-red-500 bg-red-50/60',
 }
 
+// Mesmo valor de apps/web/src/modules/comparisons/api.ts
+// (MINIMUM_QUOTATIONS_TO_EQUALIZE) — módulos não se importam entre si, então
+// o limite é duplicado propositalmente. O disparo não manda mais a SOL pra
+// negociação sozinho: o comprador só vê a opção depois de ter cotações
+// recebidas suficientes pra realmente equalizar.
+const MINIMUM_QUOTATIONS_TO_NEGOTIATE = 3
+
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat('pt-BR').format(new Date(value))
 }
@@ -144,10 +151,9 @@ export function RequestCard({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => onDispatch(request.id)}>Disparar SOL</Button>
-              {request.quotationsCount > 0 && (
+              {request.quotationsCount >= MINIMUM_QUOTATIONS_TO_NEGOTIATE && (
                 <Button variant="secondary" onClick={() => onNegotiateDirectly(request.id)}>
-                  Tenho {request.quotationsCount}{' '}
-                  {request.quotationsCount === 1 ? 'orçamento' : 'orçamentos'} → Negociar
+                  Tenho {request.quotationsCount} orçamentos → Enviar para negociação
                 </Button>
               )}
             </div>
