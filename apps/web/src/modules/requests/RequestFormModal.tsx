@@ -3,6 +3,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { Trash2 } from 'lucide-react'
 import { z } from 'zod'
 import { Button, Input, Modal } from '../../components'
+import { groupMaterialOptionsByName } from './groupMaterialOptionsByName'
 import type { MaterialOption, RequestFormValues, UnitOption } from './types'
 
 const itemSchema = z.object({
@@ -116,20 +117,24 @@ export function RequestFormModal({
                   className="rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
                 >
                   <option value="">Selecione…</option>
-                  {materials.map((material) => {
-                    // material é, na prática, um insumo (material_variants) — o
-                    // "nome do material" (materialName) é só a categoria/família
-                    // (ex.: "Abraçadeira Tipo U"), compartilhada por várias
-                    // variantes com códigos diferentes. Mostrar a descrição da
-                    // variante (o insumo específico) evita duas opções quase
-                    // idênticas no dropdown, diferindo só pelo código.
-                    const label = material.description ?? material.materialName
-                    return (
-                      <option key={material.id} value={material.id}>
-                        {material.code ? `${material.code} · ${label}` : label}
-                      </option>
-                    )
-                  })}
+                  {groupMaterialOptionsByName(materials).map((group) => (
+                    <optgroup key={group.materialName} label={group.materialName}>
+                      {group.options.map((material) => {
+                        // material é, na prática, um insumo (material_variants)
+                        // — o grupo acima (nome do material) é só a
+                        // categoria/família, compartilhada por várias
+                        // variantes com códigos diferentes. Mostrar a
+                        // descrição da variante (o insumo específico) evita
+                        // opções quase idênticas, diferindo só pelo código.
+                        const label = material.description ?? material.materialName
+                        return (
+                          <option key={material.id} value={material.id}>
+                            {material.code ? `${material.code} · ${label}` : label}
+                          </option>
+                        )
+                      })}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
               <div className="flex w-24 flex-col gap-1">

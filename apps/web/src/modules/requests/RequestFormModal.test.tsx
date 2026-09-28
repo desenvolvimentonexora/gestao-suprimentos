@@ -141,4 +141,23 @@ describe('RequestFormModal', () => {
     expect(screen.getByRole('option', { name: '027818-005 · ABRAÇADEIRA TIPO "U" 5" X 150 MM' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: '027818-006 · ABRAÇADEIRA TIPO "U" 6" X 200 MM' })).toBeInTheDocument()
   })
+
+  it('agrupa as variantes do dropdown por material (optgroup), pra deixar claro o que cada material tem cadastrado', () => {
+    render(
+      <RequestFormModal
+        {...baseProps()}
+        materials={[
+          { id: 'v1', materialName: 'Abraçadeira Tipo U', code: '027818-005', description: 'ABRAÇADEIRA "U" 5"' },
+          { id: 'v2', materialName: 'Abraçadeira Tipo U', code: '027818-006', description: 'ABRAÇADEIRA "U" 6"' },
+          { id: 'v3', materialName: 'Argamassa', code: null, description: null },
+        ]}
+      />,
+    )
+    const groups = document.querySelectorAll('optgroup')
+    const labels = [...groups].map((group) => group.getAttribute('label'))
+    expect(labels).toEqual(['Abraçadeira Tipo U', 'Argamassa'])
+
+    const abracadeiraGroup = [...groups].find((group) => group.getAttribute('label') === 'Abraçadeira Tipo U')
+    expect(abracadeiraGroup?.querySelectorAll('option')).toHaveLength(2)
+  })
 })

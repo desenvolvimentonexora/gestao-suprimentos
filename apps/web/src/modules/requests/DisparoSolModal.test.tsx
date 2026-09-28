@@ -10,6 +10,7 @@ const materials: MaterialWithSupplierCount[] = [
     name: 'Argamassa',
     supplierCount: 3,
     code: '1023',
+    description: null,
     categoryId: 'c1',
     categoryName: 'Ferramentas',
     supplierIds: ['s1', 's2', 's3'],
@@ -19,6 +20,7 @@ const materials: MaterialWithSupplierCount[] = [
     name: 'Tintas',
     supplierCount: 5,
     code: null,
+    description: null,
     categoryId: 'c2',
     categoryName: 'EPI',
     supplierIds: ['s1', 's2', 's3', 's4', 's5'],
@@ -129,6 +131,47 @@ describe('DisparoSolModal', () => {
   it('mostra só o nome quando o material não tem código', () => {
     render(<DisparoSolModal {...baseProps()} />)
     expect(screen.getByText('Tintas')).toBeInTheDocument()
+  })
+
+  it('mostra a descrição da variante (o insumo específico) em vez do nome do material, e agrupa variantes do mesmo material com um subcabeçalho', () => {
+    const multiVariant: MaterialWithSupplierCount[] = [
+      {
+        id: 'v5',
+        name: 'Abraçadeira Tipo U',
+        supplierCount: 2,
+        code: '027818-005',
+        description: 'ABRAÇADEIRA "U" 5" X 150 MM',
+        categoryId: 'c1',
+        categoryName: 'Serralheria',
+        supplierIds: ['s1', 's2'],
+      },
+      {
+        id: 'v6',
+        name: 'Abraçadeira Tipo U',
+        supplierCount: 1,
+        code: '027818-006',
+        description: 'ABRAÇADEIRA "U" 6" X 200 MM',
+        categoryId: 'c1',
+        categoryName: 'Serralheria',
+        supplierIds: ['s1'],
+      },
+    ]
+    render(<DisparoSolModal {...baseProps()} materials={multiVariant} />)
+
+    // Subcabeçalho do material (a categoria do insumo) aparece uma vez, já
+    // que as duas variantes compartilham o nome.
+    expect(screen.getByText('Abraçadeira Tipo U')).toBeInTheDocument()
+    // Cada checkbox mostra a descrição específica, não o nome repetido.
+    expect(screen.getByText('027818-005 · ABRAÇADEIRA "U" 5" X 150 MM')).toBeInTheDocument()
+    expect(screen.getByText('027818-006 · ABRAÇADEIRA "U" 6" X 200 MM')).toBeInTheDocument()
+  })
+
+  it('não mostra subcabeçalho de material quando só há uma variante (nada a distinguir)', () => {
+    render(<DisparoSolModal {...baseProps()} />)
+    // "Argamassa" aparece só dentro do rótulo do checkbox ("1023 ·
+    // Argamassa"), não como um subcabeçalho solto e redundante.
+    expect(screen.queryByText('Argamassa')).not.toBeInTheDocument()
+    expect(screen.getByText('1023 · Argamassa')).toBeInTheDocument()
   })
 
   it('filtra a lista de materiais pela busca', async () => {

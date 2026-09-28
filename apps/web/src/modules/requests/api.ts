@@ -71,7 +71,7 @@ export async function fetchMaterialsWithSupplierCount(): Promise<MaterialWithSup
   const { data, error } = await supabase
     .from('material_variants')
     .select(
-      'id, code, materials(name, category_id, supply_categories(name)), supplier_materials(supplier_id)',
+      'id, code, description, materials(name, category_id, supply_categories(name)), supplier_materials(supplier_id)',
     )
     .is('deleted_at', null)
     .order('code')
@@ -82,6 +82,7 @@ export async function fetchMaterialsWithSupplierCount(): Promise<MaterialWithSup
       id: row.id,
       name: row.materials?.name ?? '',
       code: row.code,
+      description: row.description,
       categoryId: row.materials?.category_id ?? '',
       categoryName: row.materials?.supply_categories?.name ?? 'Outros',
       supplierCount: supplierIds.length,

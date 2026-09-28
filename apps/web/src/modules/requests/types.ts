@@ -65,12 +65,13 @@ export interface ExtractedRequestData {
   items: ExtractedRequestItem[]
 }
 
-/** id é o da variante (material_variants.id); name é o nome do material genérico. */
+/** id é o da variante (material_variants.id); name é o nome do material genérico (a "categoria" do insumo — description é o insumo específico). */
 export interface MaterialWithSupplierCount {
   id: string
   name: string
   supplierCount: number
   code: string | null
+  description: string | null
   categoryId: string
   categoryName: string
   /** Ids dos fornecedores desta variante — usado só pra somar sem duplicar ao agrupar por categoria. */

@@ -7,6 +7,7 @@ function makeMaterial(overrides: Partial<MaterialWithSupplierCount>): MaterialWi
     id: 'm1',
     name: 'Aço',
     code: '3050',
+    description: null,
     categoryId: 'c1',
     categoryName: 'Ferramentas',
     supplierCount: 1,

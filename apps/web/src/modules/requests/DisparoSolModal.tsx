@@ -6,6 +6,32 @@ import { formatRequestNumber } from './formatRequestNumber'
 import { groupMaterialsByCategory } from './groupMaterialsByCategory'
 import type { MaterialWithSupplierCount, RequestRow } from './types'
 
+/** Descrição do insumo (a variante específica); cai pro nome do material (a categoria) só quando não há descrição cadastrada. */
+function materialLabel(material: MaterialWithSupplierCount): string {
+  return material.description ?? material.name
+}
+
+interface MaterialNameGroup {
+  materialName: string
+  variants: MaterialWithSupplierCount[]
+}
+
+// Dentro de uma categoria, materiais com o mesmo nome genérico (ex.:
+// "Abraçadeira Tipo U") são variantes de um só material — agrupar por nome
+// deixa claro, ao abrir a categoria, quais variantes existem de cada um, em
+// vez de uma lista só com tudo misturado.
+function groupByMaterialName(materials: MaterialWithSupplierCount[]): MaterialNameGroup[] {
+  const groups = new Map<string, MaterialWithSupplierCount[]>()
+  for (const material of materials) {
+    const list = groups.get(material.name) ?? []
+    list.push(material)
+    groups.set(material.name, list)
+  }
+  return [...groups.entries()]
+    .map(([materialName, variants]) => ({ materialName, variants }))
+    .sort((a, b) => a.materialName.localeCompare(b.materialName, 'pt-BR'))
+}
+
 export interface DisparoSolModalProps {
   isOpen: boolean
   onClose: () => void
@@ -34,7 +60,11 @@ export function DisparoSolModal({
 
   const normalizedSearch = materialSearch.trim().toLowerCase()
   const filteredMaterials = normalizedSearch
-    ? materials.filter((material) => material.name.toLowerCase().includes(normalizedSearch))
+    ? materials.filter(
+        (material) =>
+          material.name.toLowerCase().includes(normalizedSearch) ||
+          materialLabel(material).toLowerCase().includes(normalizedSearch),
+      )
     : materials
   const groups = groupMaterialsByCategory(filteredMaterials)
 
@@ -47,15 +77,15 @@ export function DisparoSolModal({
     })
   }
 
-  const selectedMaterialNames = materials
+  const selectedMaterialLabels = materials
     .filter((material) => selectedMaterialIds.has(material.id))
-    .map((material) => material.name)
+    .map(materialLabel)
 
   const subject = `Disparar ${label}`
   const bodyLines = [
     `Obra: ${request.unitName}`,
     subjectCategory ? `Categoria: ${subjectCategory}` : null,
-    selectedMaterialNames.length > 0 ? `Insumos: ${selectedMaterialNames.join(', ')}` : null,
+    selectedMaterialLabels.length > 0 ? `Insumos: ${selectedMaterialLabels.join(', ')}` : null,
     notes ? `Observação: ${notes}` : null,
   ].filter(Boolean)
   const mailtoHref = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`
@@ -110,23 +140,30 @@ export function DisparoSolModal({
                     {group.supplierCount} {group.supplierCount === 1 ? 'fornecedor cadastrado' : 'fornecedores cadastrados'}
                   </span>
                 </div>
-                {group.materials.map((material) => (
-                  <label
-                    key={material.id}
-                    className="flex items-center justify-between gap-2 pl-2 text-sm text-ink"
-                  >
-                    <span className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedMaterialIds.has(material.id)}
-                        onChange={() => toggleMaterial(material.id)}
-                      />
-                      {material.code ? `${material.code} · ${material.name}` : material.name}
-                    </span>
-                    <span className="text-xs text-ink-muted">
-                      {material.supplierCount} {material.supplierCount === 1 ? 'fornecedor' : 'fornecedores'}
-                    </span>
-                  </label>
+                {groupByMaterialName(group.materials).map((materialGroup) => (
+                  <div key={materialGroup.materialName} className="flex flex-col gap-1 pl-2">
+                    {materialGroup.variants.length > 1 && (
+                      <span className="text-xs font-medium text-ink-muted">{materialGroup.materialName}</span>
+                    )}
+                    {materialGroup.variants.map((material) => (
+                      <label
+                        key={material.id}
+                        className="flex items-center justify-between gap-2 pl-2 text-sm text-ink"
+                      >
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedMaterialIds.has(material.id)}
+                            onChange={() => toggleMaterial(material.id)}
+                          />
+                          {material.code ? `${material.code} · ${materialLabel(material)}` : materialLabel(material)}
+                        </span>
+                        <span className="text-xs text-ink-muted">
+                          {material.supplierCount} {material.supplierCount === 1 ? 'fornecedor' : 'fornecedores'}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
                 ))}
               </div>
             ))}
