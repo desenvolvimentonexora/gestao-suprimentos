@@ -24,6 +24,7 @@ export interface SupplierColumnProps {
   onEditSupplier: (supplierId: string) => void
   onDeleteSupplier: (supplierId: string) => void
   onFindSimilarSuppliers: (supplierId: string) => void
+  onMoveToOtherMaterial: (supplierId: string) => void
   /** Vocabulário do cliente para esta entidade (settings.vocabulary.supplier) — "Fornecedor" se não vier. */
   supplierLabel?: string
 }
@@ -49,6 +50,7 @@ export function SupplierColumn({
   onEditSupplier,
   onDeleteSupplier,
   onFindSimilarSuppliers,
+  onMoveToOtherMaterial,
   supplierLabel = 'Fornecedor',
 }: SupplierColumnProps) {
   if (!materialName) {
@@ -130,6 +132,7 @@ export function SupplierColumn({
                 onEdit={onEditSupplier}
                 onDelete={onDeleteSupplier}
                 onFindSimilar={onFindSimilarSuppliers}
+                onMoveToOtherMaterial={onMoveToOtherMaterial}
               />
             ))}
           </div>

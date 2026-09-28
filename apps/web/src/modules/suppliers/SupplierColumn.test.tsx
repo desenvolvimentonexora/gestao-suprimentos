@@ -38,6 +38,7 @@ function baseProps() {
     onEditSupplier: vi.fn(),
     onDeleteSupplier: vi.fn(),
     onFindSimilarSuppliers: vi.fn(),
+    onMoveToOtherMaterial: vi.fn(),
   }
 }
 

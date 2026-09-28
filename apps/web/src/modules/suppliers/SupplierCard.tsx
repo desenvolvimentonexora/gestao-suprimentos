@@ -13,6 +13,7 @@ export interface SupplierCardProps {
   onEdit: (supplierId: string) => void
   onDelete: (supplierId: string) => void
   onFindSimilar: (supplierId: string) => void
+  onMoveToOtherMaterial: (supplierId: string) => void
 }
 
 const INDICATORS: { kind: SupplierPopupKind; label: string; icon: typeof Award; iconClassName: string }[] = [
@@ -30,6 +31,7 @@ export function SupplierCard({
   onEdit,
   onDelete,
   onFindSimilar,
+  onMoveToOtherMaterial,
 }: SupplierCardProps) {
   const avatarColor = getSupplierColor(supplier.id)
   const isActive = supplier.status === 'active'
@@ -137,7 +139,9 @@ export function SupplierCard({
           Buscar semelhantes
         </Button>
         <ComingSoonButton label="Copiar" variant="secondary" />
-        <ComingSoonButton label="Copiar para setor" variant="secondary" />
+        <Button variant="secondary" onClick={() => onMoveToOtherMaterial(supplier.id)}>
+          Mover para setor
+        </Button>
         <Button variant="danger" className="!px-6 !py-2.5 !text-base" onClick={() => onDelete(supplier.id)}>
           Excluir
         </Button>

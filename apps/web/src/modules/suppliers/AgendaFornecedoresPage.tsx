@@ -5,6 +5,7 @@ import { useSettings } from '../../core/config'
 import { CategoryColumn } from './CategoryColumn'
 import { CnpjLookupBlock } from './CnpjLookupBlock'
 import { MaterialColumn } from './MaterialColumn'
+import { MoveSupplierMaterialContainer } from './MoveSupplierMaterialContainer'
 import { SimilarSuppliersContainer } from './SimilarSuppliersContainer'
 import { SupplierColumn } from './SupplierColumn'
 import type { SupplierPopupKind } from './SupplierCard'
@@ -50,6 +51,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [reportOpen, setReportOpen] = useState(false)
   const [similarSuppliersFor, setSimilarSuppliersFor] = useState<string | null>(null)
   const [manualCnpjSearch, setManualCnpjSearch] = useState<string | null>(null)
+  const [movingSupplierId, setMovingSupplierId] = useState<string | null>(null)
 
   const settingsQuery = useSettings(tenantId)
   const supplierLabel = settingsQuery.data?.vocabulary.supplier
@@ -184,6 +186,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             onEditSupplier={(supplierId) => setFormState({ mode: 'edit', supplierId })}
             onDeleteSupplier={(supplierId) => deleteSupplier.mutate(supplierId)}
             onFindSimilarSuppliers={(supplierId) => setSimilarSuppliersFor(supplierId)}
+            onMoveToOtherMaterial={(supplierId) => setMovingSupplierId(supplierId)}
           />
         </div>
       </div>
@@ -236,6 +239,17 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         isOpen={reportOpen}
         onClose={() => setReportOpen(false)}
         rows={reportQuery.data ?? []}
+      />
+
+      <MoveSupplierMaterialContainer
+        tenantId={tenantId}
+        supplierId={movingSupplierId}
+        currentMaterialId={selectedMaterialId}
+        currentMaterialName={selectedMaterial?.name ?? null}
+        categories={categoriesQuery.data ?? []}
+        materials={materialsQuery.data ?? []}
+        materialVariants={materialVariantsQuery.data ?? []}
+        onClose={() => setMovingSupplierId(null)}
       />
     </div>
   )

@@ -24,6 +24,7 @@ function baseProps() {
     onEdit: vi.fn(),
     onDelete: vi.fn(),
     onFindSimilar: vi.fn(),
+    onMoveToOtherMaterial: vi.fn(),
   }
 }
 
@@ -78,12 +79,20 @@ describe('SupplierCard', () => {
     expect(props.onFindSimilar).toHaveBeenCalledWith('s1')
   })
 
-  it('mostra "Em breve" ao clicar em Copiar ou Copiar para setor', async () => {
+  it('mostra "Em breve" ao clicar em Copiar', async () => {
     render(<SupplierCard {...baseProps()} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Copiar' }))
 
     expect(screen.getByText('Em breve')).toBeInTheDocument()
+  })
+
+  it('chama onMoveToOtherMaterial ao clicar em Mover para setor', async () => {
+    const props = baseProps()
+    render(<SupplierCard {...props} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Mover para setor' }))
+    expect(props.onMoveToOtherMaterial).toHaveBeenCalledWith('s1')
   })
 
   it('usa a cor consistente do fornecedor no avatar', () => {
@@ -102,16 +111,16 @@ describe('SupplierCard', () => {
     expect(screen.getByTestId('status-dot').className).not.toContain('bg-emerald')
   })
 
-  it('editar, avaliar, copiar e copiar para setor têm o mesmo tamanho e cor de fundo', () => {
+  it('editar, avaliar, copiar e mover para setor têm o mesmo tamanho e cor de fundo', () => {
     render(<SupplierCard {...baseProps()} />)
     const editar = screen.getByRole('button', { name: 'Editar' }).className
     const avaliar = screen.getByRole('button', { name: 'Avaliar' }).className
     const copiar = screen.getByRole('button', { name: 'Copiar' }).className
-    const copiarParaSetor = screen.getByRole('button', { name: 'Copiar para setor' }).className
+    const moverParaSetor = screen.getByRole('button', { name: 'Mover para setor' }).className
 
     expect(avaliar).toBe(editar)
     expect(copiar).toBe(editar)
-    expect(copiarParaSetor).toBe(editar)
+    expect(moverParaSetor).toBe(editar)
   })
 
   it('excluir tem o mesmo tamanho dos demais botões, mas preenchido em vermelho', () => {

@@ -1,4 +1,3 @@
-import { Building2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Card, Input } from '../../components'
 
@@ -20,8 +19,8 @@ export function CnpjLookupBlock({ onSearch }: CnpjLookupBlockProps) {
   return (
     <Card className="mt-4 flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <Building2 size={18} aria-hidden="true" />
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
+          <img src="/assets/icone-ia.png" alt="" className="h-6 w-6" />
         </span>
         <div>
           <p className="text-sm font-semibold text-ink">Empresas do mesmo ramo</p>
