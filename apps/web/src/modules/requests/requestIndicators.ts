@@ -19,11 +19,3 @@ export function getRequestIndicators(requests: RequestRow[]): RequestIndicators 
 
   return { ativas: pendentes + enviadas, pendentes, enviadas, concluidas }
 }
-
-export function isOverdue(request: RequestRow, today: Date): boolean {
-  if (!request.neededBy) return false
-  if (request.status === 'quoted' || request.status === 'cancelled') return false
-
-  const todayDateOnly = today.toISOString().slice(0, 10)
-  return request.neededBy < todayDateOnly
-}

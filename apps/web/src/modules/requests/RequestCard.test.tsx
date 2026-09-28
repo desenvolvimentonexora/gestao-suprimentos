@@ -90,6 +90,24 @@ describe('RequestCard', () => {
     expect(screen.getByText('5 dias atrasada')).toBeInTheDocument()
   })
 
+  it('borda lateral em âmbar quando o badge é de prazo restante, igual à cor do badge', () => {
+    render(<RequestCard {...baseProps()} />)
+    expect(screen.getByTestId('request-card-r1').className).toContain('border-l-amber-500')
+  })
+
+  it('borda lateral em vermelho quando o badge é de atraso, igual à cor do badge', () => {
+    render(<RequestCard {...baseProps()} request={{ ...baseRequest, neededBy: '2026-09-10' }} />)
+    expect(screen.getByTestId('request-card-r1').className).toContain('border-l-red-500')
+  })
+
+  it('borda lateral neutra quando não há prazo definido (sem badge)', () => {
+    render(<RequestCard {...baseProps()} request={{ ...baseRequest, neededBy: null }} />)
+    const className = screen.getByTestId('request-card-r1').className
+    expect(className).toContain('border-l-line')
+    expect(className).not.toContain('border-l-amber-500')
+    expect(className).not.toContain('border-l-red-500')
+  })
+
   it('não mostra a expansão por padrão', () => {
     render(<RequestCard {...baseProps()} />)
     expect(screen.queryByText('1023')).not.toBeInTheDocument()

@@ -3,7 +3,6 @@ import { Folder, Lock, MapPin } from 'lucide-react'
 import { Badge, Button } from '../../components'
 import { getDeadlineBadge } from './deadlineBadge'
 import { formatRequestNumber } from './formatRequestNumber'
-import { isOverdue } from './requestIndicators'
 import { STATUS_LABELS } from './requestStatusLabels'
 import { RequestItemsTable } from './RequestItemsTable'
 import { RequestNotesField } from './RequestNotesField'
@@ -12,6 +11,14 @@ import type { RequestRow } from './types'
 const DEADLINE_BADGE_CLASSES: Record<'restante' | 'atrasada', string> = {
   restante: 'border-amber-200 bg-amber-50 text-amber-700',
   atrasada: 'border-red-200 bg-red-50 text-red-700',
+}
+
+// Mesmo tom do badge de prazo na borda lateral do card — antes só o atraso
+// (vermelho) tinha uma cor própria, deixando "restante" com a borda neutra e
+// inconsistente com o badge ao lado.
+const DEADLINE_BORDER_CLASSES: Record<'restante' | 'atrasada', string> = {
+  restante: 'border-l-amber-500 bg-amber-50/60',
+  atrasada: 'border-l-red-500 bg-red-50/60',
 }
 
 function formatDate(value: string): string {
@@ -49,15 +56,14 @@ export function RequestCard({
 }: RequestCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const overdue = isOverdue(request, today)
   const deadlineBadge = getDeadlineBadge(request.neededBy, today)
   const displayNumber = formatRequestNumber(request.externalRef, request.sequenceNumber)
 
   return (
     <div
       data-testid={`request-card-${request.id}`}
-      className={`flex flex-col gap-3 rounded-lg border-y border-r border-l-4 p-4 ${
-        overdue ? 'border-line border-l-red-500 bg-red-50/60' : 'border-line border-l-line bg-surface'
+      className={`flex flex-col gap-3 rounded-lg border-y border-r border-l-4 p-4 border-line ${
+        deadlineBadge ? DEADLINE_BORDER_CLASSES[deadlineBadge.tone] : 'border-l-line bg-surface'
       }`}
     >
       <div className="flex items-center gap-2">
@@ -74,37 +80,41 @@ export function RequestCard({
           type="button"
           aria-expanded={isExpanded}
           onClick={() => setIsExpanded((current) => !current)}
-          className="flex flex-1 items-center gap-4 overflow-x-auto text-left"
+          className="flex flex-1 flex-wrap items-center justify-between gap-2 text-left"
         >
-          <Lock size={16} className="shrink-0 text-ink-muted" aria-hidden="true" />
+          <span className="flex flex-wrap items-center gap-4">
+            <Lock size={16} className="shrink-0 text-ink-muted" aria-hidden="true" />
 
-          <span className="shrink-0 whitespace-nowrap font-semibold text-ink">{displayNumber}</span>
+            <span className="shrink-0 whitespace-nowrap font-semibold text-ink">{displayNumber}</span>
 
-          <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
-            <MapPin size={14} className="text-blue-600" aria-hidden="true" />
-            {request.unitName}
-          </span>
-
-          <span className="shrink-0 whitespace-nowrap text-xs text-ink-muted">
-            Solicitada em {formatDate(request.createdAt)}
-          </span>
-
-          {request.neededBy && (
-            <span className="shrink-0 whitespace-nowrap text-xs text-ink-muted">
-              Entrega {formatDateOnly(request.neededBy)}
+            <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-ink-muted">
+              <MapPin size={14} className="text-blue-600" aria-hidden="true" />
+              {request.unitName}
             </span>
-          )}
 
-          <Badge className="shrink-0">{STATUS_LABELS[request.status]}</Badge>
+            <span className="shrink-0 whitespace-nowrap text-xs text-ink-muted">
+              Solicitada em {formatDate(request.createdAt)}
+            </span>
 
-          {deadlineBadge && (
-            <Badge className={`shrink-0 ${DEADLINE_BADGE_CLASSES[deadlineBadge.tone]}`}>
-              {deadlineBadge.label}
-            </Badge>
-          )}
+            {request.neededBy && (
+              <span className="shrink-0 whitespace-nowrap text-xs text-ink-muted">
+                Entrega {formatDateOnly(request.neededBy)}
+              </span>
+            )}
+          </span>
 
-          <span className="shrink-0 whitespace-nowrap text-xs text-ink-muted">
-            {request.items.length} {request.items.length === 1 ? 'item' : 'itens'}
+          <span className="flex flex-wrap items-center gap-2">
+            <Badge className="shrink-0">{STATUS_LABELS[request.status]}</Badge>
+
+            {deadlineBadge && (
+              <Badge className={`shrink-0 ${DEADLINE_BADGE_CLASSES[deadlineBadge.tone]}`}>
+                {deadlineBadge.label}
+              </Badge>
+            )}
+
+            <span className="shrink-0 whitespace-nowrap text-xs text-ink-muted">
+              {request.items.length} {request.items.length === 1 ? 'item' : 'itens'}
+            </span>
           </span>
         </button>
       </div>

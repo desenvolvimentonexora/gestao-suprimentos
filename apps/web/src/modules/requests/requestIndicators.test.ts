@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getRequestIndicators, isOverdue } from './requestIndicators'
+import { getRequestIndicators } from './requestIndicators'
 import type { RequestRow } from './types'
 
 function makeRequest(overrides: Partial<RequestRow>): RequestRow {
@@ -53,29 +53,5 @@ describe('getRequestIndicators', () => {
       enviadas: 0,
       concluidas: 0,
     })
-  })
-})
-
-describe('isOverdue', () => {
-  const today = new Date('2026-09-11T12:00:00')
-
-  it('é atrasada quando o prazo já passou e o status ainda está em aberto', () => {
-    const request = makeRequest({ neededBy: '2026-09-10', status: 'negotiating' })
-    expect(isOverdue(request, today)).toBe(true)
-  })
-
-  it('não é atrasada quando o prazo é hoje', () => {
-    const request = makeRequest({ neededBy: '2026-09-11', status: 'negotiating' })
-    expect(isOverdue(request, today)).toBe(false)
-  })
-
-  it('não é atrasada quando não há prazo definido', () => {
-    const request = makeRequest({ neededBy: null, status: 'negotiating' })
-    expect(isOverdue(request, today)).toBe(false)
-  })
-
-  it('não é atrasada quando já está concluída ou cancelada, mesmo com prazo vencido', () => {
-    expect(isOverdue(makeRequest({ neededBy: '2026-09-01', status: 'quoted' }), today)).toBe(false)
-    expect(isOverdue(makeRequest({ neededBy: '2026-09-01', status: 'cancelled' }), today)).toBe(false)
   })
 })
