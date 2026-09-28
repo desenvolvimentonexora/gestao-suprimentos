@@ -30,11 +30,14 @@ function LoginPanel({ brand }: { brand: Brand }) {
   return (
     <div className="flex flex-col items-center justify-between bg-gradient-to-t from-primary-dark to-primary px-8 py-10 text-on-primary sm:w-1/2">
       <div className="flex flex-col items-center gap-2">
-        <img
-          src={brand.logoUrl}
-          alt={brand.name ?? ''}
-          className="h-36 w-auto max-w-full object-contain"
-        />
+        <div className="flex items-center gap-3">
+          <img src="/assets/icon-nexora.png" alt="" aria-hidden="true" className="h-28 w-auto max-w-full object-contain" />
+          <img
+            src={brand.logoUrl}
+            alt={brand.name ?? ''}
+            className="h-20 w-auto max-w-full object-contain"
+          />
+        </div>
         {brand.subtitle && <p className="text-base text-on-primary">{brand.subtitle}</p>}
       </div>
       <p className="max-w-sm text-center text-2xl font-semibold">{brand.tagline}</p>
