@@ -58,3 +58,12 @@ export interface NegotiatorOption {
   id: string
   name: string
 }
+
+export interface NegotiatingAttachmentRow {
+  id: string
+  fileName: string
+  kind: 'sol' | 'quotation'
+  supplierName: string | null
+  /** Id da cotação, pra permitir descartar pela lixeira — null pro PDF da SOL (kind 'sol'). */
+  quotationId: string | null
+}

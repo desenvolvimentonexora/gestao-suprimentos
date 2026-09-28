@@ -296,8 +296,9 @@ export async function fetchRequestAttachments(requestId: string): Promise<Reques
     supabase.from('request_attachments').select('id, file_name').eq('request_id', requestId),
     supabase
       .from('quotation_attachments')
-      .select('id, file_name, quotations!inner(request_id, suppliers(name))')
-      .eq('quotations.request_id', requestId),
+      .select('id, file_name, quotation_id, quotations!inner(request_id, status, suppliers(name))')
+      .eq('quotations.request_id', requestId)
+      .neq('quotations.status', 'discarded'),
   ])
   if (solResult.error) throw solResult.error
   if (quotationResult.error) throw quotationResult.error
@@ -307,6 +308,7 @@ export async function fetchRequestAttachments(requestId: string): Promise<Reques
     fileName: row.file_name,
     kind: 'sol',
     supplierName: null,
+    quotationId: null,
   }))
 
   const quotationRows: RequestAttachmentRow[] = quotationResult.data.map((row) => ({
@@ -314,9 +316,20 @@ export async function fetchRequestAttachments(requestId: string): Promise<Reques
     fileName: row.file_name,
     kind: 'quotation',
     supplierName: row.quotations?.suppliers?.name ?? null,
+    quotationId: row.quotation_id,
   }))
 
   return [...solRows, ...quotationRows]
+}
+
+// Mesmo padrão de apps/web/src/modules/quotations/api.ts (discardQuotation)
+// — duplicado aqui porque módulo não importa de módulo. Usado pela lixeira
+// no popup de arquivos: marca a cotação como descartada (soft, nunca
+// DELETE), e ela some da lista porque fetchRequestAttachments já filtra
+// quotations com status 'discarded'.
+export async function discardQuotationAttachment(quotationId: string): Promise<void> {
+  const { error } = await supabase.from('quotations').update({ status: 'discarded' }).eq('id', quotationId)
+  if (error) throw error
 }
 
 export async function fetchRequestAttachmentUrl(attachment: {

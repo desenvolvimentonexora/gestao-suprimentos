@@ -15,6 +15,7 @@ import { RequestsTable } from './RequestsTable'
 import {
   useCancelRequest,
   useCreateRequest,
+  useDiscardQuotationAttachment,
   useDispatchRequest,
   useMaterialOptions,
   useMaterialsWithSupplierCount,
@@ -72,6 +73,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const retryDispatch = useRetryDispatch()
   const attachmentsQuery = useRequestAttachments(attachmentsRequestId)
   const viewAttachment = useViewRequestAttachment()
+  const discardQuotationAttachment = useDiscardQuotationAttachment()
 
   const requests = requestsQuery.data ?? []
   const units = unitsQuery.data ?? []
@@ -232,6 +234,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
         attachments={attachmentsQuery.data ?? []}
         isLoading={attachmentsQuery.isLoading}
         onView={(attachment) => viewAttachment.mutate(attachment)}
+        onDiscardQuotation={(quotationId) => discardQuotationAttachment.mutate(quotationId)}
       />
     </div>
   )

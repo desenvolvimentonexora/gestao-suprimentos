@@ -1,18 +1,18 @@
 import { FileText, Folder, Trash2 } from 'lucide-react'
 import { Button, Modal, Spinner } from '../../components'
-import type { RequestAttachmentRow } from './types'
+import type { NegotiatingAttachmentRow } from './types'
 
-export interface RequestAttachmentsModalProps {
+export interface NegotiatingAttachmentsModalProps {
   isOpen: boolean
   onClose: () => void
   requestLabel: string
-  attachments: RequestAttachmentRow[]
+  attachments: NegotiatingAttachmentRow[]
   isLoading: boolean
   onView: (attachment: { id: string; kind: 'sol' | 'quotation' }) => void
   onDiscardQuotation: (quotationId: string) => void
 }
 
-export function RequestAttachmentsModal({
+export function NegotiatingAttachmentsModal({
   isOpen,
   onClose,
   requestLabel,
@@ -20,7 +20,7 @@ export function RequestAttachmentsModal({
   isLoading,
   onView,
   onDiscardQuotation,
-}: RequestAttachmentsModalProps) {
+}: NegotiatingAttachmentsModalProps) {
   const solAttachments = attachments.filter((a) => a.kind === 'sol')
   const quotationAttachments = attachments.filter((a) => a.kind === 'quotation')
 

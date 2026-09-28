@@ -56,18 +56,21 @@ function baseProps() {
     today: new Date('2026-09-11T12:00:00'),
     onAssignNegotiator: vi.fn(),
     onRegisterQuotation: vi.fn(),
-    onDiscardQuotation: vi.fn(),
-    onViewPdf: vi.fn(),
     onUpdateNotes: vi.fn(),
     onSendBackToDispatch: vi.fn(),
     onFinalizeNegotiation: vi.fn(),
+    onOpenAttachments: vi.fn(),
   }
+}
+
+async function expandCard(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByText('SOL-1'))
 }
 
 describe('NegotiatingRequestCard', () => {
   it('mostra unidade, n° externo e a contagem de itens da requisição', () => {
     render(<NegotiatingRequestCard {...baseProps()} />)
-    expect(screen.getByText('UP Graça', { selector: 'span' })).toBeInTheDocument()
+    expect(screen.getByText('UP Graça')).toBeInTheDocument()
     expect(screen.getByText('SOL-1')).toBeInTheDocument()
     expect(screen.getByText('2 itens')).toBeInTheDocument()
   })
@@ -83,10 +86,21 @@ describe('NegotiatingRequestCard', () => {
     expect(screen.getByLabelText('Favorito')).toBeInTheDocument()
   })
 
-  it('mostra os itens detalhados ao expandir', async () => {
+  it('chama onOpenAttachments ao clicar no ícone de pasta, sem expandir o card', async () => {
+    const user = userEvent.setup()
+    const onOpenAttachments = vi.fn()
+    render(<NegotiatingRequestCard {...baseProps()} onOpenAttachments={onOpenAttachments} />)
+
+    await user.click(screen.getByRole('button', { name: /ver arquivos de sol-1/i }))
+
+    expect(onOpenAttachments).toHaveBeenCalledWith('r1')
+    expect(screen.queryByLabelText(/observação/i)).not.toBeInTheDocument()
+  })
+
+  it('mostra os itens detalhados ao clicar no card', async () => {
     const user = userEvent.setup()
     render(<NegotiatingRequestCard {...baseProps()} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await expandCard(user)
     expect(screen.getByText('1023')).toBeInTheDocument()
   })
 
@@ -143,14 +157,14 @@ describe('NegotiatingRequestCard', () => {
     expect(screen.getByText('9 dias restantes')).toBeInTheDocument()
   })
 
-  it('marca o card com fundo e borda de atraso quando o prazo já passou', () => {
+  it('marca a borda lateral em vermelho quando o badge de prazo é de atraso', () => {
     render(<NegotiatingRequestCard {...baseProps()} />)
     expect(screen.getByTestId('negotiating-card-r1').className).toContain('border-l-red')
   })
 
-  it('não marca o card como atrasado quando o prazo ainda não venceu', () => {
+  it('marca a borda lateral em âmbar quando o prazo ainda não venceu', () => {
     render(<NegotiatingRequestCard {...baseProps()} request={{ ...request, neededBy: '2026-09-20' }} />)
-    expect(screen.getByTestId('negotiating-card-r1').className).not.toContain('border-l-red')
+    expect(screen.getByTestId('negotiating-card-r1').className).toContain('border-l-amber')
     expect(screen.queryByText(/atrasada/i)).not.toBeInTheDocument()
   })
 
@@ -170,16 +184,16 @@ describe('NegotiatingRequestCard', () => {
     expect(select.className).not.toBe('')
   })
 
-  it('expande e mostra observação, tabela de itens, cotações e ações ao clicar no card', async () => {
+  it('expande e mostra observação, tabela de itens e ações ao clicar no card', async () => {
     const user = userEvent.setup()
     render(<NegotiatingRequestCard {...baseProps()} />)
 
     expect(screen.queryByRole('button', { name: /voltar pro disparo/i })).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await expandCard(user)
 
     expect(screen.getByLabelText(/observação/i)).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Insumo-Sub' })).toBeInTheDocument()
-    expect(screen.getByText('Fornecedor Alfa')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /registrar cotação/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /voltar pro disparo/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /finalizar negociação/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /liberar sem equalizar/i })).toBeInTheDocument()
@@ -189,7 +203,7 @@ describe('NegotiatingRequestCard', () => {
     it('tem as dez colunas esperadas', async () => {
       const user = userEvent.setup()
       render(<NegotiatingRequestCard {...baseProps()} />)
-      await user.click(screen.getByRole('button', { name: /expandir/i }))
+      await expandCard(user)
 
       for (const column of [
         'Centro',
@@ -211,7 +225,7 @@ describe('NegotiatingRequestCard', () => {
     it('mostra o código do material na coluna Insumo-Sub, com o nome como reserva sem código', async () => {
       const user = userEvent.setup()
       render(<NegotiatingRequestCard {...baseProps()} />)
-      await user.click(screen.getByRole('button', { name: /expandir/i }))
+      await expandCard(user)
 
       expect(screen.getByText('1023')).toBeInTheDocument()
       expect(screen.getByText('Areia')).toBeInTheDocument()
@@ -220,7 +234,7 @@ describe('NegotiatingRequestCard', () => {
     it('mostra a descrição do material na coluna Especificação, ou "—" quando não há', async () => {
       const user = userEvent.setup()
       render(<NegotiatingRequestCard {...baseProps()} />)
-      await user.click(screen.getByRole('button', { name: /expandir/i }))
+      await expandCard(user)
 
       expect(screen.getByText('Cimento CP-II 50kg saco')).toBeInTheDocument()
       const areiaRow = screen.getByText('Areia').closest('tr')
@@ -230,29 +244,38 @@ describe('NegotiatingRequestCard', () => {
     it('mostra a referência formatada de cada item, usando o número de exibição da SOL', async () => {
       const user = userEvent.setup()
       render(<NegotiatingRequestCard {...baseProps()} />)
-      await user.click(screen.getByRole('button', { name: /expandir/i }))
+      await expandCard(user)
 
       expect(screen.getByText('SOL-1/001')).toBeInTheDocument()
       expect(screen.getByText('SOL-1/002')).toBeInTheDocument()
     })
   })
 
-  it('recolhe ao clicar novamente em recolher', async () => {
+  it('recolhe ao clicar novamente no card', async () => {
     const user = userEvent.setup()
     render(<NegotiatingRequestCard {...baseProps()} />)
 
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await expandCard(user)
     expect(screen.getByLabelText(/observação/i)).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /recolher/i }))
+    await expandCard(user)
     expect(screen.queryByLabelText(/observação/i)).not.toBeInTheDocument()
+  })
+
+  it('chama onRegisterQuotation ao clicar em registrar cotação', async () => {
+    const user = userEvent.setup()
+    const onRegisterQuotation = vi.fn()
+    render(<NegotiatingRequestCard {...baseProps()} onRegisterQuotation={onRegisterQuotation} />)
+    await expandCard(user)
+    await user.click(screen.getByRole('button', { name: /registrar cotação/i }))
+    expect(onRegisterQuotation).toHaveBeenCalledWith('r1')
   })
 
   it('chama onSendBackToDispatch ao clicar em voltar pro disparo', async () => {
     const user = userEvent.setup()
     const onSendBackToDispatch = vi.fn()
     render(<NegotiatingRequestCard {...baseProps()} onSendBackToDispatch={onSendBackToDispatch} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await expandCard(user)
     await user.click(screen.getByRole('button', { name: /voltar pro disparo/i }))
     expect(onSendBackToDispatch).toHaveBeenCalledWith('r1')
   })
@@ -260,7 +283,7 @@ describe('NegotiatingRequestCard', () => {
   it('mostra "Voltar pro Disparo" em contorno e "Finalizar negociação" preenchido', async () => {
     const user = userEvent.setup()
     render(<NegotiatingRequestCard {...baseProps()} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await expandCard(user)
 
     const back = screen.getByRole('button', { name: /voltar pro disparo/i })
     const finalize = screen.getByRole('button', { name: /finalizar negociação/i })
@@ -270,7 +293,7 @@ describe('NegotiatingRequestCard', () => {
   it('mostra "Liberar sem equalizar" preenchido com cor de destaque, distinto de "Voltar pro Disparo"', async () => {
     const user = userEvent.setup()
     render(<NegotiatingRequestCard {...baseProps()} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await expandCard(user)
 
     const back = screen.getByRole('button', { name: /voltar pro disparo/i })
     const release = screen.getByRole('button', { name: /liberar sem equalizar/i })
@@ -282,7 +305,7 @@ describe('NegotiatingRequestCard', () => {
     const user = userEvent.setup()
     const onFinalizeNegotiation = vi.fn()
     render(<NegotiatingRequestCard {...baseProps()} onFinalizeNegotiation={onFinalizeNegotiation} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await expandCard(user)
     await user.click(screen.getByRole('button', { name: /finalizar negociação/i }))
     expect(onFinalizeNegotiation).toHaveBeenCalledWith('r1')
   })
@@ -290,33 +313,9 @@ describe('NegotiatingRequestCard', () => {
   it('mostra "Em breve" ao clicar em liberar sem equalizar', async () => {
     const user = userEvent.setup()
     render(<NegotiatingRequestCard {...baseProps()} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
+    await expandCard(user)
     await user.click(screen.getByRole('button', { name: /liberar sem equalizar/i }))
     expect(screen.getByText('Em breve')).toBeInTheDocument()
   })
 
-  it('mostra as cotações já registradas', async () => {
-    const user = userEvent.setup()
-    render(<NegotiatingRequestCard {...baseProps()} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
-    expect(screen.getByText('Fornecedor Alfa')).toBeInTheDocument()
-  })
-
-  it('chama onDiscardQuotation ao descartar uma cotação', async () => {
-    const user = userEvent.setup()
-    const onDiscardQuotation = vi.fn()
-    render(<NegotiatingRequestCard {...baseProps()} onDiscardQuotation={onDiscardQuotation} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
-    await user.click(screen.getByRole('button', { name: /descartar cotação de fornecedor alfa/i }))
-    expect(onDiscardQuotation).toHaveBeenCalledWith('q1')
-  })
-
-  it('chama onViewPdf ao clicar em Ver PDF de uma cotação', async () => {
-    const user = userEvent.setup()
-    const onViewPdf = vi.fn()
-    render(<NegotiatingRequestCard {...baseProps()} onViewPdf={onViewPdf} />)
-    await user.click(screen.getByRole('button', { name: /expandir/i }))
-    await user.click(screen.getByRole('button', { name: /ver pdf de fornecedor alfa/i }))
-    expect(onViewPdf).toHaveBeenCalledWith('q1')
-  })
 })

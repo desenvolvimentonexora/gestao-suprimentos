@@ -1,34 +1,34 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { RequestAttachmentsModal } from './RequestAttachmentsModal'
-import type { RequestAttachmentRow } from './types'
+import { NegotiatingAttachmentsModal } from './NegotiatingAttachmentsModal'
+import type { NegotiatingAttachmentRow } from './types'
 
 function baseProps() {
   return {
     isOpen: true,
     onClose: vi.fn(),
     requestLabel: 'SOL 1026',
-    attachments: [] as RequestAttachmentRow[],
+    attachments: [] as NegotiatingAttachmentRow[],
     isLoading: false,
     onView: vi.fn(),
     onDiscardQuotation: vi.fn(),
   }
 }
 
-describe('RequestAttachmentsModal', () => {
+describe('NegotiatingAttachmentsModal', () => {
   it('mostra estado de carregamento', () => {
-    render(<RequestAttachmentsModal {...baseProps()} isLoading />)
+    render(<NegotiatingAttachmentsModal {...baseProps()} isLoading />)
     expect(screen.getByText(/carregando arquivos/i)).toBeInTheDocument()
   })
 
   it('mostra mensagem quando não há PDF da solicitação ainda', () => {
-    render(<RequestAttachmentsModal {...baseProps()} />)
+    render(<NegotiatingAttachmentsModal {...baseProps()} />)
     expect(screen.getByText(/pdf da solicitação ainda não gerado/i)).toBeInTheDocument()
   })
 
   it('mostra mensagem quando não há cotações recebidas', () => {
-    render(<RequestAttachmentsModal {...baseProps()} />)
+    render(<NegotiatingAttachmentsModal {...baseProps()} />)
     expect(screen.getByText(/nenhuma cotação recebida ainda/i)).toBeInTheDocument()
   })
 
@@ -36,7 +36,7 @@ describe('RequestAttachmentsModal', () => {
     const user = userEvent.setup()
     const onView = vi.fn()
     render(
-      <RequestAttachmentsModal
+      <NegotiatingAttachmentsModal
         {...baseProps()}
         onView={onView}
         attachments={[
@@ -53,7 +53,7 @@ describe('RequestAttachmentsModal', () => {
     const user = userEvent.setup()
     const onView = vi.fn()
     render(
-      <RequestAttachmentsModal
+      <NegotiatingAttachmentsModal
         {...baseProps()}
         onView={onView}
         attachments={[
@@ -74,7 +74,7 @@ describe('RequestAttachmentsModal', () => {
     const user = userEvent.setup()
     const onDiscardQuotation = vi.fn()
     render(
-      <RequestAttachmentsModal
+      <NegotiatingAttachmentsModal
         {...baseProps()}
         onDiscardQuotation={onDiscardQuotation}
         attachments={[
@@ -87,7 +87,7 @@ describe('RequestAttachmentsModal', () => {
   })
 
   it('mostra o título com o número da SOL', () => {
-    render(<RequestAttachmentsModal {...baseProps()} requestLabel="SOL 42" />)
+    render(<NegotiatingAttachmentsModal {...baseProps()} requestLabel="SOL 42" />)
     expect(screen.getByText('Arquivos — SOL 42')).toBeInTheDocument()
   })
 })

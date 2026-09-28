@@ -5,6 +5,7 @@ import { formatRequestNumber } from './formatRequestNumber'
 import { RequestAttachmentsModal } from './RequestAttachmentsModal'
 import { STATUS_LABELS } from './requestStatusLabels'
 import {
+  useDiscardQuotationAttachment,
   useRequestAttachments,
   useRequests,
   useUnitOptions,
@@ -19,6 +20,7 @@ export function RequestDocumentsPage() {
   const requestsQuery = useRequests()
   const attachmentsQuery = useRequestAttachments(attachmentsRequestId)
   const viewAttachment = useViewRequestAttachment()
+  const discardQuotationAttachment = useDiscardQuotationAttachment()
 
   const units = unitsQuery.data ?? []
   const requests = requestsQuery.data ?? []
@@ -96,6 +98,7 @@ export function RequestDocumentsPage() {
         attachments={attachmentsQuery.data ?? []}
         isLoading={attachmentsQuery.isLoading}
         onView={(attachment) => viewAttachment.mutate(attachment)}
+        onDiscardQuotation={(quotationId) => discardQuotationAttachment.mutate(quotationId)}
       />
     </div>
   )

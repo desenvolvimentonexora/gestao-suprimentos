@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createQuotation,
   discardQuotation,
+  fetchNegotiatingAttachments,
+  fetchNegotiatingAttachmentUrl,
   fetchNegotiatingRequests,
   fetchNegotiatorOptions,
   fetchQuotationAttachmentUrl,
@@ -90,6 +92,30 @@ export function useViewQuotationPdf() {
     },
     onError: (error) => {
       window.alert(error instanceof Error ? error.message : 'Não foi possível abrir o PDF. Tente novamente.')
+    },
+  })
+}
+
+export function useNegotiatingAttachments(requestId: string | null) {
+  return useQuery({
+    queryKey: ['negotiating-attachments', requestId],
+    queryFn: () => fetchNegotiatingAttachments(requestId!),
+    enabled: Boolean(requestId),
+  })
+}
+
+export function useViewNegotiatingAttachment() {
+  return useMutation({
+    mutationFn: (attachment: { id: string; kind: 'sol' | 'quotation' }) => fetchNegotiatingAttachmentUrl(attachment),
+    onSuccess: (url) => {
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      } else {
+        window.alert('Arquivo não encontrado.')
+      }
+    },
+    onError: (error) => {
+      window.alert(error instanceof Error ? error.message : 'Não foi possível abrir o arquivo. Tente novamente.')
     },
   })
 }

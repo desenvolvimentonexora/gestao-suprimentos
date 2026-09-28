@@ -1,5 +1,6 @@
 import { supabase } from '../../lib/supabase'
 import type {
+  NegotiatingAttachmentRow,
   NegotiatingRequestRow,
   NegotiatorOption,
   QuotationFormValues,
@@ -155,4 +156,74 @@ export async function fetchQuotationAttachmentUrl(quotationId: string): Promise<
     .createSignedUrl(attachment.storage_path, SIGNED_URL_EXPIRES_IN_SECONDS)
   if (signError) throw signError
   return signed.signedUrl
+}
+
+// Mesmo padrão de apps/web/src/modules/requests/api.ts
+// (fetchRequestAttachments/fetchRequestAttachmentUrl) — duplicado aqui
+// porque módulo não importa de módulo. Reúne o PDF da SOL e as cotações
+// recebidas pro popup de arquivos do card em negociação.
+export async function fetchNegotiatingAttachments(requestId: string): Promise<NegotiatingAttachmentRow[]> {
+  const [solResult, quotationResult] = await Promise.all([
+    supabase.from('request_attachments').select('id, file_name').eq('request_id', requestId),
+    supabase
+      .from('quotation_attachments')
+      .select('id, file_name, quotation_id, quotations!inner(request_id, status, suppliers(name))')
+      .eq('quotations.request_id', requestId)
+      .neq('quotations.status', 'discarded'),
+  ])
+  if (solResult.error) throw solResult.error
+  if (quotationResult.error) throw quotationResult.error
+
+  const solRows: NegotiatingAttachmentRow[] = solResult.data.map((row) => ({
+    id: row.id,
+    fileName: row.file_name,
+    kind: 'sol',
+    supplierName: null,
+    quotationId: null,
+  }))
+
+  const quotationRows: NegotiatingAttachmentRow[] = quotationResult.data.map((row) => ({
+    id: row.id,
+    fileName: row.file_name,
+    kind: 'quotation',
+    supplierName: row.quotations?.suppliers?.name ?? null,
+    quotationId: row.quotation_id,
+  }))
+
+  return [...solRows, ...quotationRows]
+}
+
+export async function fetchNegotiatingAttachmentUrl(attachment: {
+  id: string
+  kind: 'sol' | 'quotation'
+}): Promise<string | null> {
+  if (attachment.kind === 'sol') {
+    const { data: row, error } = await supabase
+      .from('request_attachments')
+      .select('storage_path')
+      .eq('id', attachment.id)
+      .maybeSingle()
+    if (error) throw error
+    if (!row) return null
+
+    const { data: signed, error: signError } = await supabase.storage
+      .from('request-attachments')
+      .createSignedUrl(row.storage_path, SIGNED_URL_EXPIRES_IN_SECONDS)
+    if (signError) throw signError
+    return signed?.signedUrl ?? null
+  }
+
+  const { data: row, error } = await supabase
+    .from('quotation_attachments')
+    .select('storage_path')
+    .eq('id', attachment.id)
+    .maybeSingle()
+  if (error) throw error
+  if (!row) return null
+
+  const { data: signed, error: signError } = await supabase.storage
+    .from('quotation-attachments')
+    .createSignedUrl(row.storage_path, SIGNED_URL_EXPIRES_IN_SECONDS)
+  if (signError) throw signError
+  return signed?.signedUrl ?? null
 }

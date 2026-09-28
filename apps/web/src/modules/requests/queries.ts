@@ -4,6 +4,7 @@ import {
   bulkCreateRequests,
   cancelRequest,
   createRequest,
+  discardQuotationAttachment,
   dispatchRequest,
   extractRequestPdf,
   fetchImportMapping,
@@ -196,6 +197,17 @@ export function useViewRequestAttachment() {
     },
     onError: (error) => {
       window.alert(error instanceof Error ? error.message : 'Não foi possível abrir o arquivo. Tente novamente.')
+    },
+  })
+}
+
+export function useDiscardQuotationAttachment() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (quotationId: string) => discardQuotationAttachment(quotationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['request-attachments'] })
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
   })
 }
