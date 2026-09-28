@@ -3,8 +3,8 @@ import { getCheapestQuotationId, getQuotationTotal } from './combinedPrice'
 import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
 
 const requestItems: ComparisonRequestItemRow[] = [
-  { id: 'ri1', materialName: 'Argamassa', quantity: 20, unitOfMeasure: 'sc' },
-  { id: 'ri2', materialName: 'Tintas', quantity: 5, unitOfMeasure: 'lt' },
+  { id: 'ri1', materialName: 'Argamassa', materialDescription: null, quantity: 20, unitOfMeasure: 'sc' },
+  { id: 'ri2', materialName: 'Tintas', materialDescription: null, quantity: 5, unitOfMeasure: 'lt' },
 ]
 
 const sika: ComparisonQuotationRow = {
@@ -13,6 +13,7 @@ const sika: ComparisonQuotationRow = {
   freight: 50,
   paymentTerms: '30 dias',
   deliveryDays: 5,
+  unmatchedItemsCount: 0,
   prices: [
     { requestItemId: 'ri1', quotationItemId: 'qi1', unitPrice: 30, leadTimeDays: 5 },
     { requestItemId: 'ri2', quotationItemId: 'qi2', unitPrice: 100, leadTimeDays: 5 },
@@ -25,6 +26,7 @@ const votorantim: ComparisonQuotationRow = {
   freight: null,
   paymentTerms: null,
   deliveryDays: 7,
+  unmatchedItemsCount: 0,
   prices: [
     { requestItemId: 'ri1', quotationItemId: 'qi3', unitPrice: 25, leadTimeDays: 7 },
     { requestItemId: 'ri2', quotationItemId: 'qi4', unitPrice: 120, leadTimeDays: 4 },
@@ -37,6 +39,7 @@ const partial: ComparisonQuotationRow = {
   freight: 0,
   paymentTerms: null,
   deliveryDays: null,
+  unmatchedItemsCount: 0,
   prices: [{ requestItemId: 'ri1', quotationItemId: 'qi5', unitPrice: 10, leadTimeDays: 5 }],
 }
 

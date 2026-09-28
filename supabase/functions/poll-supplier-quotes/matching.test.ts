@@ -53,8 +53,20 @@ Deno.test('base64UrlToBase64 troca - e _ pelos caracteres padrão', () => {
   assertEquals(base64UrlToBase64('-_-_'), '+/+/')
 })
 
-const cimento: QuoteRequestItem = { id: 'ri1', materialName: 'Cimento CP-32', quantity: 50, unitOfMeasure: 'saco' }
-const areia: QuoteRequestItem = { id: 'ri2', materialName: 'Areia', quantity: 10, unitOfMeasure: 'm³' }
+const cimento: QuoteRequestItem = {
+  id: 'ri1',
+  materialName: 'Cimento CP-32',
+  materialDescription: null,
+  quantity: 50,
+  unitOfMeasure: 'saco',
+}
+const areia: QuoteRequestItem = {
+  id: 'ri2',
+  materialName: 'Areia',
+  materialDescription: null,
+  quantity: 10,
+  unitOfMeasure: 'm³',
+}
 
 Deno.test('matchExtractedItems casa por nome igual (confiança 1)', () => {
   const extracted: ExtractedQuoteItem[] = [
@@ -71,4 +83,27 @@ Deno.test('matchExtractedItems não casa quando a descrição não tem nada em c
   ]
   const result = matchExtractedItems(extracted, [cimento, areia])
   assertEquals(result[0].requestItemId, null)
+})
+
+Deno.test('matchExtractedItems usa a descrição da variante pra distinguir itens do mesmo material', () => {
+  const variant5: QuoteRequestItem = {
+    id: 'v5',
+    materialName: 'Abraçadeira Tipo U',
+    materialDescription: 'ABRAÇADEIRA TIPO "U" 5" X 150 MM',
+    quantity: 90,
+    unitOfMeasure: 'un',
+  }
+  const variant6: QuoteRequestItem = {
+    id: 'v6',
+    materialName: 'Abraçadeira Tipo U',
+    materialDescription: 'ABRAÇADEIRA TIPO "U" 6" X 200 MM',
+    quantity: 90,
+    unitOfMeasure: 'un',
+  }
+  const extracted: ExtractedQuoteItem[] = [
+    { description: 'ABRAÇADEIRA TIPO "U" 6" X 200 MM', quantity: 90, unitPrice: 6.4, leadTimeDays: null },
+  ]
+  const result = matchExtractedItems(extracted, [variant5, variant6])
+  assertEquals(result[0].requestItemId, 'v6')
+  assertEquals(result[0].confidence, 1)
 })

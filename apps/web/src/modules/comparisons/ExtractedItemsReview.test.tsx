@@ -5,8 +5,8 @@ import { ExtractedItemsReview } from './ExtractedItemsReview'
 import type { ComparisonRequestItemRow, ExtractedItemReview } from './types'
 
 const requestItems: ComparisonRequestItemRow[] = [
-  { id: 'ri1', materialName: 'Argamassa', quantity: 20, unitOfMeasure: 'sc' },
-  { id: 'ri2', materialName: 'Tinta', quantity: 5, unitOfMeasure: 'lt' },
+  { id: 'ri1', materialName: 'Argamassa', materialDescription: null, quantity: 20, unitOfMeasure: 'sc' },
+  { id: 'ri2', materialName: 'Tinta', materialDescription: null, quantity: 5, unitOfMeasure: 'lt' },
 ]
 
 const initialItems: ExtractedItemReview[] = [

@@ -15,6 +15,10 @@ export interface ExtractedItemsReviewProps {
   onConfirm: (items: ExtractedItemReview[], terms: ExtractedQuotationTerms) => void
   onCancel: () => void
   isSubmitting: boolean
+  /** Esconde frete/condição de pagamento — usado ao revisar só itens
+   * pendentes de uma cotação que já tem esses dados preenchidos, editáveis
+   * em outro lugar (a própria tabela de comparação). */
+  hideTerms?: boolean
 }
 
 function parseNumberInput(value: string): number | null {
@@ -31,6 +35,7 @@ export function ExtractedItemsReview({
   onConfirm,
   onCancel,
   isSubmitting,
+  hideTerms = false,
 }: ExtractedItemsReviewProps) {
   const [rows, setRows] = useState(items)
   const [terms, setTerms] = useState<ExtractedQuotationTerms>({ freight, paymentTerms })
@@ -55,38 +60,40 @@ export function ExtractedItemsReview({
         Confira os itens extraídos do PDF. Corrija o item, o preço ou o prazo se a IA errou.
       </p>
 
-      <div className="flex gap-2 border-b border-line pb-3">
-        <div className="flex w-32 flex-col gap-1">
-          <label htmlFor="review-freight" className="text-xs text-ink-muted">
-            Frete
-          </label>
-          <input
-            id="review-freight"
-            type="number"
-            step="any"
-            value={terms.freight ?? ''}
-            onChange={(e) => setTerms((current) => ({ ...current, freight: parseNumberInput(e.target.value) }))}
-            className="rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
-          />
+      {!hideTerms && (
+        <div className="flex gap-2 border-b border-line pb-3">
+          <div className="flex w-32 flex-col gap-1">
+            <label htmlFor="review-freight" className="text-xs text-ink-muted">
+              Frete
+            </label>
+            <input
+              id="review-freight"
+              type="number"
+              step="any"
+              value={terms.freight ?? ''}
+              onChange={(e) => setTerms((current) => ({ ...current, freight: parseNumberInput(e.target.value) }))}
+              className="rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+            />
+          </div>
+          <div className="flex flex-1 flex-col gap-1">
+            <label htmlFor="review-payment-terms" className="text-xs text-ink-muted">
+              Condição de pagamento
+            </label>
+            <input
+              id="review-payment-terms"
+              type="text"
+              value={terms.paymentTerms ?? ''}
+              onChange={(e) =>
+                setTerms((current) => ({
+                  ...current,
+                  paymentTerms: e.target.value.trim() === '' ? null : e.target.value,
+                }))
+              }
+              className="rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
+            />
+          </div>
         </div>
-        <div className="flex flex-1 flex-col gap-1">
-          <label htmlFor="review-payment-terms" className="text-xs text-ink-muted">
-            Condição de pagamento
-          </label>
-          <input
-            id="review-payment-terms"
-            type="text"
-            value={terms.paymentTerms ?? ''}
-            onChange={(e) =>
-              setTerms((current) => ({
-                ...current,
-                paymentTerms: e.target.value.trim() === '' ? null : e.target.value,
-              }))
-            }
-            className="rounded border border-line bg-surface px-2 py-1 text-sm text-ink"
-          />
-        </div>
-      </div>
+      )}
 
       {rows.map((row, index) => (
         <div key={index} className="flex items-end gap-2 border-b border-line pb-2">
@@ -110,7 +117,7 @@ export function ExtractedItemsReview({
               <option value="">Selecione…</option>
               {requestItems.map((requestItem) => (
                 <option key={requestItem.id} value={requestItem.id}>
-                  {requestItem.materialName}
+                  {requestItem.materialDescription ?? requestItem.materialName}
                 </option>
               ))}
             </select>

@@ -874,6 +874,57 @@ export type Database = {
           },
         ]
       }
+      quotation_unmatched_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          lead_time_days: number | null
+          quantity: number | null
+          quotation_id: string
+          resolved_at: string | null
+          tenant_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          lead_time_days?: number | null
+          quantity?: number | null
+          quotation_id: string
+          resolved_at?: string | null
+          tenant_id: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          lead_time_days?: number | null
+          quantity?: number | null
+          quotation_id?: string
+          resolved_at?: string | null
+          tenant_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_unmatched_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotation_unmatched_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quotations: {
         Row: {
           created_at: string

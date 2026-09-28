@@ -3,8 +3,8 @@ import { matchExtractedItems } from './matchExtractedItems'
 import type { ComparisonRequestItemRow, ExtractedQuoteItem } from './types'
 
 const requestItems: ComparisonRequestItemRow[] = [
-  { id: 'ri1', materialName: 'Argamassa', quantity: 20, unitOfMeasure: 'sc' },
-  { id: 'ri2', materialName: 'Tinta', quantity: 5, unitOfMeasure: 'lt' },
+  { id: 'ri1', materialName: 'Argamassa', materialDescription: null, quantity: 20, unitOfMeasure: 'sc' },
+  { id: 'ri2', materialName: 'Tinta', materialDescription: null, quantity: 5, unitOfMeasure: 'lt' },
 ]
 
 describe('matchExtractedItems', () => {
@@ -40,6 +40,30 @@ describe('matchExtractedItems', () => {
     ]
     const result = matchExtractedItems(extracted, requestItems)
     expect(result[0]!.requestItemId).toBeNull()
+  })
+
+  it('usa a descrição da variante para distinguir itens que compartilham o mesmo nome de material', () => {
+    const variants: ComparisonRequestItemRow[] = [
+      {
+        id: 'v5',
+        materialName: 'Abraçadeira Tipo U',
+        materialDescription: 'ABRAÇADEIRA TIPO "U" 5" X 150 MM',
+        quantity: 90,
+        unitOfMeasure: 'un',
+      },
+      {
+        id: 'v6',
+        materialName: 'Abraçadeira Tipo U',
+        materialDescription: 'ABRAÇADEIRA TIPO "U" 6" X 200 MM',
+        quantity: 90,
+        unitOfMeasure: 'un',
+      },
+    ]
+    const extracted: ExtractedQuoteItem[] = [
+      { description: 'ABRAÇADEIRA TIPO "U" 6" X 200 MM', quantity: 90, unitPrice: 6.4, leadTimeDays: null },
+    ]
+    const result = matchExtractedItems(extracted, variants)
+    expect(result[0]!).toMatchObject({ requestItemId: 'v6', confidence: 1 })
   })
 
   it('preserva os dados originais extraídos no resultado', () => {

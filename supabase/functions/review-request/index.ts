@@ -3,6 +3,7 @@ import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
 import { userHasPermission } from '../_shared/checkPermission.ts'
 import { generateRequestPdf } from '../_shared/requestPdf.ts'
+import { describeError } from '../_shared/errors.ts'
 import {
   buildBlockedReason,
   buildDispatchEmail,
@@ -42,7 +43,7 @@ async function fetchRequestForDispatch(
   const { data, error } = await adminClient
     .from('requests')
     .select(
-      'tenant_id, external_ref, sequence_number, needed_by, created_at, notes, units(name), users(full_name), request_items(material_variant_id, quantity, unit_of_measure, deleted_at, material_variants(materials(name, code)))',
+      'tenant_id, external_ref, sequence_number, needed_by, created_at, notes, units(name), requester:users!requester_id(full_name), request_items(material_variant_id, quantity, unit_of_measure, deleted_at, material_variants(code, materials(name)))',
     )
     .eq('id', requestId)
     .single()
@@ -54,13 +55,13 @@ async function fetchRequestForDispatch(
       quantity: number
       unit_of_measure: string | null
       deleted_at: string | null
-      material_variants: { materials: { name: string; code: string | null } | null } | null
+      material_variants: { code: string | null; materials: { name: string } | null } | null
     }[]
   )
     .filter((item) => !item.deleted_at)
     .map((item) => ({
       materialId: item.material_variant_id,
-      materialCode: item.material_variants?.materials?.code ?? null,
+      materialCode: item.material_variants?.code ?? null,
       materialName: item.material_variants?.materials?.name ?? '',
       quantity: item.quantity,
       unitOfMeasure: item.unit_of_measure,
@@ -70,7 +71,7 @@ async function fetchRequestForDispatch(
     tenantId: data.tenant_id,
     requestNumber: formatRequestNumber(data.external_ref, data.sequence_number),
     unitName: (data.units as unknown as { name: string } | null)?.name ?? '',
-    requesterName: (data.users as unknown as { full_name: string } | null)?.full_name ?? null,
+    requesterName: (data.requester as unknown as { full_name: string } | null)?.full_name ?? null,
     createdAt: data.created_at,
     neededBy: data.needed_by,
     notes: data.notes,
@@ -349,7 +350,16 @@ Deno.serve(async (req) => {
       } catch (error) {
         // A liberação (se solicitada) já foi confirmada nesse ponto — uma falha
         // aqui é só do despacho automático, não deve virar "não foi possível liberar".
+        // Mas o motivo precisa ficar visível (dispatch_blocked_reason já é
+        // exibido no card, com botão "tentar de novo") — sem isso, um erro
+        // inesperado (ex.: geração do PDF, upload no Storage) ficava só no
+        // log da função, invisível tanto pro comprador quanto pra debugar depois.
+        const message = describeError(error)
         console.error('attemptAutoDispatch falhou:', error)
+        await adminClient
+          .from('requests')
+          .update({ dispatch_blocked_reason: `Falha inesperada no disparo automático: ${message}` })
+          .eq('id', requestId)
         return jsonResponse({ ok: true, dispatched: false }, 200)
       }
     }
@@ -373,6 +383,6 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ ok: true }, 200)
   } catch (error) {
-    return jsonResponse({ error: error instanceof Error ? error.message : 'Erro desconhecido.' }, 500)
+    return jsonResponse({ error: describeError(error) }, 500)
   }
 })

@@ -33,7 +33,12 @@ export function matchExtractedItems(
     let bestMatch: { requestItemId: string; confidence: number } | null = null
 
     for (const requestItem of requestItems) {
-      const confidence = similarity(extracted.description, requestItem.materialName)
+      // O nome do material é só a categoria (ex.: "Abraçadeira Tipo U") — quando
+      // a SOL tem mais de uma variante do mesmo material, comparar só pelo nome
+      // não distingue uma da outra. A descrição da variante (o insumo
+      // específico) é o que diferencia, então tem prioridade quando existe.
+      const label = requestItem.materialDescription ?? requestItem.materialName
+      const confidence = similarity(extracted.description, label)
       if (!bestMatch || confidence > bestMatch.confidence) {
         bestMatch = { requestItemId: requestItem.id, confidence }
       }

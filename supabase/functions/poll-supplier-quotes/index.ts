@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
 import { extractQuoteDataFromPdf } from '../_shared/ai-provider.ts'
+import { describeError } from '../_shared/errors.ts'
 import {
   base64UrlToBase64,
   matchExtractedItems,
@@ -213,7 +214,7 @@ async function processMessage(adminClient: SupabaseClient, accessToken: string, 
 
     const { data: requestItemsData, error: itemsError } = await adminClient
       .from('request_items')
-      .select('id, quantity, unit_of_measure, deleted_at, material_variants(materials(name))')
+      .select('id, quantity, unit_of_measure, deleted_at, material_variants(description, materials(name))')
       .eq('request_id', requestRow.id)
       .is('deleted_at', null)
     if (itemsError) throw itemsError
@@ -222,12 +223,13 @@ async function processMessage(adminClient: SupabaseClient, accessToken: string, 
       id: string
       quantity: number
       unit_of_measure: string | null
-      material_variants: { materials: { name: string } | null } | null
+      material_variants: { description: string | null; materials: { name: string } | null } | null
     }[]
 
     const requestItems: QuoteRequestItem[] = requestItemsRows.map((item) => ({
       id: item.id,
       materialName: item.material_variants?.materials?.name ?? '',
+      materialDescription: item.material_variants?.description ?? null,
       quantity: Number(item.quantity),
       unitOfMeasure: item.unit_of_measure,
     }))
@@ -292,6 +294,25 @@ async function processMessage(adminClient: SupabaseClient, accessToken: string, 
     }
     const matchedItems = [...matchedByRequestItemId.values()]
 
+    // Itens que a IA extraiu mas não conseguiu casar com confiança suficiente
+    // não são descartados — ficam registrados pra um humano revisar e
+    // vincular manualmente (ver ExtractedItemsReview no front), do jeito que
+    // já acontece na importação manual de PDF.
+    const unmatchedItems = reviewedItems.filter((item) => item.requestItemId === null)
+    if (unmatchedItems.length > 0) {
+      const { error: unmatchedError } = await adminClient.from('quotation_unmatched_items').insert(
+        unmatchedItems.map((item) => ({
+          tenant_id: TENANT_ID,
+          quotation_id: quotationId,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          lead_time_days: item.leadTimeDays,
+        })),
+      )
+      if (unmatchedError) throw unmatchedError
+    }
+
     const { data: insertedItems, error: quotationItemsError } = await adminClient
       .from('quotation_items')
       .insert(
@@ -341,7 +362,7 @@ async function processMessage(adminClient: SupabaseClient, accessToken: string, 
       fromEmail,
       subject,
       'error',
-      error instanceof Error ? error.message : 'Erro desconhecido.',
+      describeError(error),
       { requestId: requestRow.id, supplierId: recipientRow.supplier_id },
     )
     // Não marca como lido — a próxima execução tenta de novo. A trava de
@@ -381,6 +402,6 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ ok: true, candidates: messageIds.length, processed, failed }, 200)
   } catch (error) {
-    return jsonResponse({ error: error instanceof Error ? error.message : 'Erro desconhecido.' }, 500)
+    return jsonResponse({ error: describeError(error) }, 500)
   }
 })

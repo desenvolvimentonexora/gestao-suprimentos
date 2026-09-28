@@ -6,8 +6,8 @@ import { getSupplierColor } from './supplierColor'
 import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
 
 const requestItems: ComparisonRequestItemRow[] = [
-  { id: 'ri1', materialName: 'Argamassa', quantity: 20, unitOfMeasure: 'sc' },
-  { id: 'ri2', materialName: 'Tintas', quantity: 5, unitOfMeasure: 'lt' },
+  { id: 'ri1', materialName: 'Argamassa', materialDescription: null, quantity: 20, unitOfMeasure: 'sc' },
+  { id: 'ri2', materialName: 'Tintas', materialDescription: null, quantity: 5, unitOfMeasure: 'lt' },
 ]
 
 const sika: ComparisonQuotationRow = {
@@ -16,6 +16,7 @@ const sika: ComparisonQuotationRow = {
   freight: 0,
   paymentTerms: '30 dias',
   deliveryDays: 5,
+  unmatchedItemsCount: 0,
   prices: [
     { requestItemId: 'ri1', quotationItemId: 'qi1', unitPrice: 30, leadTimeDays: 5 },
     { requestItemId: 'ri2', quotationItemId: 'qi2', unitPrice: 110, leadTimeDays: 5 },
@@ -28,6 +29,7 @@ const votorantim: ComparisonQuotationRow = {
   freight: 0,
   paymentTerms: null,
   deliveryDays: 7,
+  unmatchedItemsCount: 0,
   prices: [
     { requestItemId: 'ri1', quotationItemId: 'qi3', unitPrice: 25, leadTimeDays: 7 },
     { requestItemId: 'ri2', quotationItemId: 'qi4', unitPrice: 120, leadTimeDays: 4 },
@@ -40,6 +42,7 @@ function baseProps() {
     quotations: [sika, votorantim],
     onWinnerChange: vi.fn(),
     onUpdateQuotationTerms: vi.fn(),
+    onReviewUnmatchedItems: vi.fn(),
     isEditable: true,
   }
 }
@@ -126,7 +129,15 @@ describe('ComparisonTable', () => {
 
   it('mostra — quando o fornecedor não cotou aquele item, no preço unitário e no total do item', () => {
     const partialQuotations: ComparisonQuotationRow[] = [
-      { quotationId: 'q3', supplierName: 'Gama', freight: 0, paymentTerms: null, deliveryDays: null, prices: [] },
+      {
+        quotationId: 'q3',
+        supplierName: 'Gama',
+        freight: 0,
+        paymentTerms: null,
+        deliveryDays: null,
+        unmatchedItemsCount: 0,
+        prices: [],
+      },
     ]
     render(<ComparisonTable {...baseProps()} quotations={partialQuotations} />)
     expect(screen.getByTestId('price-q3-ri1')).toHaveTextContent('—')
@@ -163,6 +174,7 @@ describe('ComparisonTable', () => {
       freight: 0,
       paymentTerms: null,
       deliveryDays: null,
+      unmatchedItemsCount: 0,
       prices: [{ requestItemId: 'ri1', quotationItemId: 'qi5', unitPrice: 10, leadTimeDays: 5 }],
     }
     render(<ComparisonTable {...baseProps()} quotations={[partial]} />)
@@ -212,6 +224,7 @@ describe('ComparisonTable', () => {
       freight: 0,
       paymentTerms: null,
       deliveryDays: null,
+      unmatchedItemsCount: 0,
       prices: [{ requestItemId: 'ri1', quotationItemId: 'qi5', unitPrice: 10, leadTimeDays: 5 }],
     }
     render(<ComparisonTable {...baseProps()} quotations={[partial]} />)
@@ -264,5 +277,24 @@ describe('ComparisonTable', () => {
     expect(screen.getByLabelText(/frete sika/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/pagamento sika/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/entrega sika/i)).toBeInTheDocument()
+  })
+
+  it('mostra um aviso quando a captura automática deixou itens sem identificar, e chama onReviewUnmatchedItems ao clicar', async () => {
+    const user = userEvent.setup()
+    const onReviewUnmatchedItems = vi.fn()
+    const withUnmatched = { ...sika, unmatchedItemsCount: 2 }
+    render(
+      <ComparisonTable {...baseProps()} quotations={[withUnmatched, votorantim]} onReviewUnmatchedItems={onReviewUnmatchedItems} />,
+    )
+
+    const warning = screen.getByText('2 itens não identificados')
+    expect(warning).toBeInTheDocument()
+    await user.click(warning)
+    expect(onReviewUnmatchedItems).toHaveBeenCalledWith('q1')
+  })
+
+  it('não mostra o aviso de itens não identificados quando a cotação não tem pendência', () => {
+    render(<ComparisonTable {...baseProps()} />)
+    expect(screen.queryByText(/não identificad/i)).not.toBeInTheDocument()
   })
 })

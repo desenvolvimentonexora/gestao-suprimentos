@@ -16,6 +16,7 @@ import type {
   PendingReleaseRow,
   ReleasedComparisonRow,
   SupplierOption,
+  UnmatchedQuotationItemRow,
 } from './types'
 
 const IMPORT_TYPE_ORDERS = 'orders'
@@ -40,12 +41,26 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
   const { data, error } = await supabase
     .from('requests')
     .select(
-      'id, units(name), external_ref, sequence_number, request_items(id, quantity, unit_of_measure, deleted_at, material_variants(materials(name))), quotations(id, status, deleted_at, freight_amount, payment_terms, delivery_days, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
+      'id, units(name), external_ref, sequence_number, request_items(id, quantity, unit_of_measure, deleted_at, material_variants(description, materials(name))), quotations(id, status, deleted_at, freight_amount, payment_terms, delivery_days, suppliers(name), quotation_items(id, request_item_id, unit_price, lead_time_days))',
     )
     .eq('status', 'negotiating')
     .is('deleted_at', null)
 
   if (error) throw error
+
+  const quotationIds = data.flatMap((row) =>
+    row.quotations.filter((quotation) => !quotation.deleted_at && quotation.status === 'received').map((quotation) => quotation.id),
+  )
+  const { data: unmatchedRows, error: unmatchedError } = await supabase
+    .from('quotation_unmatched_items')
+    .select('quotation_id')
+    .in('quotation_id', quotationIds.length > 0 ? quotationIds : [''])
+    .is('resolved_at', null)
+  if (unmatchedError) throw unmatchedError
+  const unmatchedCountByQuotationId = new Map<string, number>()
+  for (const row of unmatchedRows) {
+    unmatchedCountByQuotationId.set(row.quotation_id, (unmatchedCountByQuotationId.get(row.quotation_id) ?? 0) + 1)
+  }
 
   const requestIds = data.map((row) => row.id)
   const { data: comparisonsData, error: comparisonsError } = await supabase
@@ -80,6 +95,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
         .map((item) => ({
           id: item.id,
           materialName: item.material_variants?.materials?.name ?? '',
+          materialDescription: item.material_variants?.description ?? null,
           quantity: Number(item.quantity),
           unitOfMeasure: item.unit_of_measure,
         }))
@@ -92,6 +108,7 @@ export async function fetchComparableRequests(): Promise<ComparableRequestRow[]>
           freight: quotation.freight_amount === null ? null : Number(quotation.freight_amount),
           paymentTerms: quotation.payment_terms,
           deliveryDays: quotation.delivery_days,
+          unmatchedItemsCount: unmatchedCountByQuotationId.get(quotation.id) ?? 0,
           prices: quotation.quotation_items.map((item) => ({
             requestItemId: item.request_item_id,
             quotationItemId: item.id,
@@ -240,6 +257,70 @@ export async function confirmExtractedItems(
     })
     .eq('id', quotationId)
   if (quotationError) throw quotationError
+}
+
+export async function fetchUnmatchedQuotationItems(quotationId: string): Promise<UnmatchedQuotationItemRow[]> {
+  const { data, error } = await supabase
+    .from('quotation_unmatched_items')
+    .select('id, description, quantity, unit_price, lead_time_days')
+    .eq('quotation_id', quotationId)
+    .is('resolved_at', null)
+    .order('created_at')
+  if (error) throw error
+  return data.map((row) => ({
+    id: row.id,
+    description: row.description,
+    quantity: row.quantity === null ? null : Number(row.quantity),
+    unitPrice: Number(row.unit_price),
+    leadTimeDays: row.lead_time_days,
+  }))
+}
+
+export async function resolveUnmatchedQuotationItems(
+  tenantId: string,
+  comparisonId: string,
+  quotationId: string,
+  items: (ExtractedItemReview & { unmatchedItemId: string })[],
+): Promise<void> {
+  const resolvedItems = items.filter(
+    (item): item is typeof item & { requestItemId: string } => item.requestItemId !== null,
+  )
+  if (resolvedItems.length === 0) return
+
+  const { data: insertedItems, error: itemsError } = await supabase
+    .from('quotation_items')
+    .insert(
+      resolvedItems.map((item) => ({
+        tenant_id: tenantId,
+        quotation_id: quotationId,
+        request_item_id: item.requestItemId,
+        unit_price: item.unitPrice,
+        lead_time_days: item.leadTimeDays,
+      })),
+    )
+    .select('id, request_item_id')
+  if (itemsError) throw itemsError
+
+  const { error: linesError } = await supabase.from('comparison_lines').insert(
+    insertedItems.map((inserted, index) => ({
+      tenant_id: tenantId,
+      comparison_id: comparisonId,
+      request_item_id: inserted.request_item_id,
+      quotation_item_id: inserted.id,
+      extracted_by_ai: true,
+      ai_confidence: resolvedItems[index]?.confidence ?? null,
+    })),
+  )
+  if (linesError) throw linesError
+
+  const { error: resolveError } = await supabase
+    .from('quotation_unmatched_items')
+    .update({ resolved_at: new Date().toISOString() })
+    .in(
+      'id',
+      resolvedItems.map((item) => item.unmatchedItemId),
+    )
+  if (resolveError) throw resolveError
 }
 
 export interface QuotationTermsInput {

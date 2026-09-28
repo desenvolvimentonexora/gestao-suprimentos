@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
-import { Flag } from 'lucide-react'
+import { Flag, TriangleAlert } from 'lucide-react'
 import { getCheapestQuotationId, getQuotationTotal } from './combinedPrice'
 import { getSupplierColor } from './supplierColor'
 import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
@@ -15,6 +15,7 @@ export interface ComparisonTableProps {
   quotations: ComparisonQuotationRow[]
   onWinnerChange: (quotationId: string | null) => void
   onUpdateQuotationTerms: (quotationId: string, terms: QuotationTerms) => void
+  onReviewUnmatchedItems: (quotationId: string) => void
   isEditable: boolean
 }
 
@@ -32,6 +33,7 @@ export function ComparisonTable({
   quotations,
   onWinnerChange,
   onUpdateQuotationTerms,
+  onReviewUnmatchedItems,
   isEditable,
 }: ComparisonTableProps) {
   const [excludedQuotationIds, setExcludedQuotationIds] = useState<string[]>([])
@@ -106,17 +108,30 @@ export function ComparisonTable({
                         <Flag size={14} aria-hidden="true" />
                         {quotation.supplierName}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => toggleExcluded(quotation.quotationId)}
-                        disabled={!isEditable}
-                        aria-label={
-                          isExcluded ? `Reincluir ${quotation.supplierName}` : `Excluir ${quotation.supplierName}`
-                        }
-                        className="rounded-sm px-1 text-ink-muted hover:bg-white/50 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        ×
-                      </button>
+                      <div className="flex items-center gap-1">
+                        {quotation.unmatchedItemsCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => onReviewUnmatchedItems(quotation.quotationId)}
+                            className="flex items-center gap-1 rounded-sm bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800 hover:bg-amber-200"
+                          >
+                            <TriangleAlert size={12} aria-hidden="true" />
+                            {quotation.unmatchedItemsCount}{' '}
+                            {quotation.unmatchedItemsCount === 1 ? 'item não identificado' : 'itens não identificados'}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => toggleExcluded(quotation.quotationId)}
+                          disabled={!isEditable}
+                          aria-label={
+                            isExcluded ? `Reincluir ${quotation.supplierName}` : `Excluir ${quotation.supplierName}`
+                          }
+                          className="rounded-sm px-1 text-ink-muted hover:bg-white/50 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
                   </th>
                 )
@@ -148,7 +163,7 @@ export function ComparisonTable({
               const bestSupplier = cheapestSupplierFor(item.id)
               return (
                 <tr key={item.id} className="border-b border-line">
-                  <td className="py-2.5 pr-4 text-ink">{item.materialName}</td>
+                  <td className="py-2.5 pr-4 text-ink">{item.materialDescription ?? item.materialName}</td>
                   <td className={`${COLUMN_DIVIDER} px-3 py-2.5 text-ink-muted`}>{item.unitOfMeasure ?? '—'}</td>
                   <td className={`${COLUMN_DIVIDER} px-3 py-2.5 text-ink-muted`}>{item.quantity}</td>
                   {quotations.map((quotation) => {

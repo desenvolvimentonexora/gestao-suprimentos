@@ -9,6 +9,7 @@ export type ComparisonStatus =
 export interface ComparisonRequestItemRow {
   id: string
   materialName: string
+  materialDescription: string | null
   quantity: number
   unitOfMeasure: string | null
 }
@@ -26,6 +27,7 @@ export interface ComparisonQuotationRow {
   freight: number | null
   paymentTerms: string | null
   deliveryDays: number | null
+  unmatchedItemsCount: number
   prices: ComparisonQuotationItemPrice[]
 }
 
@@ -60,6 +62,17 @@ export interface ExtractedQuoteData {
 export interface ExtractedItemReview extends ExtractedQuoteItem {
   requestItemId: string | null
   confidence: number
+}
+
+// Item que a captura automática (e-mail do fornecedor) extraiu mas não
+// conseguiu casar com nenhum item da SOL — fica pendente de revisão manual
+// em vez de ser descartado silenciosamente.
+export interface UnmatchedQuotationItemRow {
+  id: string
+  description: string
+  quantity: number | null
+  unitPrice: number
+  leadTimeDays: number | null
 }
 
 export interface SupplierOption {

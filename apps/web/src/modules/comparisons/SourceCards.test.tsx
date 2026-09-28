@@ -10,6 +10,7 @@ const sika: ComparisonQuotationRow = {
   freight: null,
   paymentTerms: null,
   deliveryDays: null,
+  unmatchedItemsCount: 0,
   prices: [],
 }
 

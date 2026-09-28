@@ -13,8 +13,10 @@ import {
   fetchPendingReleases,
   fetchReleasedAwaitingOrder,
   fetchSupplierOptions,
+  fetchUnmatchedQuotationItems,
   getOrCreateDraftComparison,
   releaseComparison,
+  resolveUnmatchedQuotationItems,
   runExtraction,
   saveOrderImportMapping,
   sendToApproval,
@@ -97,6 +99,33 @@ export function useConfirmExtractedItems(tenantId: string) {
     }) => confirmExtractedItems(tenantId, comparisonId, quotationId, reviewedItems, terms),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
+    },
+  })
+}
+
+export function useUnmatchedQuotationItems(quotationId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: ['unmatched-quotation-items', quotationId],
+    queryFn: () => fetchUnmatchedQuotationItems(quotationId as string),
+    enabled: enabled && Boolean(quotationId),
+  })
+}
+
+export function useResolveUnmatchedQuotationItems(tenantId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      comparisonId,
+      quotationId,
+      items,
+    }: {
+      comparisonId: string
+      quotationId: string
+      items: (ExtractedItemReview & { unmatchedItemId: string })[]
+    }) => resolveUnmatchedQuotationItems(tenantId, comparisonId, quotationId, items),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comparable-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['unmatched-quotation-items'] })
     },
   })
 }

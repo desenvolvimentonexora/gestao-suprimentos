@@ -12,6 +12,7 @@ import { ImportQuotationPdfModal } from './ImportQuotationPdfModal'
 import { OrdersQueueModal } from './OrdersQueueModal'
 import { PendingApprovalsSection } from './PendingApprovalsSection'
 import { PendingReleaseSection } from './PendingReleaseSection'
+import { ReviewUnmatchedItemsModal } from './ReviewUnmatchedItemsModal'
 import { SourceCards } from './SourceCards'
 import {
   useComparableRequests,
@@ -42,6 +43,11 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
   const [createdComparisonIds, setCreatedComparisonIds] = useState<Record<string, string>>({})
   const [importOpen, setImportOpen] = useState(false)
   const [queueView, setQueueView] = useState<QueueView>(null)
+  const [reviewingQuotation, setReviewingQuotation] = useState<{
+    comparisonId: string
+    quotationId: string
+    supplierName: string
+  } | null>(null)
 
   const settingsQuery = useSettings(tenantId)
   const requestsQuery = useComparableRequests()
@@ -256,6 +262,15 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                         onUpdateQuotationTerms={(quotationId, terms) => {
                           updateQuotationTerms.mutate({ quotationId, terms })
                         }}
+                        onReviewUnmatchedItems={(quotationId) => {
+                          if (!comparisonId) return
+                          const quotation = request.quotations.find((q) => q.quotationId === quotationId)
+                          setReviewingQuotation({
+                            comparisonId,
+                            quotationId,
+                            supplierName: quotation?.supplierName ?? '',
+                          })
+                        }}
                       />
 
                       {comparisonId && (
@@ -276,6 +291,16 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                           requestItems={request.requestItems}
                         />
                       )}
+
+                      <ReviewUnmatchedItemsModal
+                        isOpen={reviewingQuotation !== null && request.quotations.some((q) => q.quotationId === reviewingQuotation.quotationId)}
+                        onClose={() => setReviewingQuotation(null)}
+                        tenantId={tenantId}
+                        comparisonId={reviewingQuotation?.comparisonId ?? null}
+                        quotationId={reviewingQuotation?.quotationId ?? null}
+                        supplierName={reviewingQuotation?.supplierName ?? ''}
+                        requestItems={request.requestItems}
+                      />
                     </div>
                   )}
                 </div>
