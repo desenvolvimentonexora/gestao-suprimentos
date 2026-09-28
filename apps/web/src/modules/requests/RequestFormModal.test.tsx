@@ -126,4 +126,19 @@ describe('RequestFormModal', () => {
     render(<RequestFormModal {...baseProps()} />)
     expect(screen.getByRole('option', { name: 'Areia' })).toBeInTheDocument()
   })
+
+  it('mostra a descrição da variante (o insumo específico), não o nome do material, quando há descrição — evita opções ambíguas quando duas variantes compartilham o mesmo material', () => {
+    const props = baseProps()
+    render(
+      <RequestFormModal
+        {...props}
+        materials={[
+          { id: 'v1', materialName: 'Abraçadeira Tipo U', code: '027818-005', description: 'ABRAÇADEIRA TIPO "U" 5" X 150 MM' },
+          { id: 'v2', materialName: 'Abraçadeira Tipo U', code: '027818-006', description: 'ABRAÇADEIRA TIPO "U" 6" X 200 MM' },
+        ]}
+      />,
+    )
+    expect(screen.getByRole('option', { name: '027818-005 · ABRAÇADEIRA TIPO "U" 5" X 150 MM' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: '027818-006 · ABRAÇADEIRA TIPO "U" 6" X 200 MM' })).toBeInTheDocument()
+  })
 })

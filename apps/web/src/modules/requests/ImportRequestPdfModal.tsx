@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Modal, Spinner } from '../../components'
+import { buildMaterialLookup } from './buildMaterialLookup'
 import { useExtractRequestPdf, useMaterialOptions, useUnitOptions } from './queries'
 import type { RequestFormValues } from './types'
 
@@ -36,12 +37,11 @@ export function ImportRequestPdfModal({ isOpen, onClose, onImported }: ImportReq
       const units = unitsQuery.data ?? []
       const materials = materialsQuery.data ?? []
       const unitsByName = new Map(units.map((unit) => [normalizeName(unit.name), unit.id]))
-      const materialsByCode = new Map(
-        materials.filter((material) => material.code).map((material) => [normalizeName(material.code!), material.id]),
-      )
-      const materialsByName = new Map(
-        materials.map((material) => [normalizeName(material.materialName), material.id]),
-      )
+      // item.description vem da IA como o texto completo do insumo (ex.:
+      // "ABRAÇADEIRA TIPO "U" 5" X 150 MM") — comparável à descrição da
+      // variante, não ao nome genérico do material (que é só a categoria,
+      // ex.: "Abraçadeira Tipo U", compartilhada por várias variantes).
+      const materialLookup = buildMaterialLookup(materials)
 
       const values: RequestFormValues = {
         unitId: extracted.unitNameGuess ? (unitsByName.get(normalizeName(extracted.unitNameGuess)) ?? '') : '',
@@ -49,8 +49,8 @@ export function ImportRequestPdfModal({ isOpen, onClose, onImported }: ImportReq
         externalRef: extracted.requestNumber ?? '',
         items: extracted.items.map((item) => ({
           materialId:
-            (item.code ? materialsByCode.get(normalizeName(item.code)) : undefined) ??
-            materialsByName.get(normalizeName(item.description)) ??
+            (item.code ? materialLookup.findByCode(item.code) : null) ??
+            materialLookup.findByDescription(item.description) ??
             '',
           quantity: item.quantity ?? 0,
           unitOfMeasure: item.unitOfMeasure ?? '',
