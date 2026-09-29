@@ -10,6 +10,8 @@ const mapping: ImportColumnMapping = {
   unitOfMeasure: '',
   neededBy: 'Prazo',
   externalRef: 'SOL',
+  status: '',
+  openStatusValue: '',
 }
 
 const mappingWithCode: ImportColumnMapping = { ...mapping, materialCode: 'Código' }
@@ -62,6 +64,30 @@ describe('parseImportRows', () => {
     expect(result.errors).toEqual([{ row: 1, reason: 'Quantidade inválida: "abc".' }])
   })
 
+  it('pula silenciosamente linhas cuja situação não é a de SOL aberta, quando mapeada', () => {
+    const mappingComStatus: ImportColumnMapping = { ...mapping, status: 'Sit', openStatusValue: 'AB' }
+    const rows = [
+      { Obra: 'UP Graça', Insumo: 'Cimento', Qtd: '10', Sit: 'AB' },
+      { Obra: 'UP Graça', Insumo: 'Areia', Qtd: '5', Sit: 'CA' },
+    ]
+    const result = parseImportRows(
+      rows,
+      mappingComStatus,
+      lookup({ 'up graça': 'u1' }, { cimento: 'm1', areia: 'm2' }),
+    )
+
+    expect(result.errors).toHaveLength(0)
+    expect(result.successes).toHaveLength(1)
+    expect(result.successes[0]?.items).toEqual([{ materialId: 'm1', quantity: 10, unitOfMeasure: '' }])
+  })
+
+  it('não filtra por situação quando a coluna não está mapeada', () => {
+    const rows = [{ Obra: 'UP Graça', Insumo: 'Cimento', Qtd: '10', Sit: 'CA' }]
+    const result = parseImportRows(rows, mapping, lookup({ 'up graça': 'u1' }, { cimento: 'm1' }))
+
+    expect(result.successes).toHaveLength(1)
+  })
+
   it('numera os erros pela linha de dados (1-indexada)', () => {
     const rows = [
       { Obra: 'UP Graça', Insumo: 'Cimento', Qtd: '10' },
@@ -102,6 +128,62 @@ describe('parseImportRows', () => {
     })
 
     expect(receivedArgs).toEqual({ name: 'Cimento', code: '' })
+  })
+
+  it('agrupa linhas com o mesmo número de SOL (antes da barra) em uma única requisição', () => {
+    const rows = [
+      { Obra: 'UP Graça', Insumo: 'Cimento', Qtd: '10', SOL: '1140 / 001' },
+      { Obra: 'UP Graça', Insumo: 'Areia', Qtd: '5', SOL: '1140 / 002' },
+      { Obra: 'UP Graça', Insumo: 'Brita', Qtd: '2', SOL: '1141 / 001' },
+    ]
+    const result = parseImportRows(
+      rows,
+      mapping,
+      lookup({ 'up graça': 'u1' }, { cimento: 'm1', areia: 'm2', brita: 'm3' }),
+    )
+
+    expect(result.errors).toHaveLength(0)
+    expect(result.successes).toEqual([
+      {
+        unitId: 'u1',
+        neededBy: '',
+        externalRef: '1140',
+        items: [
+          { materialId: 'm1', quantity: 10, unitOfMeasure: '' },
+          { materialId: 'm2', quantity: 5, unitOfMeasure: '' },
+        ],
+      },
+      {
+        unitId: 'u1',
+        neededBy: '',
+        externalRef: '1141',
+        items: [{ materialId: 'm3', quantity: 2, unitOfMeasure: '' }],
+      },
+    ])
+  })
+
+  it('mantém uma requisição por linha quando o Nº externo não está mapeado', () => {
+    const rows = [
+      { Obra: 'UP Graça', Insumo: 'Cimento', Qtd: '10' },
+      { Obra: 'UP Graça', Insumo: 'Areia', Qtd: '5' },
+    ]
+    const mappingSemExternalRef: ImportColumnMapping = { ...mapping, externalRef: '' }
+    const result = parseImportRows(
+      rows,
+      mappingSemExternalRef,
+      lookup({ 'up graça': 'u1' }, { cimento: 'm1', areia: 'm2' }),
+    )
+
+    expect(result.errors).toHaveLength(0)
+    expect(result.successes).toHaveLength(2)
+    expect(result.successes.every((r) => r.externalRef === '')).toBe(true)
+  })
+
+  it('formata célula de data (lida com cellDates) como YYYY-MM-DD', () => {
+    const rows = [{ Obra: 'UP Graça', Insumo: 'Cimento', Qtd: '10', Prazo: new Date(Date.UTC(2027, 11, 31)) }]
+    const result = parseImportRows(rows, mapping, lookup({ 'up graça': 'u1' }, { cimento: 'm1' }))
+
+    expect(result.successes[0]?.neededBy).toBe('2027-12-31')
   })
 
   it('lê a unidade de medida da coluna mapeada, quando mapeada', () => {

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, ComingSoonButton, Toast, type ToastVariant } from '../../components'
+import { ComingSoonButton, Toast, type ToastVariant } from '../../components'
 import { useSettings } from '../../core/config'
 import { DisparoSolModal } from './DisparoSolModal'
 import { ANALYSIS_STATUSES } from './filterAnalysisRequests'
 import { filterRequests } from './filterRequests'
 import { formatRequestNumber } from './formatRequestNumber'
-import { ImportRequestsModal } from './ImportRequestsModal'
 import { IndicatorCards } from './IndicatorCards'
 import { getRequestIndicators } from './requestIndicators'
 import { RequestAttachmentsModal } from './RequestAttachmentsModal'
@@ -46,7 +45,6 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
   const [formState, setFormState] = useState<
     { mode: 'create' } | { mode: 'edit'; requestId: string } | null
   >(null)
-  const [importOpen, setImportOpen] = useState(false)
   const [dispatchRequestId, setDispatchRequestId] = useState<string | null>(null)
   const [attachmentsRequestId, setAttachmentsRequestId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ variant: ToastVariant; message: string } | null>(null)
@@ -125,9 +123,6 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
             <h1 className="text-2xl font-semibold text-on-primary">Disparo de Solicitações</h1>
             <div className="flex gap-2">
               <ComingSoonButton label="Limpar NF" variant="on-primary" />
-              <Button variant="on-primary" onClick={() => setImportOpen(true)}>
-                Importar Excel
-              </Button>
               <ComingSoonButton label="Buscar SOL sumida" variant="on-primary" />
             </div>
           </div>
@@ -220,8 +215,6 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
           isSubmitting={dispatchRequest.isPending}
         />
       )}
-
-      <ImportRequestsModal isOpen={importOpen} onClose={() => setImportOpen(false)} tenantId={tenantId} />
 
       <RequestAttachmentsModal
         isOpen={Boolean(attachmentsRequest)}

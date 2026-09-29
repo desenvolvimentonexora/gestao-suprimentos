@@ -115,6 +115,10 @@ export interface ImportColumnMapping {
   unitOfMeasure: string
   neededBy: string
   externalRef: string
+  /** Coluna com a situação da SOL no ERP de origem (ex.: "Sit"). Quando mapeada, só entram linhas cujo valor bate com `openStatusValue`. */
+  status: string
+  /** Valor de `status` que indica SOL aberta (ex.: "AB") — as demais são puladas silenciosamente. */
+  openStatusValue: string
 }
 
 export interface ImportRowError {
