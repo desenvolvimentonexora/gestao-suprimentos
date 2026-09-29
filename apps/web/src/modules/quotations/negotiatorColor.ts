@@ -6,7 +6,7 @@ export interface NegotiatorColorClasses {
 
 const GRAY: NegotiatorColorClasses = {
   chipSelected: 'border-ink-muted bg-ink-muted text-white',
-  chipUnselected: 'border-line bg-surface text-ink hover:bg-bg',
+  chipUnselected: 'border-line bg-bg text-ink-muted hover:bg-line/30',
   select: 'border-line bg-surface text-ink',
 }
 

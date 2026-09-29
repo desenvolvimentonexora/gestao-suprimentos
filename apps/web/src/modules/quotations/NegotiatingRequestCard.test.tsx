@@ -93,7 +93,7 @@ describe('NegotiatingRequestCard', () => {
     await user.click(screen.getByRole('button', { name: /ver arquivos de sol-1/i }))
 
     expect(onOpenAttachments).toHaveBeenCalledWith('r1')
-    expect(screen.queryByLabelText(/observação/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/observaç/i)).not.toBeInTheDocument()
   })
 
   it('mostra os itens detalhados ao clicar no card', async () => {
@@ -190,7 +190,7 @@ describe('NegotiatingRequestCard', () => {
     expect(screen.queryByRole('button', { name: /voltar pro disparo/i })).not.toBeInTheDocument()
     await expandCard(user)
 
-    expect(screen.getByLabelText(/observação/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/observaç/i)).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Insumo-Sub' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /voltar pro disparo/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /finalizar negociação/i })).toBeInTheDocument()
@@ -254,10 +254,10 @@ describe('NegotiatingRequestCard', () => {
     render(<NegotiatingRequestCard {...baseProps()} />)
 
     await expandCard(user)
-    expect(screen.getByLabelText(/observação/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/observaç/i)).toBeInTheDocument()
 
     await expandCard(user)
-    expect(screen.queryByLabelText(/observação/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/observaç/i)).not.toBeInTheDocument()
   })
 
   it('chama onSendBackToDispatch ao clicar em voltar pro disparo', async () => {

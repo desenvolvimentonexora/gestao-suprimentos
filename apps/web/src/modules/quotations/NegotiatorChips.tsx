@@ -18,11 +18,12 @@ export function NegotiatorChips({ counts, selected, onSelect }: NegotiatorChipsP
             key={entry.id}
             type="button"
             onClick={() => onSelect(isSelected ? null : entry.id)}
-            className={`rounded-full border px-3 py-1 text-xs font-medium ${
+            className={`flex min-w-[88px] flex-col items-center gap-0.5 rounded-md border px-3 py-2 ${
               isSelected ? color.chipSelected : color.chipUnselected
             }`}
           >
-            {entry.name} ({entry.count})
+            <span className="text-[11px] font-semibold uppercase tracking-wide">{entry.name}</span>
+            <span className="text-xl font-bold">{entry.count}</span>
           </button>
         )
       })}
