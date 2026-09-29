@@ -123,31 +123,48 @@ export function PendingReleaseList({
                   )}
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex w-48 flex-col gap-2">
                   {rejectingId === row.comparisonId ? (
                     <>
-                      <Button variant="warning" disabled={isSubmitting} onClick={() => handleReject(row.comparisonId)}>
+                      <Button
+                        variant="warning"
+                        className="w-full"
+                        disabled={isSubmitting}
+                        onClick={() => handleReject(row.comparisonId)}
+                      >
                         Confirmar não liberar
                       </Button>
-                      <Button variant="secondary" disabled={isSubmitting} onClick={() => cancelReject(row.comparisonId)}>
+                      <Button
+                        variant="secondary"
+                        className="w-full"
+                        disabled={isSubmitting}
+                        onClick={() => cancelReject(row.comparisonId)}
+                      >
                         Cancelar
                       </Button>
                     </>
                   ) : awaitingProof ? (
                     <>
-                      <ComingSoonButton label="Ver" variant="info" />
+                      <ComingSoonButton label="Ver" variant="info" className="w-full" />
                       <Button
                         variant="violet"
+                        className="w-full"
                         disabled={isSubmitting}
                         onClick={() => onConfirmPaymentProof(row.comparisonId)}
                       >
                         Confirmar comprovante
                       </Button>
-                      <Button variant="warning" disabled={isSubmitting} onClick={() => startReject(row.comparisonId)}>
+                      <Button
+                        variant="warning"
+                        className="w-full"
+                        disabled={isSubmitting}
+                        onClick={() => startReject(row.comparisonId)}
+                      >
                         Não liberar
                       </Button>
                       <Button
                         variant="violet"
+                        className="w-full"
                         disabled={isSubmitting}
                         onClick={() => onRequestFinancialCharge(row.comparisonId)}
                       >
@@ -155,10 +172,10 @@ export function PendingReleaseList({
                       </Button>
                     </>
                   ) : (
-                    <ComingSoonButton label="Ver" variant="info" />
+                    <ComingSoonButton label="Ver" variant="info" className="w-full" />
                   )}
                   {!awaitingProof && rejectingId !== row.comparisonId && (
-                    <Button disabled={isSubmitting} onClick={() => onRelease(row.comparisonId)}>
+                    <Button className="w-full" disabled={isSubmitting} onClick={() => onRelease(row.comparisonId)}>
                       Liberar
                     </Button>
                   )}

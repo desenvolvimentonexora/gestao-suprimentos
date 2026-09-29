@@ -8,12 +8,10 @@ import { ComparisonIdentificationHeader } from './ComparisonIdentificationHeader
 import { ComparisonNotes } from './ComparisonNotes'
 import { ComparisonTable } from './ComparisonTable'
 import { HistoryList } from './HistoryList'
-import { ImportQuotationPdfModal } from './ImportQuotationPdfModal'
 import { OrdersQueueModal } from './OrdersQueueModal'
 import { PendingApprovalsSection } from './PendingApprovalsSection'
 import { PendingReleaseSection } from './PendingReleaseSection'
 import { ReviewUnmatchedItemsModal } from './ReviewUnmatchedItemsModal'
-import { SourceCards } from './SourceCards'
 import {
   useComparableRequests,
   useGetOrCreateDraftComparison,
@@ -41,7 +39,6 @@ function queueLabel(label: string, count: number | undefined): string {
 export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
   const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null)
   const [createdComparisonIds, setCreatedComparisonIds] = useState<Record<string, string>>({})
-  const [importOpen, setImportOpen] = useState(false)
   const [queueView, setQueueView] = useState<QueueView>(null)
   const [reviewingQuotation, setReviewingQuotation] = useState<{
     comparisonId: string
@@ -214,7 +211,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                   )}
 
                   {isExpanded && (
-                    <div className="flex flex-col gap-4 border-t border-line bg-bg p-4">
+                    <div className="flex flex-col gap-4 border-t border-line bg-bg px-4 pt-4">
                       <div className="flex flex-wrap justify-end gap-2">
                         <ComingSoonButton label="Imprimir" variant="secondary" />
                         <ComingSoonButton label="Excel" variant="secondary" />
@@ -239,58 +236,47 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                         <ComingSoonButton label="Nova" variant="secondary" />
                       </div>
 
-                      <SourceCards
-                        itemCount={request.requestItems.length}
-                        quotations={request.quotations}
-                        onAddQuotation={() => setImportOpen(true)}
-                      />
-
-                      <ComparisonTable
-                        requestItems={request.requestItems}
-                        quotations={request.quotations}
-                        isEditable={isEditable}
-                        onWinnerChange={(quotationId) => {
-                          if (!comparisonId) return
-                          if (!isEditable) return
-                          const quotation = request.quotations.find((q) => q.quotationId === quotationId) ?? null
-                          setComparisonWinner.mutate({
-                            comparisonId,
-                            quotation,
-                            requestItems: request.requestItems,
-                          })
-                        }}
-                        onUpdateQuotationTerms={(quotationId, terms) => {
-                          updateQuotationTerms.mutate({ quotationId, terms })
-                        }}
-                        onReviewUnmatchedItems={(quotationId) => {
-                          if (!comparisonId) return
-                          const quotation = request.quotations.find((q) => q.quotationId === quotationId)
-                          setReviewingQuotation({
-                            comparisonId,
-                            quotationId,
-                            supplierName: quotation?.supplierName ?? '',
-                          })
-                        }}
-                      />
-
-                      {comparisonId && (
-                        <ComparisonNotes
-                          key={comparisonId}
-                          notes={request.notes}
-                          onUpdateNotes={(notes) => updateComparisonNotes.mutate({ comparisonId, notes })}
-                        />
-                      )}
-
-                      {comparisonId && (
-                        <ImportQuotationPdfModal
-                          isOpen={importOpen}
-                          onClose={() => setImportOpen(false)}
-                          tenantId={tenantId}
-                          requestId={request.requestId}
-                          comparisonId={comparisonId}
+                      {/* -mx-4 cancela o p-4 do container pai só aqui, pra tabela e
+                          observações encostarem nas bordas do card em vez de ficar com
+                          faixa de respiro dos lados; gap-4 repõe o espaço entre as duas
+                          que se perde ao virarem filhas de uma mesma div. */}
+                      <div className="-mx-4 flex flex-col gap-4">
+                        <ComparisonTable
                           requestItems={request.requestItems}
+                          quotations={request.quotations}
+                          isEditable={isEditable}
+                          onWinnerChange={(quotationId) => {
+                            if (!comparisonId) return
+                            if (!isEditable) return
+                            const quotation = request.quotations.find((q) => q.quotationId === quotationId) ?? null
+                            setComparisonWinner.mutate({
+                              comparisonId,
+                              quotation,
+                              requestItems: request.requestItems,
+                            })
+                          }}
+                          onUpdateQuotationTerms={(quotationId, terms) => {
+                            updateQuotationTerms.mutate({ quotationId, terms })
+                          }}
+                          onReviewUnmatchedItems={(quotationId) => {
+                            if (!comparisonId) return
+                            const quotation = request.quotations.find((q) => q.quotationId === quotationId)
+                            setReviewingQuotation({
+                              comparisonId,
+                              quotationId,
+                              supplierName: quotation?.supplierName ?? '',
+                            })
+                          }}
                         />
-                      )}
+
+                        {comparisonId && (
+                          <ComparisonNotes
+                            key={comparisonId}
+                            notes={request.notes}
+                            onUpdateNotes={(notes) => updateComparisonNotes.mutate({ comparisonId, notes })}
+                          />
+                        )}
+                      </div>
 
                       <ReviewUnmatchedItemsModal
                         isOpen={reviewingQuotation !== null && request.quotations.some((q) => q.quotationId === reviewingQuotation.quotationId)}

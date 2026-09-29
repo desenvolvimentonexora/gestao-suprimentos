@@ -21,6 +21,11 @@ export interface ComparisonTableProps {
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const COLUMN_DIVIDER = 'border-l border-line'
+// Verde escuro é sempre "menor preço unitário desta linha" (não a cor do
+// fornecedor) — azul-marinho, à parte, é reservado pro menor total
+// combinado (ver footerCellClasses).
+const CHEAPEST_UNIT_PRICE_CLASSES = 'bg-emerald-50 text-emerald-800'
+const CHEAPEST_UNIT_PRICE_TEXT = 'text-emerald-700'
 
 function parseNumberInput(value: string): number | null {
   if (value.trim() === '') return null
@@ -79,33 +84,43 @@ export function ComparisonTable({
   const winningQuotation = quotations.find((quotation) => quotation.quotationId === winningQuotationId) ?? null
   const combinedBestPrice = winningQuotation ? getQuotationTotal(requestItems, winningQuotation) : null
 
+  // Frete/Total ficam neutros pra todo mundo — só o vencedor (menor total
+  // combinado) recebe o preenchimento sólido, igual à referência (a cor por
+  // fornecedor fica só no cabeçalho e na célula mais barata de cada item).
+  function footerCellClasses(quotationId: string): string {
+    if (excludedQuotationIds.includes(quotationId)) return 'opacity-40'
+    if (quotationId === winningQuotationId) return 'bg-blue-900 text-white'
+    return 'text-ink'
+  }
+
   return (
-    <div className="flex flex-col gap-4 rounded-sm border border-line bg-surface p-4">
+    <div className="flex flex-col rounded-sm border border-line bg-surface pt-4">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-line text-ink-muted">
-              <th rowSpan={2} className="bg-blue-900 py-2 pr-4 pl-3 font-medium text-white">
+              <th rowSpan={2} className="min-w-[240px] bg-blue-900 py-2 pr-4 pl-3 font-semibold text-white">
                 Descrição
               </th>
-              <th rowSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2 font-medium`}>
+              <th rowSpan={2} className={`${COLUMN_DIVIDER} bg-blue-900 px-3 py-2 font-semibold text-white`}>
                 Und.
               </th>
-              <th rowSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2 font-medium`}>
+              <th rowSpan={2} className={`${COLUMN_DIVIDER} bg-blue-900 px-3 py-2 font-semibold text-white`}>
                 Qtde.
               </th>
               {quotations.map((quotation) => {
                 const isExcluded = excludedQuotationIds.includes(quotation.quotationId)
+                const isWinner = quotation.quotationId === winningQuotationId
                 const color = getSupplierColor(quotation.quotationId)
                 return (
                   <th
                     key={quotation.quotationId}
                     colSpan={2}
-                    className={`${COLUMN_DIVIDER} px-3 py-2 font-medium ${isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.tableHeader}`}
+                    className={`${COLUMN_DIVIDER} px-3 py-2 font-semibold ${isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.tableHeader}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-1">
-                        <Flag size={14} aria-hidden="true" />
+                        {isWinner && <Flag size={14} aria-hidden="true" />}
                         {quotation.supplierName}
                       </span>
                       <div className="flex items-center gap-1">
@@ -136,7 +151,7 @@ export function ComparisonTable({
                   </th>
                 )
               })}
-              <th rowSpan={2} className={`${COLUMN_DIVIDER} bg-emerald-700 py-2 px-3 font-medium text-white`}>
+              <th rowSpan={2} className={`${COLUMN_DIVIDER} bg-emerald-700 py-2 px-3 font-semibold text-white`}>
                 <span className="flex items-center gap-1">
                   <Flag size={14} aria-hidden="true" />
                   Melhor Forn.
@@ -150,8 +165,8 @@ export function ComparisonTable({
                 const tagClasses = isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.tag
                 return (
                   <Fragment key={quotation.quotationId}>
-                    <th className={`${COLUMN_DIVIDER} px-3 py-1 text-xs font-medium ${tagClasses}`}>V.Unit.</th>
-                    <th className={`px-3 py-1 text-xs font-medium ${tagClasses}`}>Total</th>
+                    <th className={`${COLUMN_DIVIDER} px-3 py-1 text-xs font-semibold ${tagClasses}`}>V.Unit.</th>
+                    <th className={`px-3 py-1 text-xs font-semibold ${tagClasses}`}>Total</th>
                   </Fragment>
                 )
               })}
@@ -163,7 +178,9 @@ export function ComparisonTable({
               const bestSupplier = cheapestSupplierFor(item.id)
               return (
                 <tr key={item.id} className="border-b border-line">
-                  <td className="py-2.5 pr-4 text-ink">{item.materialDescription ?? item.materialName}</td>
+                  <td className="min-w-[240px] py-2.5 pr-4 pl-3 text-ink">
+                    {item.materialDescription ?? item.materialName}
+                  </td>
                   <td className={`${COLUMN_DIVIDER} px-3 py-2.5 text-ink-muted`}>{item.unitOfMeasure ?? '—'}</td>
                   <td className={`${COLUMN_DIVIDER} px-3 py-2.5 text-ink-muted`}>{item.quantity}</td>
                   {quotations.map((quotation) => {
@@ -172,8 +189,7 @@ export function ComparisonTable({
                     const isCheapest =
                       price?.unitPrice !== null && price?.unitPrice !== undefined && price.unitPrice === cheapest
                     const itemTotal = price?.unitPrice != null ? price.unitPrice * item.quantity : null
-                    const cheapestColor = getSupplierColor(quotation.quotationId)
-                    const cellClasses = `${isExcluded ? 'opacity-40' : ''} ${isCheapest ? `${cheapestColor.cellHighlight} font-semibold` : 'text-ink-muted'}`
+                    const cellClasses = `${isExcluded ? 'opacity-40' : ''} ${isCheapest ? `${CHEAPEST_UNIT_PRICE_CLASSES} font-semibold` : 'text-ink-muted'}`
                     return (
                       <Fragment key={quotation.quotationId}>
                         <td
@@ -193,7 +209,7 @@ export function ComparisonTable({
                   })}
                   <td
                     data-testid={`best-${item.id}`}
-                    className={`${COLUMN_DIVIDER} bg-surface px-3 py-2.5 font-semibold ${bestSupplier ? getSupplierColor(bestSupplier.quotationId).cellText : 'text-ink-muted'}`}
+                    className={`${COLUMN_DIVIDER} bg-surface px-3 py-2.5 font-semibold ${bestSupplier ? CHEAPEST_UNIT_PRICE_TEXT : 'text-ink-muted'}`}
                   >
                     {bestSupplier
                       ? `${bestSupplier.supplierName} — ${currencyFormatter.format(bestSupplier.unitPrice)}`
@@ -204,11 +220,15 @@ export function ComparisonTable({
             })}
 
             <tr className="border-b border-line bg-bg/60">
-              <td colSpan={3} className="py-2.5 pr-4 text-ink-muted">
+              <td colSpan={3} className="py-2.5 pr-4 text-right text-ink-muted">
                 Frete
               </td>
               {quotations.map((quotation) => (
-                <td key={quotation.quotationId} colSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2`}>
+                <td
+                  key={quotation.quotationId}
+                  colSpan={2}
+                  className={`${COLUMN_DIVIDER} px-3 py-2 ${footerCellClasses(quotation.quotationId)}`}
+                >
                   {isEditable ? (
                     <input
                       type="number"
@@ -224,7 +244,7 @@ export function ComparisonTable({
                       }
                     />
                   ) : (
-                    <span className="text-sm text-ink">
+                    <span className="text-sm">
                       {quotation.freight != null ? currencyFormatter.format(quotation.freight) : '—'}
                     </span>
                   )}
@@ -234,18 +254,17 @@ export function ComparisonTable({
             </tr>
 
             <tr>
-              <td colSpan={3} className="py-2.5 pr-4 font-medium text-ink">
+              <td colSpan={3} className="py-2.5 pr-4 text-right font-medium text-ink">
                 Total
               </td>
               {quotations.map((quotation) => {
                 const total = getQuotationTotal(requestItems, quotation)
-                const isWinner = quotation.quotationId === winningQuotationId
                 return (
                   <td
                     key={quotation.quotationId}
                     data-testid={`total-${quotation.quotationId}`}
                     colSpan={2}
-                    className={`${COLUMN_DIVIDER} px-3 py-2.5 font-semibold ${isWinner ? 'rounded-sm bg-blue-900 text-white' : 'text-ink'}`}
+                    className={`${COLUMN_DIVIDER} px-3 py-2.5 font-semibold ${footerCellClasses(quotation.quotationId)}`}
                   >
                     {total === null ? '—' : currencyFormatter.format(total)}
                   </td>
@@ -255,7 +274,7 @@ export function ComparisonTable({
             </tr>
 
             <tr className="border-b border-line bg-bg/60">
-              <td colSpan={3} className="py-2.5 pr-4 text-ink-muted">
+              <td colSpan={3} className="py-2.5 pr-4 text-right text-ink-muted">
                 Pagamento
               </td>
               {quotations.map((quotation) => (
@@ -283,7 +302,7 @@ export function ComparisonTable({
             </tr>
 
             <tr className="border-b border-line bg-bg/60">
-              <td colSpan={3} className="py-2.5 pr-4 text-ink-muted">
+              <td colSpan={3} className="py-2.5 pr-4 text-right text-ink-muted">
                 Entrega (dias)
               </td>
               {quotations.map((quotation) => (
@@ -316,7 +335,7 @@ export function ComparisonTable({
       </div>
 
       {combinedBestPrice !== null && (
-        <div className="rounded-md bg-primary px-4 py-3 text-base font-semibold text-on-primary">
+        <div className="rounded-b-md bg-primary px-4 py-3 text-center text-base font-semibold text-on-primary">
           🏆 Melhor preço combinado: {currencyFormatter.format(combinedBestPrice)}
         </div>
       )}

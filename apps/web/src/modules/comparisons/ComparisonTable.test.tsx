@@ -2,7 +2,6 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ComparisonTable } from './ComparisonTable'
-import { getSupplierColor } from './supplierColor'
 import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
 
 const requestItems: ComparisonRequestItemRow[] = [
@@ -48,14 +47,27 @@ function baseProps() {
 }
 
 describe('ComparisonTable', () => {
-  it('preenche o cabeçalho de Descrição em azul e o de Melhor Forn. em verde, sempre, com texto branco', () => {
+  it('preenche o cabeçalho de Descrição, Und., Qtde. em azul e o de Melhor Forn. em verde, sempre, com texto branco', () => {
     render(<ComparisonTable {...baseProps()} />)
     const descricaoHeader = screen.getByText('Descrição').closest('th')
+    const undHeader = screen.getByText('Und.').closest('th')
+    const qtdeHeader = screen.getByText('Qtde.').closest('th')
     const melhorForHeader = screen.getByText('Melhor Forn.').closest('th')
-    expect(descricaoHeader!.className).toContain('bg-blue-900')
-    expect(descricaoHeader!.className).toContain('text-white')
+    for (const header of [descricaoHeader, undHeader, qtdeHeader]) {
+      expect(header!.className).toContain('bg-blue-900')
+      expect(header!.className).toContain('text-white')
+    }
     expect(melhorForHeader!.className).toContain('bg-emerald-700')
     expect(melhorForHeader!.className).toContain('text-white')
+  })
+
+  it('alinha os rótulos de Frete, Total, Pagamento e Entrega à direita, perto da coluna Qtde.', () => {
+    render(<ComparisonTable {...baseProps()} />)
+    for (const label of ['Frete', 'Pagamento', 'Entrega (dias)']) {
+      expect(screen.getByText(label).className).toContain('text-right')
+    }
+    const totalRow = screen.getByTestId('total-q1').closest('tr')
+    expect(within(totalRow!).getByText('Total').className).toContain('text-right')
   })
 
   it('mostra Descrição, Und. e Qtde. como colunas separadas', () => {
@@ -99,13 +111,12 @@ describe('ComparisonTable', () => {
     expect(screen.getByText('Argamassa')).toBeInTheDocument()
   })
 
-  it('destaca visualmente a célula de menor preço unitário da linha, com a cor do próprio fornecedor vencedor', () => {
+  it('destaca visualmente a célula de menor preço unitário da linha, sempre em verde (não na cor do fornecedor)', () => {
     render(<ComparisonTable {...baseProps()} />)
     const cheapestCell = screen.getByTestId('price-q2-ri1')
     const pricierCell = screen.getByTestId('price-q1-ri1')
-    const winnerHighlight = getSupplierColor('q2').cellHighlight.split(' ')[0]!
-    expect(cheapestCell.className).toContain(winnerHighlight)
-    expect(pricierCell.className).not.toContain(winnerHighlight)
+    expect(cheapestCell.className).toContain('bg-emerald-50')
+    expect(pricierCell.className).not.toContain('bg-emerald-50')
   })
 
   it('mostra o total por item (preço unitário × quantidade) na subcoluna Total', () => {

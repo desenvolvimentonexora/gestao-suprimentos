@@ -95,23 +95,38 @@ export function PendingApprovalsList({ rows, onApprove, onReject, isSubmitting }
                 )}
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex w-48 flex-col gap-2">
                 {rejectingId === row.comparisonId ? (
                   <>
-                    <Button variant="warning" disabled={isSubmitting} onClick={() => handleReject(row.comparisonId)}>
+                    <Button
+                      variant="warning"
+                      className="w-full"
+                      disabled={isSubmitting}
+                      onClick={() => handleReject(row.comparisonId)}
+                    >
                       Confirmar rejeição
                     </Button>
-                    <Button variant="secondary" disabled={isSubmitting} onClick={() => cancelReject(row.comparisonId)}>
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      disabled={isSubmitting}
+                      onClick={() => cancelReject(row.comparisonId)}
+                    >
                       Cancelar
                     </Button>
                   </>
                 ) : (
                   <>
-                    <ComingSoonButton label="Ver" variant="info" />
-                    <Button disabled={isSubmitting} onClick={() => onApprove(row.comparisonId)}>
+                    <ComingSoonButton label="Ver" variant="info" className="w-full" />
+                    <Button className="w-full" disabled={isSubmitting} onClick={() => onApprove(row.comparisonId)}>
                       Aprovar
                     </Button>
-                    <Button variant="warning" disabled={isSubmitting} onClick={() => startReject(row.comparisonId)}>
+                    <Button
+                      variant="warning"
+                      className="w-full"
+                      disabled={isSubmitting}
+                      onClick={() => startReject(row.comparisonId)}
+                    >
                       Rejeitar
                     </Button>
                   </>

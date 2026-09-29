@@ -55,7 +55,7 @@ export function AwaitingOrderList({ rows }: AwaitingOrderListProps) {
                 {row.note && <p className="text-sm text-blue-700">💬 Obs.: {row.note}</p>}
               </div>
 
-              <ComingSoonButton label="Ver" variant="info" />
+              <ComingSoonButton label="Ver" variant="info" className="w-48" />
             </Card>
           ))}
         </div>
