@@ -1,40 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  createQuotation,
   discardQuotation,
   fetchNegotiatingAttachments,
   fetchNegotiatingAttachmentUrl,
   fetchNegotiatingRequests,
   fetchNegotiatorOptions,
   fetchQuotationAttachmentUrl,
-  fetchSupplierOptions,
   sendBackToDispatch,
   updateNegotiationNotes,
   updateNegotiator,
 } from './api'
-import type { QuotationFormValues } from './types'
 
 export function useNegotiatingRequests() {
   return useQuery({ queryKey: ['negotiating-requests'], queryFn: fetchNegotiatingRequests })
 }
 
-export function useSupplierOptions() {
-  return useQuery({ queryKey: ['quotation-supplier-options'], queryFn: fetchSupplierOptions })
-}
-
 export function useNegotiatorOptions() {
   return useQuery({ queryKey: ['negotiator-options'], queryFn: fetchNegotiatorOptions })
-}
-
-export function useCreateQuotation(tenantId: string) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({ requestId, values }: { requestId: string; values: QuotationFormValues }) =>
-      createQuotation(tenantId, requestId, values),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['negotiating-requests'] })
-    },
-  })
 }
 
 export function useDiscardQuotation() {

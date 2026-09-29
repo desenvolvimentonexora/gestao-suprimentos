@@ -86,10 +86,6 @@ function DisparoSolicitacoesRoute({ tenantId }: { tenantId: string }) {
   return <DisparoSolicitacoesPage tenantId={tenantId} />
 }
 
-function EmNegociacaoRoute({ tenantId }: { tenantId: string }) {
-  return <EmNegociacaoPage tenantId={tenantId} />
-}
-
 function ComparisonRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
   return <ComparisonPage tenantId={tenantId} userId={userId} />
 }
@@ -217,10 +213,7 @@ export function AppRoot() {
             element={<DisparoSolicitacoesRoute tenantId={tenant.tenantId} />}
           />
           <Route path="/suprimentos/documentos" element={<RequestDocumentsPage />} />
-          <Route
-            path="/suprimentos/em-negociacao"
-            element={<EmNegociacaoRoute tenantId={tenant.tenantId} />}
-          />
+          <Route path="/suprimentos/em-negociacao" element={<EmNegociacaoPage />} />
           <Route
             path="/suprimentos/equalizacao"
             element={

@@ -1,23 +1,5 @@
 export type QuotationStatus = 'pending' | 'received' | 'discarded'
 
-export interface SupplierOption {
-  id: string
-  name: string
-}
-
-export interface QuotationItemFormValues {
-  requestItemId: string
-  unitPrice: string
-  leadTimeDays: string
-}
-
-export interface QuotationFormValues {
-  supplierId: string
-  freight: string
-  paymentTerms: string
-  items: QuotationItemFormValues[]
-}
-
 export interface QuotationRow {
   id: string
   supplierId: string

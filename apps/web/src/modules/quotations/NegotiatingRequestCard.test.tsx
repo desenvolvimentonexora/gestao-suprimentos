@@ -55,7 +55,6 @@ function baseProps() {
     negotiators,
     today: new Date('2026-09-11T12:00:00'),
     onAssignNegotiator: vi.fn(),
-    onRegisterQuotation: vi.fn(),
     onUpdateNotes: vi.fn(),
     onSendBackToDispatch: vi.fn(),
     onFinalizeNegotiation: vi.fn(),
@@ -193,7 +192,6 @@ describe('NegotiatingRequestCard', () => {
 
     expect(screen.getByLabelText(/observação/i)).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Insumo-Sub' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /registrar cotação/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /voltar pro disparo/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /finalizar negociação/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /liberar sem equalizar/i })).toBeInTheDocument()
@@ -260,15 +258,6 @@ describe('NegotiatingRequestCard', () => {
 
     await expandCard(user)
     expect(screen.queryByLabelText(/observação/i)).not.toBeInTheDocument()
-  })
-
-  it('chama onRegisterQuotation ao clicar em registrar cotação', async () => {
-    const user = userEvent.setup()
-    const onRegisterQuotation = vi.fn()
-    render(<NegotiatingRequestCard {...baseProps()} onRegisterQuotation={onRegisterQuotation} />)
-    await expandCard(user)
-    await user.click(screen.getByRole('button', { name: /registrar cotação/i }))
-    expect(onRegisterQuotation).toHaveBeenCalledWith('r1')
   })
 
   it('chama onSendBackToDispatch ao clicar em voltar pro disparo', async () => {

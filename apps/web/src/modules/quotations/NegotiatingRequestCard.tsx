@@ -39,7 +39,6 @@ export interface NegotiatingRequestCardProps {
   negotiators: NegotiatorOption[]
   today: Date
   onAssignNegotiator: (requestId: string, negotiatorId: string | null) => void
-  onRegisterQuotation: (requestId: string) => void
   onUpdateNotes: (requestId: string, notes: string) => void
   onSendBackToDispatch: (requestId: string) => void
   onFinalizeNegotiation: (requestId: string) => void
@@ -51,7 +50,6 @@ export function NegotiatingRequestCard({
   negotiators,
   today,
   onAssignNegotiator,
-  onRegisterQuotation,
   onUpdateNotes,
   onSendBackToDispatch,
   onFinalizeNegotiation,
@@ -218,7 +216,6 @@ export function NegotiatingRequestCard({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => onRegisterQuotation(request.id)}>Registrar cotação</Button>
             <Button variant="secondary" onClick={() => onSendBackToDispatch(request.id)}>
               Voltar pro Disparo
             </Button>

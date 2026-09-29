@@ -1,12 +1,5 @@
 import { supabase } from '../../lib/supabase'
-import type {
-  NegotiatingAttachmentRow,
-  NegotiatingRequestRow,
-  NegotiatorOption,
-  QuotationFormValues,
-  QuotationStatus,
-  SupplierOption,
-} from './types'
+import type { NegotiatingAttachmentRow, NegotiatingRequestRow, NegotiatorOption, QuotationStatus } from './types'
 
 const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
 
@@ -88,48 +81,6 @@ export async function updateNegotiationNotes(requestId: string, notes: string): 
 export async function sendBackToDispatch(requestId: string): Promise<void> {
   const { error } = await supabase.from('requests').update({ status: 'open' }).eq('id', requestId)
   if (error) throw error
-}
-
-export async function fetchSupplierOptions(): Promise<SupplierOption[]> {
-  const { data, error } = await supabase
-    .from('suppliers')
-    .select('id, name')
-    .is('deleted_at', null)
-    .order('name')
-  if (error) throw error
-  return data
-}
-
-export async function createQuotation(
-  tenantId: string,
-  requestId: string,
-  values: QuotationFormValues,
-): Promise<void> {
-  const { data, error } = await supabase
-    .from('quotations')
-    .insert({
-      tenant_id: tenantId,
-      request_id: requestId,
-      supplier_id: values.supplierId,
-      status: 'received',
-      submitted_at: new Date().toISOString(),
-      freight_amount: values.freight.trim() === '' ? null : Number(values.freight.replace(',', '.')),
-      payment_terms: values.paymentTerms.trim() === '' ? null : values.paymentTerms,
-    })
-    .select('id')
-    .single()
-  if (error) throw error
-
-  const { error: itemsError } = await supabase.from('quotation_items').insert(
-    values.items.map((item) => ({
-      tenant_id: tenantId,
-      quotation_id: data.id,
-      request_item_id: item.requestItemId,
-      unit_price: Number(item.unitPrice.replace(',', '.')),
-      lead_time_days: item.leadTimeDays ? Number(item.leadTimeDays) : null,
-    })),
-  )
-  if (itemsError) throw itemsError
 }
 
 export async function discardQuotation(quotationId: string): Promise<void> {

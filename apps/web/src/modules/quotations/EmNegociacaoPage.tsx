@@ -9,37 +9,26 @@ import { getNegotiatorCounts } from './getNegotiatorCounts'
 import { NegotiatingAttachmentsModal } from './NegotiatingAttachmentsModal'
 import { NegotiatingRequestCard } from './NegotiatingRequestCard'
 import { NegotiatorChips } from './NegotiatorChips'
-import { QuotationFormModal } from './QuotationFormModal'
 import {
-  useCreateQuotation,
   useDiscardQuotation,
   useNegotiatingAttachments,
   useNegotiatingRequests,
   useNegotiatorOptions,
   useSendBackToDispatch,
-  useSupplierOptions,
   useUpdateNegotiationNotes,
   useUpdateNegotiator,
   useViewNegotiatingAttachment,
 } from './queries'
-import type { QuotationFormValues } from './types'
 
-export interface EmNegociacaoPageProps {
-  tenantId: string
-}
-
-export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
+export function EmNegociacaoPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [unitFilter, setUnitFilter] = useState<string | null>(null)
   const [negotiatorFilter, setNegotiatorFilter] = useState<string | null>(null)
-  const [activeRequestId, setActiveRequestId] = useState<string | null>(null)
   const [attachmentsRequestId, setAttachmentsRequestId] = useState<string | null>(null)
 
   const requestsQuery = useNegotiatingRequests()
-  const suppliersQuery = useSupplierOptions()
   const negotiatorsQuery = useNegotiatorOptions()
-  const createQuotation = useCreateQuotation(tenantId)
   const discardQuotation = useDiscardQuotation()
   const updateNegotiator = useUpdateNegotiator()
   const updateNotes = useUpdateNegotiationNotes()
@@ -59,7 +48,6 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
   }, [queryClient])
 
   const requests = requestsQuery.data ?? []
-  const suppliers = suppliersQuery.data ?? []
   const negotiators = negotiatorsQuery.data ?? []
   const units = [...new Map(requests.map((request) => [request.unitId, request.unitName])).entries()].map(
     ([id, name]) => ({ id, name }),
@@ -70,16 +58,7 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
     unitId: unitFilter,
     negotiatorFilter,
   })
-  const activeRequest = requests.find((request) => request.id === activeRequestId)
   const attachmentsRequest = requests.find((request) => request.id === attachmentsRequestId)
-
-  function handleSubmit(values: QuotationFormValues) {
-    if (!activeRequestId) return
-    createQuotation.mutate(
-      { requestId: activeRequestId, values },
-      { onSuccess: () => setActiveRequestId(null) },
-    )
-  }
 
   return (
     <div className="min-h-screen bg-bg">
@@ -141,7 +120,6 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
               onAssignNegotiator={(requestId, negotiatorId) =>
                 updateNegotiator.mutate({ requestId, negotiatorId })
               }
-              onRegisterQuotation={setActiveRequestId}
               onUpdateNotes={(requestId, notes) => updateNotes.mutate({ requestId, notes })}
               onSendBackToDispatch={(requestId) => sendBackToDispatch.mutate(requestId)}
               onFinalizeNegotiation={() => navigate('/suprimentos/equalizacao')}
@@ -151,17 +129,6 @@ export function EmNegociacaoPage({ tenantId }: EmNegociacaoPageProps) {
         )}
       </div>
       </div>
-
-      {activeRequest && (
-        <QuotationFormModal
-          isOpen
-          onClose={() => setActiveRequestId(null)}
-          suppliers={suppliers}
-          requestItems={activeRequest.items}
-          onSubmit={handleSubmit}
-          isSubmitting={createQuotation.isPending}
-        />
-      )}
 
       <NegotiatingAttachmentsModal
         isOpen={attachmentsRequestId !== null}
