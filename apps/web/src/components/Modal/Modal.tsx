@@ -15,10 +15,21 @@ export interface ModalProps {
    * afeta o layout quando presente, pra não alterar nenhum modal existente.
    */
   headerClassName?: string
+  /** Sobrepõe a largura máxima padrão (max-w-lg) — pra modais com conteúdo mais denso (ex.: detalhe de pedido). */
+  maxWidthClassName?: string
   children: ReactNode
 }
 
-export function Modal({ isOpen, onClose, title, icon: Icon, titleClassName, headerClassName, children }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  icon: Icon,
+  titleClassName,
+  headerClassName,
+  maxWidthClassName = 'max-w-lg',
+  children,
+}: ModalProps) {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -44,7 +55,7 @@ export function Modal({ isOpen, onClose, title, icon: Icon, titleClassName, head
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="flex max-h-[90vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-lg bg-surface p-6 shadow-lg focus:outline-none"
+        className={`flex max-h-[90vh] w-full ${maxWidthClassName} flex-col gap-4 overflow-y-auto rounded-lg bg-surface p-6 shadow-lg focus:outline-none`}
       >
         <div
           className={

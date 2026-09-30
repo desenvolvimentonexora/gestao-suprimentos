@@ -1,5 +1,6 @@
 import {
   DELIVERY_STATUS_BADGE_CLASSES,
+  DELIVERY_STATUS_BORDER_CLASSES,
   DELIVERY_STATUS_DOT_CLASSES,
   DELIVERY_STATUS_LABELS,
   getDeliveryStatus,
@@ -58,17 +59,25 @@ export function DeliveryCalendarGrid({ weeks, ordersByDate, today, onShowMore, o
               </span>
 
               <div className="flex flex-col gap-1">
-                {visibleOrders.map((order) => (
+                {visibleOrders.map((order) => {
+                  const status = getDeliveryStatus(order, today)
+                  return (
                   <button
                     key={order.id}
                     type="button"
                     onClick={() => onSelectOrder(order.id)}
                     title={`${order.orderNumber} · ${order.supplierNames.join(', ')} · ${order.unitName}`}
-                    className={`truncate rounded border px-1.5 py-0.5 text-left text-[11px] hover:opacity-80 ${DELIVERY_STATUS_BADGE_CLASSES[getDeliveryStatus(order, today)]}`}
+                    className={`flex items-center gap-1 rounded border-y border-r border-l-4 px-1.5 py-0.5 text-left text-[11px] hover:opacity-80 ${DELIVERY_STATUS_BADGE_CLASSES[status]} ${DELIVERY_STATUS_BORDER_CLASSES[status]}`}
                   >
-                    {order.orderNumber} · {order.supplierNames[0] ?? '—'} · {order.unitName}
+                    <span className="truncate">
+                      {order.orderNumber} · {order.supplierNames[0] ?? '—'}
+                    </span>
+                    <span className="shrink-0 rounded-full border border-current/30 bg-surface px-1.5 py-px text-[10px] font-semibold">
+                      {order.unitName}
+                    </span>
                   </button>
-                ))}
+                  )
+                })}
                 {extraCount > 0 && (
                   <button
                     type="button"

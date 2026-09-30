@@ -27,6 +27,34 @@ export const DELIVERY_STATUS_DOT_CLASSES: Record<DeliveryStatus, string> = {
   chegou_ar_pendente: 'bg-status-chegou-ar-pendente',
 }
 
+// Borda esquerda grossa e sólida — mesmo padrão de destaque lateral usado
+// nos cards de RequestCard/NegotiatingRequestCard/PendingApprovalsList
+// (border-l-4 sobrepondo o border-status-X/30 mais claro do badge).
+export const DELIVERY_STATUS_BORDER_CLASSES: Record<DeliveryStatus, string> = {
+  atrasado: 'border-l-status-atrasado',
+  hoje: 'border-l-status-hoje',
+  no_prazo: 'border-l-status-no-prazo',
+  chegou_ar_pendente: 'border-l-status-chegou-ar-pendente',
+}
+
+// Preenchimento sólido (não o tom clarinho do badge) com texto branco — só
+// pra faixa de cabeçalho do popup de pedido, igual à referência do cliente.
+export const DELIVERY_STATUS_HEADER_CLASSES: Record<DeliveryStatus, string> = {
+  atrasado: 'bg-status-atrasado text-white',
+  hoje: 'bg-status-hoje text-white',
+  no_prazo: 'bg-status-no-prazo text-white',
+  chegou_ar_pendente: 'bg-status-chegou-ar-pendente text-white',
+}
+
+// Só a cor do texto — usado pro "PC {número}" se destacar na cor do status
+// dentro do card, sem herdar bg/borda do badge.
+export const DELIVERY_STATUS_TEXT_CLASSES: Record<DeliveryStatus, string> = {
+  atrasado: 'text-status-atrasado',
+  hoje: 'text-status-hoje',
+  no_prazo: 'text-status-no-prazo',
+  chegou_ar_pendente: 'text-status-chegou-ar-pendente',
+}
+
 function toDateOnly(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
 }

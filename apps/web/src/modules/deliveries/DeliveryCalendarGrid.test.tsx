@@ -45,7 +45,9 @@ describe('DeliveryCalendarGrid', () => {
         onSelectOrder={vi.fn()}
       />,
     )
-    expect(screen.getByText('PC-100 · Fornecedor Alfa · UP Graça')).toBeInTheDocument()
+    expect(screen.getByTitle('PC-100 · Fornecedor Alfa · UP Graça')).toBeInTheDocument()
+    expect(screen.getByText('PC-100 · Fornecedor Alfa')).toBeInTheDocument()
+    expect(screen.getByText('UP Graça')).toBeInTheDocument()
   })
 
   it('chama onSelectOrder com o id do pedido ao clicar num chip', async () => {
@@ -62,7 +64,7 @@ describe('DeliveryCalendarGrid', () => {
       />,
     )
 
-    await user.click(screen.getByText('PC-100 · Fornecedor Alfa · UP Graça'))
+    await user.click(screen.getByTitle('PC-100 · Fornecedor Alfa · UP Graça'))
     expect(onSelectOrder).toHaveBeenCalledWith('o1')
   })
 
