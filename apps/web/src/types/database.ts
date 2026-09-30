@@ -625,7 +625,7 @@ export type Database = {
       }
       orders: {
         Row: {
-          comparison_id: string
+          comparison_id: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -637,14 +637,14 @@ export type Database = {
           imported_at: string
           order_number: string
           payment_condition_note: string | null
-          request_id: string
+          request_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           tenant_id: string
           unit_id: string
           updated_at: string
         }
         Insert: {
-          comparison_id: string
+          comparison_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -656,14 +656,14 @@ export type Database = {
           imported_at?: string
           order_number: string
           payment_condition_note?: string | null
-          request_id: string
+          request_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           tenant_id: string
           unit_id: string
           updated_at?: string
         }
         Update: {
-          comparison_id?: string
+          comparison_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -675,7 +675,7 @@ export type Database = {
           imported_at?: string
           order_number?: string
           payment_condition_note?: string | null
-          request_id?: string
+          request_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           tenant_id?: string
           unit_id?: string
@@ -2084,10 +2084,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      fn_mark_request_negotiating: {
-        Args: { p_request_id: string; p_reviewer_id: string }
-        Returns: undefined
-      }
       fn_next_tenant_sequence: {
         Args: { p_sequence_name: string; p_tenant_id: string }
         Returns: number
@@ -2119,6 +2115,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      fn_send_request_to_negotiation: {
+        Args: { p_request_id: string; p_reviewer_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       comparison_status:
@@ -2135,6 +2135,7 @@ export type Database = {
         | "extension_requested"
         | "released_to_dispatch"
         | "dispatched_to_suppliers"
+        | "sent_to_negotiation"
       request_status:
         | "draft"
         | "open"
@@ -2290,6 +2291,7 @@ export const Constants = {
         "extension_requested",
         "released_to_dispatch",
         "dispatched_to_suppliers",
+        "sent_to_negotiation",
       ],
       request_status: [
         "draft",

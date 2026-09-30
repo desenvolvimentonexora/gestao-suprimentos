@@ -52,7 +52,7 @@ export function OrderImportModal({ isOpen, onClose, tenantId }: OrderImportModal
     if (!file) return
 
     const buffer = await file.arrayBuffer()
-    const workbook = XLSX.read(buffer, { type: 'array' })
+    const workbook = XLSX.read(buffer, { type: 'array', cellDates: true })
     const firstSheetName = workbook.SheetNames[0]
     if (!firstSheetName) return
     const sheet = workbook.Sheets[firstSheetName]
@@ -75,6 +75,7 @@ export function OrderImportModal({ isOpen, onClose, tenantId }: OrderImportModal
     const comparisonsByRef = new Map(
       context.comparisons.map((comparison) => [normalizeName(comparison.externalRef), comparison]),
     )
+    const unitsByName = new Map(context.units.map((unit) => [normalizeName(unit.name), unit.id]))
     const suppliersByName = new Map(context.suppliers.map((supplier) => [normalizeName(supplier.name), supplier.id]))
     const materialsByName = new Map(context.materials.map((material) => [normalizeName(material.name), material.id]))
     const materialsByCode = new Map(
@@ -98,6 +99,7 @@ export function OrderImportModal({ isOpen, onClose, tenantId }: OrderImportModal
             }
           : null
       },
+      findUnitId: (name) => unitsByName.get(normalizeName(name)) ?? null,
       findSupplierId: (name) => suppliersByName.get(normalizeName(name)) ?? null,
       findMaterialId: ({ name, code }) =>
         (code ? materialsByCode.get(normalizeName(code)) : undefined) ??
@@ -121,8 +123,9 @@ export function OrderImportModal({ isOpen, onClose, tenantId }: OrderImportModal
       {step.name === 'upload' && (
         <div className="flex flex-col gap-3">
           <p className="text-sm text-ink-muted">
-            Selecione a planilha (.xlsx) do pedido de compra exportada do ERP. Cada linha precisa trazer o
-            número da SOL para casar com a comparação já liberada.
+            Selecione a planilha (.xlsx) do pedido de compra exportada do ERP. Quando a linha traz o número
+            da SOL e ela bate com uma comparação já liberada, o pedido fica amarrado a ela; senão, vira um
+            pedido avulso.
           </p>
           <input type="file" accept=".xlsx,.xls" onChange={handleFileChange} />
         </div>

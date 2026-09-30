@@ -4,16 +4,31 @@ import { z } from 'zod'
 import { Button } from '../../components'
 import type { OrderImportColumnMapping } from './types'
 
-const mappingSchema = z.object({
-  externalRef: z.string().min(1, 'Selecione a coluna correspondente.'),
-  orderNumber: z.string().min(1, 'Selecione a coluna correspondente.'),
-  supplier: z.string().min(1, 'Selecione a coluna correspondente.'),
-  material: z.string().min(1, 'Selecione a coluna correspondente.'),
-  materialCode: z.string(),
-  quantity: z.string().min(1, 'Selecione a coluna correspondente.'),
-  unitPrice: z.string().min(1, 'Selecione a coluna correspondente.'),
-  expectedDeliveryDate: z.string(),
-})
+// Material é só uma categoria interna do sistema (agrupa insumos) — alguns
+// exports de ERP não têm essa coluna, só código do insumo e descrição. Por
+// isso material e código não são cada um obrigatório sozinho, mas pelo menos
+// um dos dois precisa estar mapeado (é o que identifica o insumo).
+const mappingSchema = z
+  .object({
+    externalRef: z.string(),
+    orderNumber: z.string().min(1, 'Selecione a coluna correspondente.'),
+    unit: z.string(),
+    supplier: z.string().min(1, 'Selecione a coluna correspondente.'),
+    material: z.string(),
+    materialCode: z.string(),
+    quantity: z.string().min(1, 'Selecione a coluna correspondente.'),
+    unitPrice: z.string().min(1, 'Selecione a coluna correspondente.'),
+    expectedDeliveryDate: z.string(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.material && !data.materialCode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['material'],
+        message: 'Mapeie pelo menos o material ou o código do insumo.',
+      })
+    }
+  })
 
 export interface OrderImportMappingFormProps {
   columns: string[]
@@ -23,10 +38,11 @@ export interface OrderImportMappingFormProps {
 }
 
 const FIELDS: { name: keyof OrderImportColumnMapping; label: string; required: boolean }[] = [
-  { name: 'externalRef', label: 'N° da SOL', required: true },
+  { name: 'externalRef', label: 'N° da SOL', required: false },
   { name: 'orderNumber', label: 'N° do pedido', required: true },
+  { name: 'unit', label: 'Unidade', required: false },
   { name: 'supplier', label: 'Fornecedor', required: true },
-  { name: 'material', label: 'Material', required: true },
+  { name: 'material', label: 'Material', required: false },
   { name: 'materialCode', label: 'Código do insumo', required: false },
   { name: 'quantity', label: 'Quantidade', required: true },
   { name: 'unitPrice', label: 'Preço unitário', required: true },
@@ -48,6 +64,7 @@ export function OrderImportMappingForm({
     defaultValues: initialMapping ?? {
       externalRef: '',
       orderNumber: '',
+      unit: '',
       supplier: '',
       material: '',
       materialCode: '',
@@ -64,7 +81,9 @@ export function OrderImportMappingForm({
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-3">
       <p className="text-sm text-ink-muted">
-        Indique qual coluna da planilha do pedido corresponde a cada campo do sistema.
+        Indique qual coluna da planilha do pedido corresponde a cada campo do sistema. Quando a SOL bate com
+        uma comparação já liberada, o pedido usa a unidade dela — a coluna &ldquo;Unidade&rdquo; só é usada
+        quando a SOL não é encontrada (pedido avulso).
       </p>
       {FIELDS.map((field) => (
         <div key={field.name} className="flex flex-col gap-1">

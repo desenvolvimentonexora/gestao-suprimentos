@@ -685,6 +685,13 @@ export async function fetchOrderImportContext(): Promise<OrderImportContext> {
   if (ordersError) throw ordersError
   const orderedComparisonIds = new Set(existingOrders.map((order) => order.comparison_id))
 
+  const { data: units, error: unitsError } = await supabase
+    .from('units')
+    .select('id, name')
+    .is('deleted_at', null)
+    .order('name')
+  if (unitsError) throw unitsError
+
   const suppliers = await fetchSupplierOptions()
 
   const { data: materialVariants, error: materialsError } = await supabase
@@ -711,6 +718,7 @@ export async function fetchOrderImportContext(): Promise<OrderImportContext> {
         externalRef: comparison.requests!.external_ref!,
         hasOrder: orderedComparisonIds.has(comparison.id),
       })),
+    units,
     suppliers,
     materials: materialVariants.map((variant) => ({
       id: variant.id,

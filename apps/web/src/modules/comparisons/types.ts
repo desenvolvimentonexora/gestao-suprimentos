@@ -150,6 +150,8 @@ export type OrderStatus = 'issued' | 'cancelled'
 export interface OrderImportColumnMapping {
   externalRef: string
   orderNumber: string
+  /** Só usada quando a SOL não bate com nenhuma comparação liberada (pedido avulso). */
+  unit: string
   supplier: string
   material: string
   materialCode: string
@@ -173,8 +175,9 @@ export interface OrderImportItemRow {
 }
 
 export interface OrderImportGroup {
-  comparisonId: string
-  requestId: string
+  /** null para pedido avulso (SOL não encontrada entre as comparações liberadas). */
+  comparisonId: string | null
+  requestId: string | null
   unitId: string
   orderNumber: string
   expectedDeliveryDate: string | null
@@ -206,8 +209,14 @@ export interface OrderImportRequestItemOption {
   materialId: string
 }
 
+export interface OrderImportUnitOption {
+  id: string
+  name: string
+}
+
 export interface OrderImportContext {
   comparisons: OrderImportComparisonOption[]
+  units: OrderImportUnitOption[]
   suppliers: SupplierOption[]
   materials: OrderImportMaterialOption[]
   requestItems: OrderImportRequestItemOption[]

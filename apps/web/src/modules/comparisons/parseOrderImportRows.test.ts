@@ -5,6 +5,7 @@ import type { OrderImportColumnMapping } from './types'
 const mapping: OrderImportColumnMapping = {
   externalRef: 'SOL',
   orderNumber: 'Pedido',
+  unit: 'Unidade',
   supplier: 'Fornecedor',
   material: 'Material',
   materialCode: 'Código',
@@ -17,6 +18,7 @@ function baseLookup(overrides: Partial<OrderImportLookup> = {}): OrderImportLook
   return {
     findComparisonByExternalRef: (ref) =>
       ref === 'SOL-1' ? { comparisonId: 'c1', requestId: 'r1', unitId: 'u1', hasOrder: false } : null,
+    findUnitId: (name) => (name === 'UP Graça' ? 'u2' : null),
     findSupplierId: (name) => (name === 'Sika' ? 's1' : null),
     findMaterialId: () => 'm1',
     findRequestItemId: () => 'ri1',
@@ -53,17 +55,60 @@ describe('parseOrderImportRows', () => {
     })
   })
 
-  it('reporta erro quando o número da SOL não bate com nenhuma comparação liberada', () => {
+  it('cria pedido avulso (sem comparação/requisição) quando a SOL não bate com nenhuma liberada, usando a unidade da própria planilha', () => {
     const rows = [
-      { SOL: 'SOL-999', Pedido: 'PC-100', Fornecedor: 'Sika', Material: 'Argamassa', Qtd: '10', Preço: '30', Entrega: '' },
+      {
+        SOL: 'SOL-999',
+        Pedido: 'PC-200',
+        Unidade: 'UP Graça',
+        Fornecedor: 'Sika',
+        Material: 'Argamassa',
+        Qtd: '10',
+        Preço: '30',
+        Entrega: '',
+      },
+    ]
+
+    const result = parseOrderImportRows(rows, mapping, baseLookup())
+
+    expect(result.errors).toEqual([])
+    expect(result.successes).toEqual([
+      {
+        comparisonId: null,
+        requestId: null,
+        unitId: 'u2',
+        orderNumber: 'PC-200',
+        expectedDeliveryDate: null,
+        items: [
+          { supplierId: 's1', materialId: 'm1', materialNameRaw: 'Argamassa', requestItemId: null, quantity: 10, unitPrice: 30 },
+        ],
+      },
+    ])
+  })
+
+  it('agrupa pedido avulso pelo número do pedido antes da barra (mesmo padrão do ERP: "368 / 001")', () => {
+    const rows = [
+      { Pedido: '368 / 001', Unidade: 'UP Graça', Fornecedor: 'Sika', Material: 'Argamassa', Qtd: '10', Preço: '30', Entrega: '' },
+      { Pedido: '368 / 002', Unidade: 'UP Graça', Fornecedor: 'Sika', Material: 'Tintas', Qtd: '5', Preço: '100', Entrega: '' },
+    ]
+
+    const result = parseOrderImportRows(rows, mapping, baseLookup())
+
+    expect(result.errors).toEqual([])
+    expect(result.successes).toHaveLength(1)
+    expect(result.successes[0]!.orderNumber).toBe('368')
+    expect(result.successes[0]!.items).toHaveLength(2)
+  })
+
+  it('reporta erro quando o pedido avulso não tem unidade encontrada', () => {
+    const rows = [
+      { Pedido: 'PC-200', Unidade: 'Obra Inexistente', Fornecedor: 'Sika', Material: 'Argamassa', Qtd: '10', Preço: '30', Entrega: '' },
     ]
 
     const result = parseOrderImportRows(rows, mapping, baseLookup())
 
     expect(result.successes).toEqual([])
-    expect(result.errors).toEqual([
-      { row: 1, reason: 'SOL não encontrada entre as comparações liberadas: "SOL-999".' },
-    ])
+    expect(result.errors).toEqual([{ row: 1, reason: 'Unidade não encontrada: "Obra Inexistente".' }])
   })
 
   it('reporta erro quando a comparação já tem um pedido importado', () => {
@@ -137,5 +182,23 @@ describe('parseOrderImportRows', () => {
     const result = parseOrderImportRows(rows, mapping, baseLookup())
 
     expect(result.successes[0]!.expectedDeliveryDate).toBeNull()
+  })
+
+  it('formata célula de data (lida com cellDates) como YYYY-MM-DD', () => {
+    const rows = [
+      {
+        SOL: 'SOL-1',
+        Pedido: 'PC-100',
+        Fornecedor: 'Sika',
+        Material: 'Argamassa',
+        Qtd: '10',
+        Preço: '30',
+        Entrega: new Date(Date.UTC(2026, 9, 1)),
+      },
+    ]
+
+    const result = parseOrderImportRows(rows, mapping, baseLookup())
+
+    expect(result.successes[0]!.expectedDeliveryDate).toBe('2026-10-01')
   })
 })

@@ -8,6 +8,7 @@ import { ComparisonIdentificationHeader } from './ComparisonIdentificationHeader
 import { ComparisonNotes } from './ComparisonNotes'
 import { ComparisonTable } from './ComparisonTable'
 import { HistoryList } from './HistoryList'
+import { OrderImportModal } from './OrderImportModal'
 import { OrdersQueueModal } from './OrdersQueueModal'
 import { PendingApprovalsSection } from './PendingApprovalsSection'
 import { PendingReleaseSection } from './PendingReleaseSection'
@@ -40,6 +41,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
   const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null)
   const [createdComparisonIds, setCreatedComparisonIds] = useState<Record<string, string>>({})
   const [queueView, setQueueView] = useState<QueueView>(null)
+  const [orderImportOpen, setOrderImportOpen] = useState(false)
   const [reviewingQuotation, setReviewingQuotation] = useState<{
     comparisonId: string
     quotationId: string
@@ -112,6 +114,9 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
             >
               {queueLabel('Histórico', historyQuery.data?.length)}
             </Button>
+            <Button variant="on-primary" onClick={() => setOrderImportOpen(true)}>
+              Importar Pedidos
+            </Button>
           </div>
         </div>
       </div>
@@ -141,6 +146,8 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
       )}
 
       <OrdersQueueModal isOpen={queueView === 'orders'} onClose={() => setQueueView(null)} />
+
+      <OrderImportModal isOpen={orderImportOpen} onClose={() => setOrderImportOpen(false)} tenantId={tenantId} />
 
       <Modal isOpen={queueView === 'history'} onClose={() => setQueueView(null)} title="Histórico">
         <HistoryList rows={historyQuery.data ?? []} />
