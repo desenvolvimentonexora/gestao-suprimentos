@@ -127,22 +127,26 @@ export function SupplierCard({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2 border-t border-line pt-3">
-        <Button variant="secondary" onClick={() => onEdit(supplier.id)}>
+      <div className="grid grid-cols-2 gap-2 border-t border-line pt-3">
+        <Button variant="secondary" className="w-full" onClick={() => onEdit(supplier.id)}>
           Editar
         </Button>
-        <Button variant="secondary" onClick={() => onOpenPopup('avaliacoes', supplier.id)}>
+        <Button variant="secondary" className="w-full" onClick={() => onOpenPopup('avaliacoes', supplier.id)}>
           Avaliar
         </Button>
-        <Button variant="secondary" onClick={() => onFindSimilar(supplier.id)}>
+        <Button variant="secondary" className="w-full" onClick={() => onFindSimilar(supplier.id)}>
           <Search size={14} className="mr-1 inline" aria-hidden="true" />
           Buscar semelhantes
         </Button>
-        <ComingSoonButton label="Copiar" variant="secondary" />
-        <Button variant="secondary" onClick={() => onMoveToOtherMaterial(supplier.id)}>
+        <ComingSoonButton
+          label="Copiar"
+          variant="secondary"
+          className="flex h-full w-full items-center justify-center"
+        />
+        <Button variant="secondary" className="w-full" onClick={() => onMoveToOtherMaterial(supplier.id)}>
           Mover para setor
         </Button>
-        <Button variant="danger" className="!px-6 !py-2.5 !text-base" onClick={() => onDelete(supplier.id)}>
+        <Button variant="danger" className="w-full" onClick={() => onDelete(supplier.id)}>
           Excluir
         </Button>
       </div>

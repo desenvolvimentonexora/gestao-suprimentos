@@ -6,7 +6,6 @@
 
 insert into supply_categories (tenant_id, name, slug, icon)
 values
-  ('00000000-0000-0000-0000-000000000001', 'Suprimentos', 'suprimentos', 'package'),
   ('00000000-0000-0000-0000-000000000001', 'Recursos Humanos', 'recursos-humanos', 'users'),
   ('00000000-0000-0000-0000-000000000001', 'Marketing', 'marketing', 'megaphone'),
   ('00000000-0000-0000-0000-000000000001', 'Financeiro', 'financeiro', 'banknote'),

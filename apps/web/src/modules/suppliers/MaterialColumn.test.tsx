@@ -29,12 +29,12 @@ function baseProps() {
 }
 
 describe('MaterialColumn', () => {
-  it('lista os materiais com a contagem de fornecedores e um ícone', () => {
+  it('lista os materiais com a contagem de fornecedores, sem ícone', () => {
     render(<MaterialColumn {...baseProps()} />)
-    const row = screen.getByText('Cimento').closest('div')
     expect(screen.getByText('Cimento')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
-    expect(row?.querySelector('svg')).toBeInTheDocument()
+    expect(screen.getByText('(3)')).toBeInTheDocument()
+    const materialButton = screen.getByText('Cimento').closest('button')
+    expect(materialButton?.querySelector('svg')).not.toBeInTheDocument()
   })
 
   it('filtra pela busca de material recebida por prop (o input mora na página)', () => {
@@ -53,7 +53,7 @@ describe('MaterialColumn', () => {
     expect(props.onSelectMaterial).toHaveBeenCalledWith('m1')
   })
 
-  it('mostra o formulário de novo material quando showNewForm é true, sugere um ícone pelo nome e cria ao enviar', async () => {
+  it('mostra o formulário de novo material quando showNewForm é true e cria com ícone sugerido internamente pelo nome', async () => {
     const props = baseProps()
     render(<MaterialColumn {...props} showNewForm />)
 
@@ -63,17 +63,6 @@ describe('MaterialColumn', () => {
 
     expect(props.onCreateMaterial).toHaveBeenCalledWith('Cabo de Aço', 'c1', 'zap')
     expect(props.onCloseNewForm).toHaveBeenCalledTimes(1)
-  })
-
-  it('permite trocar manualmente o ícone sugerido antes de criar', async () => {
-    const props = baseProps()
-    render(<MaterialColumn {...props} showNewForm />)
-
-    await userEvent.type(screen.getByLabelText('Nome do material'), 'Cabo de Aço')
-    await userEvent.click(screen.getByRole('button', { name: 'wrench' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Criar material' }))
-
-    expect(props.onCreateMaterial).toHaveBeenCalledWith('Cabo de Aço', 'c1', 'wrench')
   })
 
   it('chama onCloseNewForm ao cancelar o formulário de novo material', async () => {
@@ -94,7 +83,7 @@ describe('MaterialColumn', () => {
     expect(props.onDeleteMaterial).toHaveBeenCalledWith('m1')
   })
 
-  it('edita um material existente (nome, categoria e ícone)', async () => {
+  it('edita um material existente (nome e categoria), mantendo o ícone interno original', async () => {
     const props = baseProps()
     render(<MaterialColumn {...props} />)
 

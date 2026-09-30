@@ -19,7 +19,6 @@ const suppliers: SupplierRow[] = [
 function baseProps() {
   return {
     materialName: 'Cimento',
-    materialIcon: 'layers',
     suppliers,
     totalCount: 1,
     page: 0,
@@ -48,11 +47,10 @@ describe('SupplierColumn', () => {
     expect(screen.getByText(/selecione um material/i)).toBeInTheDocument()
   })
 
-  it('mostra o nome do material, o ícone e a contagem no cabeçalho', () => {
+  it('mostra o nome do material e a contagem no cabeçalho', () => {
     render(<SupplierColumn {...baseProps()} />)
     expect(screen.getByRole('heading', { name: 'Cimento' })).toBeInTheDocument()
     expect(screen.getByText('1 fornecedor')).toBeInTheDocument()
-    expect(screen.getByTestId('material-header-icon')).toBeInTheDocument()
   })
 
   it('mostra o estado vazio quando o material não tem fornecedores', () => {

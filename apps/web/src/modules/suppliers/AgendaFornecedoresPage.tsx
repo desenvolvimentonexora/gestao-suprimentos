@@ -156,7 +156,6 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         <div className="lg:h-full lg:overflow-y-auto">
           <SupplierColumn
             materialName={selectedMaterial?.name ?? null}
-            materialIcon={selectedMaterial?.icon ?? null}
             supplierLabel={supplierLabel}
             suppliers={supplierRows}
             totalCount={suppliersQuery.data?.total ?? 0}

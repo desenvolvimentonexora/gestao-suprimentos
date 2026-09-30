@@ -111,16 +111,26 @@ describe('SupplierCard', () => {
     expect(screen.getByTestId('status-dot').className).not.toContain('bg-emerald')
   })
 
-  it('editar, avaliar, copiar e mover para setor têm o mesmo tamanho e cor de fundo', () => {
+  it('editar, avaliar e mover para setor têm o mesmo tamanho e cor de fundo', () => {
     render(<SupplierCard {...baseProps()} />)
     const editar = screen.getByRole('button', { name: 'Editar' }).className
     const avaliar = screen.getByRole('button', { name: 'Avaliar' }).className
-    const copiar = screen.getByRole('button', { name: 'Copiar' }).className
     const moverParaSetor = screen.getByRole('button', { name: 'Mover para setor' }).className
 
     expect(avaliar).toBe(editar)
-    expect(copiar).toBe(editar)
     expect(moverParaSetor).toBe(editar)
+  })
+
+  it('copiar tem a mesma cor de fundo dos demais e preenche a altura da linha (fica do lado de "buscar semelhantes", que quebra em duas linhas)', () => {
+    render(<SupplierCard {...baseProps()} />)
+    const editarClass = screen.getByRole('button', { name: 'Editar' }).className
+    const copiarClass = screen.getByRole('button', { name: 'Copiar' }).className
+
+    const sharedClasses = ['rounded-md', 'px-4', 'py-2', 'text-sm', 'font-medium', 'border-line', 'text-ink']
+    for (const sharedClass of sharedClasses) {
+      expect(copiarClass).toContain(sharedClass)
+    }
+    expect(copiarClass).toBe(editarClass.replace('w-full', 'flex h-full w-full items-center justify-center'))
   })
 
   it('excluir tem o mesmo tamanho dos demais botões, mas preenchido em vermelho', () => {
