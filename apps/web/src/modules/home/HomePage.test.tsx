@@ -1,14 +1,23 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { HomePage } from './HomePage'
+import { HomePage, type HomePageProps } from './HomePage'
 
-function renderHome(now = new Date('2026-09-08T09:00:00')) {
+function renderHome(props: Partial<HomePageProps> = {}) {
+  const queryClient = new QueryClient()
   return render(
-    <MemoryRouter>
-      <HomePage fullName="Marcelo Souza" onSignOut={vi.fn()} now={now} />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <HomePage
+          fullName="Marcelo Souza"
+          onSignOut={vi.fn()}
+          now={new Date('2026-09-08T09:00:00')}
+          {...props}
+        />
+      </MemoryRouter>
+    </QueryClientProvider>,
   )
 }
 
@@ -39,16 +48,7 @@ describe('HomePage', () => {
   })
 
   it('mostra a faixa de trabalho pendente com links quando há dados', () => {
-    render(
-      <MemoryRouter>
-        <HomePage
-          fullName="Marcelo Souza"
-          onSignOut={vi.fn()}
-          now={new Date('2026-09-08T09:00:00')}
-          pendingWork={{ dueTodayCount: 3 }}
-        />
-      </MemoryRouter>,
-    )
+    renderHome({ pendingWork: { dueTodayCount: 3 } })
     expect(screen.getByRole('link', { name: '3 requisições vencem hoje' })).toHaveAttribute(
       'href',
       '/suprimentos/disparo-solicitacoes',
@@ -57,14 +57,19 @@ describe('HomePage', () => {
 
   it('chama onSignOut ao clicar em sair da conta', async () => {
     const onSignOut = vi.fn()
-    render(
-      <MemoryRouter>
-        <HomePage fullName="Marcelo Souza" onSignOut={onSignOut} />
-      </MemoryRouter>,
-    )
+    renderHome({ onSignOut })
 
     await userEvent.click(screen.getByRole('button', { name: /Sair da conta/ }))
 
     expect(onSignOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('abre o quadro de tarefas ao clicar no botão Tarefas', async () => {
+    renderHome()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de tarefas' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Quadro de tarefas')).toBeInTheDocument()
   })
 })

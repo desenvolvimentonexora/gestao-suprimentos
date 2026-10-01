@@ -58,4 +58,13 @@ describe('SuprimentosPage', () => {
 
     expect(onSignOut).toHaveBeenCalledTimes(1)
   })
+
+  it('abre o quadro de tarefas ao clicar no botão Tarefas', async () => {
+    renderPage()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de tarefas' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Quadro de tarefas')).toBeInTheDocument()
+  })
 })

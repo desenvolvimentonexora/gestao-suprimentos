@@ -1,27 +1,41 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
-import { AppShell } from './AppShell'
+import { AppShell, type AppShellProps } from './AppShell'
+
+function renderShell(props: Partial<AppShellProps> = {}, children: ReactNode = <p>Conteúdo</p>) {
+  const queryClient = new QueryClient()
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <AppShell
+          tenantName="Construtora Beta"
+          userName="Marcelo"
+          tenantId="tenant-1"
+          userId="user-1"
+          onSignOut={vi.fn()}
+          {...props}
+        >
+          {children}
+        </AppShell>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
 
 describe('AppShell', () => {
   it('mostra o nome do tenant e o conteúdo', () => {
-    render(
-      <AppShell tenantName="Construtora Beta" userName="Marcelo" onSignOut={vi.fn()}>
-        <p>Conteúdo da página</p>
-      </AppShell>,
-    )
+    renderShell({}, <p>Conteúdo da página</p>)
 
     expect(screen.getByText('Construtora Beta')).toBeInTheDocument()
     expect(screen.getByText('Conteúdo da página')).toBeInTheDocument()
   })
 
   it('foca a busca ao pressionar "/"', async () => {
-    render(
-      <AppShell tenantName="Construtora Beta" userName="Marcelo" onSignOut={vi.fn()}>
-        <p>Conteúdo</p>
-      </AppShell>,
-    )
+    renderShell()
 
     await userEvent.keyboard('/')
 
@@ -29,11 +43,7 @@ describe('AppShell', () => {
   })
 
   it('não rouba o foco de outro campo ao digitar "/" nele', async () => {
-    render(
-      <AppShell tenantName="Construtora Beta" userName="Marcelo" onSignOut={vi.fn()}>
-        <input aria-label="outro campo" />
-      </AppShell>,
-    )
+    renderShell({}, <input aria-label="outro campo" />)
 
     const outroCampo = screen.getByLabelText('outro campo')
     await userEvent.click(outroCampo)
@@ -44,11 +54,7 @@ describe('AppShell', () => {
 
   it('abre o menu do usuário e chama onSignOut ao clicar em Sair', async () => {
     const onSignOut = vi.fn()
-    render(
-      <AppShell tenantName="Construtora Beta" userName="Marcelo" onSignOut={onSignOut}>
-        <p>Conteúdo</p>
-      </AppShell>,
-    )
+    renderShell({ onSignOut })
 
     await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
     await userEvent.click(screen.getByRole('menuitem', { name: 'Sair' }))
@@ -57,23 +63,13 @@ describe('AppShell', () => {
   })
 
   it('usa a cor escura da marca na barra superior, para casar com o topo em degradê das telas de trabalho', () => {
-    render(
-      <AppShell tenantName="Construtora Beta" userName="Marcelo" onSignOut={vi.fn()}>
-        <p>Conteúdo</p>
-      </AppShell>,
-    )
+    renderShell()
 
     expect(screen.getByText('Construtora Beta').closest('header')?.className).toContain('bg-primary-dark')
   })
 
   it('não mostra o item Administração para quem não é admin', async () => {
-    render(
-      <MemoryRouter>
-        <AppShell tenantName="Construtora Beta" userName="Marcelo" onSignOut={vi.fn()}>
-          <p>Conteúdo</p>
-        </AppShell>
-      </MemoryRouter>,
-    )
+    renderShell()
 
     await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
 
@@ -81,16 +77,29 @@ describe('AppShell', () => {
   })
 
   it('mostra o item Administração no menu para admins', async () => {
-    render(
-      <MemoryRouter>
-        <AppShell tenantName="Construtora Beta" userName="Marcelo" isAdmin onSignOut={vi.fn()}>
-          <p>Conteúdo</p>
-        </AppShell>
-      </MemoryRouter>,
-    )
+    renderShell({ isAdmin: true })
 
     await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
 
     expect(screen.getByRole('menuitem', { name: 'Administração' })).toHaveAttribute('href', '/admin')
+  })
+
+  it('abre o quadro de tarefas ao clicar no botão do quadro', async () => {
+    renderShell()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de tarefas' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Quadro de tarefas')).toBeInTheDocument()
+  })
+
+  it('também abre o quadro de tarefas pelo item "Tarefas" no menu do usuário', async () => {
+    renderShell()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Tarefas' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Quadro de tarefas')).toBeInTheDocument()
   })
 })

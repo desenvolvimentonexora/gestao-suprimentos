@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown, Search } from 'lucide-react'
+import { ChevronDown, Kanban, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { TaskBoardContainer } from '../modules/tasks/TaskBoardContainer'
 
 export interface AppShellProps {
   tenantName: string
   userName: string
+  tenantId: string
+  userId: string
   isAdmin?: boolean
   onSignOut: () => void
   children: ReactNode
@@ -18,10 +21,19 @@ function isTypingTarget(element: Element | null): boolean {
   )
 }
 
-export function AppShell({ tenantName, userName, isAdmin = false, onSignOut, children }: AppShellProps) {
+export function AppShell({
+  tenantName,
+  userName,
+  tenantId,
+  userId,
+  isAdmin = false,
+  onSignOut,
+  children,
+}: AppShellProps) {
   const searchRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [taskBoardOpen, setTaskBoardOpen] = useState(false)
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -64,6 +76,16 @@ export function AppShell({ tenantName, userName, isAdmin = false, onSignOut, chi
           />
         </div>
 
+        <button
+          type="button"
+          aria-label="Abrir quadro de tarefas"
+          onClick={() => setTaskBoardOpen(true)}
+          className="flex shrink-0 items-center gap-1.5 rounded border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
+        >
+          <Kanban size={16} aria-hidden="true" />
+          Tarefas
+        </button>
+
         <div ref={menuRef} className="relative shrink-0">
           <button
             type="button"
@@ -93,6 +115,18 @@ export function AppShell({ tenantName, userName, isAdmin = false, onSignOut, chi
                 role="menuitem"
                 onClick={() => {
                   setMenuOpen(false)
+                  setTaskBoardOpen(true)
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-ink hover:bg-bg"
+              >
+                <Kanban size={14} aria-hidden="true" />
+                Tarefas
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false)
                   onSignOut()
                 }}
                 className="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-bg"
@@ -104,6 +138,13 @@ export function AppShell({ tenantName, userName, isAdmin = false, onSignOut, chi
         </div>
       </header>
       <main className="flex-1">{children}</main>
+
+      <TaskBoardContainer
+        isOpen={taskBoardOpen}
+        onClose={() => setTaskBoardOpen(false)}
+        tenantId={tenantId}
+        userId={userId}
+      />
     </div>
   )
 }

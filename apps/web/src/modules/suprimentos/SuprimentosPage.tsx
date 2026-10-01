@@ -1,7 +1,9 @@
-import { Search } from 'lucide-react'
+import { useState } from 'react'
+import { Kanban, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ModuleCard, ModuleGrid } from '../../components'
 import { useSettings } from '../../core/config'
+import { TaskBoardContainer } from '../tasks/TaskBoardContainer'
 import { getGreeting } from '../home/getGreeting'
 import { suprimentosRegistry } from '../registry'
 import { filterActiveModules } from './filterActiveModules'
@@ -10,11 +12,19 @@ export interface SuprimentosPageProps {
   fullName: string
   onSignOut: () => void
   tenantId?: string
+  userId?: string
   now?: Date
 }
 
-export function SuprimentosPage({ fullName, onSignOut, tenantId, now = new Date() }: SuprimentosPageProps) {
+export function SuprimentosPage({
+  fullName,
+  onSignOut,
+  tenantId,
+  userId = '',
+  now = new Date(),
+}: SuprimentosPageProps) {
   const settingsQuery = useSettings(tenantId)
+  const [taskBoardOpen, setTaskBoardOpen] = useState(false)
   const requestLabel = settingsQuery.data?.vocabulary.request ?? 'SOL'
   const visibleModules = settingsQuery.data
     ? filterActiveModules(suprimentosRegistry, settingsQuery.data.modules)
@@ -40,12 +50,23 @@ export function SuprimentosPage({ fullName, onSignOut, tenantId, now = new Date(
           {getGreeting(fullName, now)}
         </h1>
 
-        <Link
-          to="/"
-          className="shrink-0 rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
-        >
-          ← Setores
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            aria-label="Abrir quadro de tarefas"
+            onClick={() => setTaskBoardOpen(true)}
+            className="flex items-center gap-1.5 rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
+          >
+            <Kanban size={16} aria-hidden="true" />
+            Tarefas
+          </button>
+          <Link
+            to="/"
+            className="rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
+          >
+            ← Setores
+          </Link>
+        </div>
       </div>
 
       <div className="mx-auto mt-10 max-w-[960px]">
@@ -65,6 +86,13 @@ export function SuprimentosPage({ fullName, onSignOut, tenantId, now = new Date(
           ↩ Sair da conta
         </button>
       </div>
+
+      <TaskBoardContainer
+        isOpen={taskBoardOpen}
+        onClose={() => setTaskBoardOpen(false)}
+        tenantId={tenantId ?? ''}
+        userId={userId}
+      />
     </div>
   )
 }

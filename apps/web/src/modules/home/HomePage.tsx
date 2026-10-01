@@ -1,5 +1,8 @@
+import { useState } from 'react'
+import { Kanban } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ModuleCard, ModuleGrid } from '../../components'
+import { TaskBoardContainer } from '../tasks/TaskBoardContainer'
 import { sectorRegistry } from '../registry'
 import { getGreeting } from './getGreeting'
 import { getPendingWorkMessage, type PendingWorkSummary } from './getPendingWorkMessage'
@@ -7,15 +10,37 @@ import { getPendingWorkMessage, type PendingWorkSummary } from './getPendingWork
 export interface HomePageProps {
   fullName: string
   onSignOut: () => void
+  tenantId?: string
+  userId?: string
   now?: Date
   pendingWork?: PendingWorkSummary
 }
 
-export function HomePage({ fullName, onSignOut, now = new Date(), pendingWork }: HomePageProps) {
+export function HomePage({
+  fullName,
+  onSignOut,
+  tenantId = '',
+  userId = '',
+  now = new Date(),
+  pendingWork,
+}: HomePageProps) {
   const pendingWorkSegments = pendingWork ? getPendingWorkMessage(pendingWork) : null
+  const [taskBoardOpen, setTaskBoardOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-dark to-primary px-6 py-12">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          aria-label="Abrir quadro de tarefas"
+          onClick={() => setTaskBoardOpen(true)}
+          className="flex items-center gap-1.5 rounded-full border border-white/30 bg-black/20 px-4 py-1.5 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
+        >
+          <Kanban size={16} aria-hidden="true" />
+          Tarefas
+        </button>
+      </div>
+
       <h1 className="text-center text-3xl font-semibold text-on-primary">
         {getGreeting(fullName, now)}
       </h1>
@@ -50,6 +75,13 @@ export function HomePage({ fullName, onSignOut, now = new Date(), pendingWork }:
           ↩ Sair da conta
         </button>
       </div>
+
+      <TaskBoardContainer
+        isOpen={taskBoardOpen}
+        onClose={() => setTaskBoardOpen(false)}
+        tenantId={tenantId}
+        userId={userId}
+      />
     </div>
   )
 }

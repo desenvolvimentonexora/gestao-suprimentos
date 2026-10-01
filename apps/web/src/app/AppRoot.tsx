@@ -57,17 +57,43 @@ function LoginRoute({ brand }: { brand: Brand }) {
   return <LoginPage brand={brand} onLoginSuccess={() => navigate('/', { replace: true })} />
 }
 
-function HomeRoute({ fullName, userId }: { fullName: string; userId: string }) {
+function HomeRoute({
+  fullName,
+  tenantId,
+  userId,
+}: {
+  fullName: string
+  tenantId: string
+  userId: string
+}) {
   const handleSignOut = useSignOutHandler()
   const permissionsQuery = useUserPermissions(userId)
   const canApprove = (permissionsQuery.data ?? []).includes('comparisons.approve')
   const pendingWorkQuery = usePendingWorkSummary(canApprove)
-  return <HomePage fullName={fullName} onSignOut={handleSignOut} pendingWork={pendingWorkQuery.data} />
+  return (
+    <HomePage
+      fullName={fullName}
+      onSignOut={handleSignOut}
+      tenantId={tenantId}
+      userId={userId}
+      pendingWork={pendingWorkQuery.data}
+    />
+  )
 }
 
-function SuprimentosRoute({ fullName, tenantId }: { fullName: string; tenantId: string }) {
+function SuprimentosRoute({
+  fullName,
+  tenantId,
+  userId,
+}: {
+  fullName: string
+  tenantId: string
+  userId: string
+}) {
   const handleSignOut = useSignOutHandler()
-  return <SuprimentosPage fullName={fullName} onSignOut={handleSignOut} tenantId={tenantId} />
+  return (
+    <SuprimentosPage fullName={fullName} onSignOut={handleSignOut} tenantId={tenantId} userId={userId} />
+  )
 }
 
 function AgendaFornecedoresRoute({ tenantId, userId }: { tenantId: string; userId: string }) {
@@ -101,16 +127,27 @@ function AdminRoute({ tenantId }: { tenantId: string }) {
 function ProtectedLayout({
   tenantName,
   userName,
+  tenantId,
+  userId,
   isAdmin,
 }: {
   tenantName: string
   userName: string
+  tenantId: string
+  userId: string
   isAdmin: boolean
 }) {
   const handleSignOut = useSignOutHandler()
 
   return (
-    <AppShell tenantName={tenantName} userName={userName} isAdmin={isAdmin} onSignOut={handleSignOut}>
+    <AppShell
+      tenantName={tenantName}
+      userName={userName}
+      tenantId={tenantId}
+      userId={userId}
+      isAdmin={isAdmin}
+      onSignOut={handleSignOut}
+    >
       <Outlet />
     </AppShell>
   )
@@ -176,7 +213,11 @@ export function AppRoot() {
           path="/"
           element={
             <RequireSession session={session ?? null}>
-              <HomeRoute fullName={userName} userId={session?.user.id ?? ''} />
+              <HomeRoute
+                fullName={userName}
+                tenantId={tenant.tenantId}
+                userId={session?.user.id ?? ''}
+              />
             </RequireSession>
           }
         />
@@ -184,14 +225,24 @@ export function AppRoot() {
           path="/suprimentos"
           element={
             <RequireSession session={session ?? null}>
-              <SuprimentosRoute fullName={userName} tenantId={tenant.tenantId} />
+              <SuprimentosRoute
+                fullName={userName}
+                tenantId={tenant.tenantId}
+                userId={session?.user.id ?? ''}
+              />
             </RequireSession>
           }
         />
         <Route
           element={
             <RequireSession session={session ?? null}>
-              <ProtectedLayout tenantName={tenant.name} userName={userName} isAdmin={isAdmin} />
+              <ProtectedLayout
+                tenantName={tenant.name}
+                userName={userName}
+                tenantId={tenant.tenantId}
+                userId={session?.user.id ?? ''}
+                isAdmin={isAdmin}
+              />
             </RequireSession>
           }
         >
