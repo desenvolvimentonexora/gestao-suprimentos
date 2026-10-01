@@ -28,8 +28,8 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 
 function LoginPanel({ brand }: { brand: Brand }) {
   return (
-    <div className="flex flex-col items-center justify-between bg-gradient-to-t from-primary-dark to-primary px-8 py-10 text-on-primary sm:w-1/2">
-      <div className="flex flex-col items-center gap-2">
+    <div className="relative flex flex-col sm:w-[70%]">
+      <div className="flex flex-col items-start gap-2 bg-bg py-10 pl-16 pr-8">
         <div className="flex items-center gap-3">
           <img src="/assets/icon-nexora.png" alt="" aria-hidden="true" className="h-28 w-auto max-w-full object-contain" />
           <img
@@ -38,14 +38,18 @@ function LoginPanel({ brand }: { brand: Brand }) {
             className="h-20 w-auto max-w-full object-contain"
           />
         </div>
-        {brand.subtitle && <p className="text-base text-on-primary">{brand.subtitle}</p>}
+        {brand.subtitle && <p className="text-base text-ink-muted">{brand.subtitle}</p>}
       </div>
-      <p className="max-w-sm text-center text-2xl font-semibold">{brand.tagline}</p>
+      <div className="flex flex-1 flex-col items-start justify-center gap-8 bg-gradient-to-t from-primary-dark to-primary py-10 pl-16 pr-8 text-on-primary">
+        <p className="max-w-sm text-left text-4xl font-semibold">{brand.tagline}</p>
+        <img src="/assets/skyline.svg" alt="" className="hidden w-full max-w-xl" aria-hidden="true" />
+      </div>
+
       <img
-        src="/assets/skyline.svg"
+        src="/assets/conexoes.png"
         alt=""
-        className="hidden w-full max-w-xl sm:block"
         aria-hidden="true"
+        className="pointer-events-none absolute right-6 top-0 hidden h-full w-auto max-w-md object-contain object-[right_25%] sm:block"
       />
     </div>
   )
@@ -140,8 +144,8 @@ export function LoginPage({ brand, onLoginSuccess }: LoginPageProps) {
         <div className="w-full max-w-[380px]">
           {mode === 'login' && (
             <>
-              <h1 className="text-2xl font-semibold text-ink">Bem-vindo 👋</h1>
-              <p className="mt-1 text-sm text-ink-muted">Faça login para continuar</p>
+              <h1 className="text-center text-2xl font-semibold text-ink">Bem-vindo 👋</h1>
+              <p className="mt-1 text-center text-sm text-ink-muted">Faça login para continuar</p>
             </>
           )}
           <div className="mt-6">
