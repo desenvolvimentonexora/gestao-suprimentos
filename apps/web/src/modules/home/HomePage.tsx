@@ -33,7 +33,7 @@ export function HomePage({
         <img
           src="/assets/logo-nexora.png"
           alt="Nexora"
-          className="h-8 w-auto object-contain brightness-0 invert"
+          className="h-10 w-auto object-contain brightness-0 invert"
         />
         <button
           type="button"

@@ -62,7 +62,7 @@ export function AppShell({
         <img
           src="/assets/logo-nexora.png"
           alt="Nexora"
-          className="h-8 w-auto shrink-0 object-contain brightness-0 invert"
+          className="h-10 w-auto shrink-0 object-contain brightness-0 invert"
         />
 
         <div className="relative w-full max-w-md">
