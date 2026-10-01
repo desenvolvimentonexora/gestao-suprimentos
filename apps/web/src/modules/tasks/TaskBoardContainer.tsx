@@ -1,4 +1,3 @@
-import { STATUS_ORDER } from './taskStatus'
 import { TaskBoardModal } from './TaskBoardModal'
 import {
   useCreateTaskCard,
@@ -17,10 +16,7 @@ export interface TaskBoardContainerProps {
 }
 
 function groupByStatus(cards: TaskCard[]): Record<TaskStatus, TaskCard[]> {
-  const grouped = Object.fromEntries(STATUS_ORDER.map((status) => [status, []])) as Record<
-    TaskStatus,
-    TaskCard[]
-  >
+  const grouped: Record<TaskStatus, TaskCard[]> = { a_fazer: [], fazendo: [], feito: [] }
   for (const card of cards) {
     grouped[card.status].push(card)
   }
