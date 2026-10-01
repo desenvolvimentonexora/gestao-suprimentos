@@ -47,15 +47,15 @@ function renderModal(props: Partial<ReturnType<typeof baseProps>> = {}) {
 describe('TaskBoardModal', () => {
   it('mostra as três colunas com seus rótulos e cards', () => {
     renderModal()
-    expect(screen.getByText(/Realizar/)).toBeInTheDocument()
-    expect(screen.getByText(/Realizando/)).toBeInTheDocument()
-    expect(screen.getByText(/Realizado/)).toBeInTheDocument()
+    expect(screen.getByText(/Backlog/)).toBeInTheDocument()
+    expect(screen.getByText(/Em andamento/)).toBeInTheDocument()
+    expect(screen.getByText(/Concluído/)).toBeInTheDocument()
     expect(screen.getByText('Card A')).toBeInTheDocument()
     expect(screen.getByText('Card B')).toBeInTheDocument()
     expect(screen.getByText('Card C')).toBeInTheDocument()
   })
 
-  it('só a coluna "Realizar" tem campo de adicionar card', () => {
+  it('só a coluna "Backlog" tem campo de adicionar card', () => {
     renderModal()
     expect(screen.getAllByLabelText('Título do novo card')).toHaveLength(1)
   })

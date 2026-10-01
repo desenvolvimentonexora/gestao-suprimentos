@@ -3,9 +3,9 @@ import type { TaskStatus } from './types'
 export const STATUS_ORDER: TaskStatus[] = ['a_fazer', 'fazendo', 'feito']
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
-  a_fazer: 'Realizar',
-  fazendo: 'Realizando',
-  feito: 'Realizado',
+  a_fazer: 'Backlog',
+  fazendo: 'Em andamento',
+  feito: 'Concluído',
 }
 
 export function getPreviousStatus(status: TaskStatus): TaskStatus | null {

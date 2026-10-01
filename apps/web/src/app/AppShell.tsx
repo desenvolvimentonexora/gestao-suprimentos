@@ -59,7 +59,14 @@ export function AppShell({
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <header className="flex items-center justify-between gap-4 bg-primary-dark px-4 py-2">
-        <span className="shrink-0 text-sm font-semibold text-on-primary">{tenantName}</span>
+        <span className="flex shrink-0 items-center gap-2">
+          <img
+            src="/assets/logo-nexora.png"
+            alt="Nexora"
+            className="h-5 w-auto object-contain brightness-0 invert"
+          />
+          <span className="text-sm font-semibold text-on-primary">{tenantName}</span>
+        </span>
 
         <div className="relative w-full max-w-md">
           <Search
@@ -80,7 +87,7 @@ export function AppShell({
           type="button"
           aria-label="Abrir quadro de tarefas"
           onClick={() => setTaskBoardOpen(true)}
-          className="flex shrink-0 items-center gap-1.5 rounded border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
         >
           <Kanban size={16} aria-hidden="true" />
           Tarefas
