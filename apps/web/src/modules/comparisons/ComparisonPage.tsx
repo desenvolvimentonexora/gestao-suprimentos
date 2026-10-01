@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { ClipboardCheck, Pencil } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { Badge, Button, Card, ComingSoonButton, Modal } from '../../components'
 import { useSettings } from '../../core/config'
 import { useUserPermissions } from '../../core/permissions'
@@ -80,13 +79,7 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
     <div className="min-h-screen bg-bg">
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <Link
-            to="/suprimentos"
-            className="inline-flex items-center rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
-          >
-            ← Suprimentos
-          </Link>
-          <h1 className="mt-4 text-2xl font-semibold text-on-primary">Nova Equalização</h1>
+          <h1 className="text-2xl font-semibold text-on-primary">Nova Equalização</h1>
 
           <div className="mt-4 flex flex-wrap gap-2">
             {canApprove && (

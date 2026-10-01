@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { ComingSoonButton, Toast, type ToastVariant } from '../../components'
 import { useSettings } from '../../core/config'
 import { DisparoSolModal } from './DisparoSolModal'
@@ -116,13 +115,7 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
 
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <Link
-            to="/suprimentos"
-            className="inline-flex items-center rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
-          >
-            ← Suprimentos
-          </Link>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h1 className="text-2xl font-semibold text-on-primary">Disparo de Solicitações</h1>
             <div className="flex gap-2">
               <ComingSoonButton label="Limpar NF" variant="on-primary" />

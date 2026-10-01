@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Button } from '../../components'
 import { useSettings } from '../../core/config'
 import { CategoryColumn } from './CategoryColumn'
@@ -92,13 +91,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
     <div className="min-h-screen bg-bg">
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-7xl">
-          <Link
-            to="/suprimentos"
-            className="inline-flex items-center rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
-          >
-            ← Suprimentos
-          </Link>
-          <h1 className="mt-4 text-2xl font-semibold text-on-primary">Agenda de Fornecedores</h1>
+          <h1 className="text-2xl font-semibold text-on-primary">Agenda de Fornecedores</h1>
         </div>
       </div>
 

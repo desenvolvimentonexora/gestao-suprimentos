@@ -6,11 +6,15 @@ import { describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { AppShell, type AppShellProps } from './AppShell'
 
-function renderShell(props: Partial<AppShellProps> = {}, children: ReactNode = <p>Conteúdo</p>) {
+function renderShell(
+  props: Partial<AppShellProps> = {},
+  children: ReactNode = <p>Conteúdo</p>,
+  initialEntries: string[] = ['/'],
+) {
   const queryClient = new QueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={initialEntries}>
         <AppShell
           userName="Marcelo"
           tenantId="tenant-1"
@@ -100,5 +104,17 @@ describe('AppShell', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Quadro de Funcionalidades')).toBeInTheDocument()
+  })
+
+  it('mostra o botão de voltar para Suprimentos ao lado de Funcionalidades nas telas do setor', () => {
+    renderShell({}, <p>Conteúdo</p>, ['/suprimentos/unidades'])
+
+    expect(screen.getByRole('link', { name: '← Suprimentos' })).toHaveAttribute('href', '/suprimentos')
+  })
+
+  it('não mostra o botão de voltar para Suprimentos fora das telas do setor', () => {
+    renderShell({}, <p>Conteúdo</p>, ['/admin'])
+
+    expect(screen.queryByRole('link', { name: '← Suprimentos' })).not.toBeInTheDocument()
   })
 })

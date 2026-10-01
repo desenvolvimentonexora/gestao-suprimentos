@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ChevronDown, Kanban, Search } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { TaskBoardContainer } from '../modules/tasks/TaskBoardContainer'
 
 export interface AppShellProps {
@@ -32,6 +32,8 @@ export function AppShell({
   const menuRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [taskBoardOpen, setTaskBoardOpen] = useState(false)
+  const location = useLocation()
+  const showSuprimentosBack = location.pathname.startsWith('/suprimentos/')
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -87,6 +89,15 @@ export function AppShell({
           <Kanban size={16} aria-hidden="true" />
           Funcionalidades
         </button>
+
+        {showSuprimentosBack && (
+          <Link
+            to="/suprimentos"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
+          >
+            ← Suprimentos
+          </Link>
+        )}
 
         <div ref={menuRef} className="relative shrink-0">
           <button

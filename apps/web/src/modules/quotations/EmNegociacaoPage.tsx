@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '../../components'
 import { subscribeToTableChanges } from '../../core/realtime'
 import { filterNegotiatingRequests } from './filterNegotiatingRequests'
@@ -64,13 +64,7 @@ export function EmNegociacaoPage() {
     <div className="min-h-screen bg-bg">
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <Link
-            to="/suprimentos"
-            className="inline-flex items-center rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
-          >
-            ← Suprimentos
-          </Link>
-          <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-on-primary">🤝 Em Negociação</h1>
               <p className="text-sm text-on-primary/80">
