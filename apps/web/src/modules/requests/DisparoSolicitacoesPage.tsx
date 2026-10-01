@@ -116,7 +116,10 @@ export function DisparoSolicitacoesPage({ tenantId }: DisparoSolicitacoesPagePro
 
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <Link to="/suprimentos" className="text-sm text-on-primary hover:underline">
+          <Link
+            to="/suprimentos"
+            className="inline-flex items-center rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
+          >
             ← Suprimentos
           </Link>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
