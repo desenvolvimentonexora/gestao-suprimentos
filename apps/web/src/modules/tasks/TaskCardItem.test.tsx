@@ -12,6 +12,9 @@ const card: TaskCard = {
   status: 'fazendo',
   createdAt: '2026-09-01T00:00:00Z',
   createdByName: 'Marcelo Souza',
+  lastMovedEventType: null,
+  lastMovedAt: null,
+  lastMovedByName: null,
 }
 
 function baseProps(): TaskCardItemProps {
@@ -49,6 +52,24 @@ describe('TaskCardItem', () => {
   it('mostra só a data quando não há autor', () => {
     renderCard({ card: { ...card, createdByName: null } })
     expect(screen.getByText(/^Criado em/)).toBeInTheDocument()
+  })
+
+  it('não mostra linha de movimentação quando o card nunca foi movido', () => {
+    renderCard()
+    expect(screen.queryByText(/Movido para/)).not.toBeInTheDocument()
+  })
+
+  it('mostra só a última movimentação, sem empilhar histórico', () => {
+    renderCard({
+      card: {
+        ...card,
+        lastMovedEventType: 'moved_concluido',
+        lastMovedAt: '2026-09-05T10:00:00Z',
+        lastMovedByName: 'Ana Lima',
+      },
+    })
+    expect(screen.getByText(/Movido para Concluído por Ana Lima em/)).toBeInTheDocument()
+    expect(screen.queryByText(/Movido para Em andamento/)).not.toBeInTheDocument()
   })
 
   it('chama onMove com a coluna anterior ao clicar em voltar', async () => {

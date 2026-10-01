@@ -4,7 +4,12 @@ import { Button } from '../../components'
 import { formatDateTime } from '../../lib/formatters'
 import { getNextStatus, getPreviousStatus } from './taskStatus'
 import { TaskCardAttachmentsSection } from './TaskCardAttachmentsSection'
-import type { TaskCard, TaskCardFormValues } from './types'
+import type { TaskCard, TaskCardFormValues, TaskMoveEventType } from './types'
+
+const MOVE_EVENT_LABELS: Record<TaskMoveEventType, string> = {
+  moved_em_andamento: 'Movido para Em andamento por',
+  moved_concluido: 'Movido para Concluído por',
+}
 
 export interface TaskCardItemProps {
   card: TaskCard
@@ -75,6 +80,12 @@ export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete 
         {card.createdByName ? `Criado por ${card.createdByName} em ` : 'Criado em '}
         {formatDateTime(new Date(card.createdAt))}
       </p>
+      {card.lastMovedEventType && card.lastMovedAt && (
+        <p className="text-xs text-ink-muted">
+          {MOVE_EVENT_LABELS[card.lastMovedEventType]} {card.lastMovedByName ?? 'alguém'} em{' '}
+          {formatDateTime(new Date(card.lastMovedAt))}
+        </p>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex gap-1">
           <button

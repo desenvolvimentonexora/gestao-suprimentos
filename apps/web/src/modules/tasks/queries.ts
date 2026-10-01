@@ -27,11 +27,11 @@ export function useCreateTaskCard(tenantId: string, userId: string) {
   })
 }
 
-export function useUpdateTaskCardStatus() {
+export function useUpdateTaskCardStatus(userId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ cardId, status }: { cardId: string; status: TaskStatus }) =>
-      updateTaskCardStatus(cardId, status),
+      updateTaskCardStatus(userId, cardId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TASK_CARDS_KEY })
     },

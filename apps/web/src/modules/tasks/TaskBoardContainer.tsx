@@ -26,7 +26,7 @@ function groupByStatus(cards: TaskCard[]): Record<TaskStatus, TaskCard[]> {
 export function TaskBoardContainer({ isOpen, onClose, tenantId, userId }: TaskBoardContainerProps) {
   const cardsQuery = useTaskCards()
   const createCard = useCreateTaskCard(tenantId, userId)
-  const updateStatus = useUpdateTaskCardStatus()
+  const updateStatus = useUpdateTaskCardStatus(userId)
   const updateCard = useUpdateTaskCard()
   const deleteCard = useDeleteTaskCard()
 

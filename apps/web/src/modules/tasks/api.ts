@@ -1,11 +1,27 @@
 import { supabase } from '../../lib/supabase'
-import type { TaskCard, TaskCardAttachment, TaskCardFormValues, TaskStatus } from './types'
+import type { TaskCard, TaskCardAttachment, TaskCardFormValues, TaskMoveEventType, TaskStatus } from './types'
 
-const TASK_CARD_COLUMNS = 'id, title, description, status, created_at, created_by'
+const TASK_CARD_COLUMNS =
+  'id, title, description, status, created_at, created_by, last_moved_event_type, last_moved_at, last_moved_by'
 const ATTACHMENTS_BUCKET = 'task-card-attachments'
 const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
 
-function toTaskCard(row: Record<string, unknown>, createdByName: string | null): TaskCard {
+async function resolveUserNames(userIds: (string | null)[]): Promise<Map<string, string>> {
+  const ids = [...new Set(userIds.filter(Boolean))] as string[]
+  const namesByUserId = new Map<string, string>()
+  if (ids.length === 0) return namesByUserId
+
+  const { data: users, error } = await supabase.from('users').select('id, full_name').in('id', ids)
+  if (error) throw error
+  for (const user of users) namesByUserId.set(user.id, user.full_name)
+  return namesByUserId
+}
+
+function toTaskCard(
+  row: Record<string, unknown>,
+  createdByName: string | null,
+  lastMovedByName: string | null,
+): TaskCard {
   return {
     id: row.id as string,
     title: row.title as string,
@@ -13,6 +29,9 @@ function toTaskCard(row: Record<string, unknown>, createdByName: string | null):
     status: row.status as TaskStatus,
     createdAt: row.created_at as string,
     createdByName,
+    lastMovedEventType: (row.last_moved_event_type as TaskMoveEventType | null) ?? null,
+    lastMovedAt: (row.last_moved_at as string | null) ?? null,
+    lastMovedByName,
   }
 }
 
@@ -25,18 +44,18 @@ export async function fetchTaskCards(): Promise<TaskCard[]> {
 
   if (error) throw error
 
-  const authorIds = [...new Set(data.map((row) => row.created_by).filter(Boolean))] as string[]
-  const namesByUserId = new Map<string, string>()
-  if (authorIds.length > 0) {
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('id, full_name')
-      .in('id', authorIds)
-    if (usersError) throw usersError
-    for (const user of users) namesByUserId.set(user.id, user.full_name)
-  }
+  const namesByUserId = await resolveUserNames([
+    ...data.map((row) => row.created_by),
+    ...data.map((row) => row.last_moved_by),
+  ])
 
-  return data.map((row) => toTaskCard(row, row.created_by ? (namesByUserId.get(row.created_by) ?? null) : null))
+  return data.map((row) =>
+    toTaskCard(
+      row,
+      row.created_by ? (namesByUserId.get(row.created_by) ?? null) : null,
+      row.last_moved_by ? (namesByUserId.get(row.last_moved_by) ?? null) : null,
+    ),
+  )
 }
 
 export async function createTaskCard(
@@ -53,10 +72,29 @@ export async function createTaskCard(
   if (error) throw error
 }
 
-export async function updateTaskCardStatus(cardId: string, status: TaskStatus): Promise<void> {
+const MOVE_EVENT_BY_STATUS: Partial<Record<TaskStatus, TaskMoveEventType>> = {
+  fazendo: 'moved_em_andamento',
+  feito: 'moved_concluido',
+}
+
+export async function updateTaskCardStatus(
+  userId: string,
+  cardId: string,
+  status: TaskStatus,
+): Promise<void> {
+  const moveEvent = MOVE_EVENT_BY_STATUS[status]
+
   const { error } = await supabase
     .from('task_cards')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+      ...(moveEvent && {
+        last_moved_event_type: moveEvent,
+        last_moved_at: new Date().toISOString(),
+        last_moved_by: userId,
+      }),
+    })
     .eq('id', cardId)
   if (error) throw error
 }

@@ -1876,6 +1876,9 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           id: string
+          last_moved_at: string | null
+          last_moved_by: string | null
+          last_moved_event_type: string | null
           status: string
           tenant_id: string
           title: string
@@ -1887,6 +1890,9 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
+          last_moved_at?: string | null
+          last_moved_by?: string | null
+          last_moved_event_type?: string | null
           status?: string
           tenant_id: string
           title: string
@@ -1898,6 +1904,9 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
+          last_moved_at?: string | null
+          last_moved_by?: string | null
+          last_moved_event_type?: string | null
           status?: string
           tenant_id?: string
           title?: string

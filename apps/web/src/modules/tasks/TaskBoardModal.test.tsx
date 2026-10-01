@@ -13,6 +13,9 @@ function card(id: string, title: string, status: TaskStatus): TaskCard {
     status,
     createdAt: '2026-09-01T00:00:00Z',
     createdByName: null,
+    lastMovedEventType: null,
+    lastMovedAt: null,
+    lastMovedByName: null,
   }
 }
 
