@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '../../components'
+import { formatDateTime } from '../../lib/formatters'
 import { getNextStatus, getPreviousStatus } from './taskStatus'
 import { TaskCardAttachmentsSection } from './TaskCardAttachmentsSection'
 import type { TaskCard, TaskCardFormValues } from './types'
@@ -69,6 +70,10 @@ export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete 
     <div className="flex flex-col gap-2 rounded border border-line bg-surface p-3">
       <p className="text-sm font-medium text-ink">{card.title}</p>
       {card.description && <p className="text-sm text-ink-muted">{card.description}</p>}
+      <p className="text-xs text-ink-muted">
+        {card.createdByName ? `Criado por ${card.createdByName} em ` : 'Criado em '}
+        {formatDateTime(new Date(card.createdAt))}
+      </p>
       <div className="flex items-center justify-between">
         <div className="flex gap-1">
           <button

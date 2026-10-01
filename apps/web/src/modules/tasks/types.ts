@@ -6,6 +6,7 @@ export interface TaskCard {
   description: string | null
   status: TaskStatus
   createdAt: string
+  createdByName: string | null
 }
 
 export interface TaskCardFormValues {

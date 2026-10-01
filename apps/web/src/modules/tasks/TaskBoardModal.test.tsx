@@ -6,7 +6,14 @@ import { TaskBoardModal } from './TaskBoardModal'
 import type { TaskCard, TaskStatus } from './types'
 
 function card(id: string, title: string, status: TaskStatus): TaskCard {
-  return { id, title, description: null, status, createdAt: '2026-09-01T00:00:00Z' }
+  return {
+    id,
+    title,
+    description: null,
+    status,
+    createdAt: '2026-09-01T00:00:00Z',
+    createdByName: null,
+  }
 }
 
 function baseProps() {

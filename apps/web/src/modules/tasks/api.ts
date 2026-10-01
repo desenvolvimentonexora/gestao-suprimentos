@@ -1,17 +1,18 @@
 import { supabase } from '../../lib/supabase'
 import type { TaskCard, TaskCardAttachment, TaskCardFormValues, TaskStatus } from './types'
 
-const TASK_CARD_COLUMNS = 'id, title, description, status, created_at'
+const TASK_CARD_COLUMNS = 'id, title, description, status, created_at, created_by'
 const ATTACHMENTS_BUCKET = 'task-card-attachments'
 const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
 
-function toTaskCard(row: Record<string, unknown>): TaskCard {
+function toTaskCard(row: Record<string, unknown>, createdByName: string | null): TaskCard {
   return {
     id: row.id as string,
     title: row.title as string,
     description: (row.description as string | null) ?? null,
     status: row.status as TaskStatus,
     createdAt: row.created_at as string,
+    createdByName,
   }
 }
 
@@ -23,7 +24,19 @@ export async function fetchTaskCards(): Promise<TaskCard[]> {
     .order('created_at')
 
   if (error) throw error
-  return data.map(toTaskCard)
+
+  const authorIds = [...new Set(data.map((row) => row.created_by).filter(Boolean))] as string[]
+  const namesByUserId = new Map<string, string>()
+  if (authorIds.length > 0) {
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('id, full_name')
+      .in('id', authorIds)
+    if (usersError) throw usersError
+    for (const user of users) namesByUserId.set(user.id, user.full_name)
+  }
+
+  return data.map((row) => toTaskCard(row, row.created_by ? (namesByUserId.get(row.created_by) ?? null) : null))
 }
 
 export async function createTaskCard(

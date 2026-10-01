@@ -11,6 +11,7 @@ const card: TaskCard = {
   description: 'Ajustar cores do cliente novo',
   status: 'fazendo',
   createdAt: '2026-09-01T00:00:00Z',
+  createdByName: 'Marcelo Souza',
 }
 
 function baseProps(): TaskCardItemProps {
@@ -38,6 +39,16 @@ describe('TaskCardItem', () => {
     renderCard()
     expect(screen.getByText('Configurar tema')).toBeInTheDocument()
     expect(screen.getByText('Ajustar cores do cliente novo')).toBeInTheDocument()
+  })
+
+  it('mostra quem criou o card e quando', () => {
+    renderCard()
+    expect(screen.getByText(/Criado por Marcelo Souza em/)).toBeInTheDocument()
+  })
+
+  it('mostra só a data quando não há autor', () => {
+    renderCard({ card: { ...card, createdByName: null } })
+    expect(screen.getByText(/^Criado em/)).toBeInTheDocument()
   })
 
   it('chama onMove com a coluna anterior ao clicar em voltar', async () => {
