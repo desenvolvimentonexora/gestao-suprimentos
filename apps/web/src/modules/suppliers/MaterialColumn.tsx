@@ -157,7 +157,6 @@ export function MaterialColumn({
               >
                 {material.name}
               </button>
-              <span className="shrink-0 px-2 text-xs text-ink-muted">({material.supplierCount})</span>
               <div className="invisible flex items-center gap-2 group-hover:visible">
                 <button
                   type="button"
@@ -176,6 +175,7 @@ export function MaterialColumn({
                   <Trash2 size={16} aria-hidden="true" />
                 </button>
               </div>
+              <span className="shrink-0 pl-2 text-xs text-ink-muted">({material.supplierCount})</span>
             </div>
           )
         })}
