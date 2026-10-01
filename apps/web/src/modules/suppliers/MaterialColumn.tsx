@@ -153,11 +153,11 @@ export function MaterialColumn({
               <button
                 type="button"
                 onClick={() => onSelectMaterial(material.id)}
-                className="flex flex-1 items-center gap-2 text-left text-sm text-ink hover:text-primary"
+                className="flex-1 truncate text-left text-sm text-ink hover:text-primary"
               >
                 {material.name}
-                <span className="text-xs text-ink-muted">({material.supplierCount})</span>
               </button>
+              <span className="shrink-0 px-2 text-xs text-ink-muted">({material.supplierCount})</span>
               <div className="invisible flex items-center gap-2 group-hover:visible">
                 <button
                   type="button"
