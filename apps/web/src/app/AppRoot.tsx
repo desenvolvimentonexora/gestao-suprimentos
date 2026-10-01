@@ -59,10 +59,12 @@ function LoginRoute({ brand }: { brand: Brand }) {
 
 function HomeRoute({
   fullName,
+  tenantName,
   tenantId,
   userId,
 }: {
   fullName: string
+  tenantName: string
   tenantId: string
   userId: string
 }) {
@@ -71,6 +73,7 @@ function HomeRoute({
   return (
     <HomePage
       fullName={fullName}
+      tenantName={tenantName}
       onSignOut={handleSignOut}
       tenantId={tenantId}
       userId={userId}
@@ -213,6 +216,7 @@ export function AppRoot() {
             <RequireSession session={session ?? null}>
               <HomeRoute
                 fullName={userName}
+                tenantName={tenant.name}
                 tenantId={tenant.tenantId}
                 userId={session?.user.id ?? ''}
               />

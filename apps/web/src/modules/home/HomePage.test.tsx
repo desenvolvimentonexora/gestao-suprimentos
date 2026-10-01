@@ -27,6 +27,12 @@ describe('HomePage', () => {
     expect(screen.getByText('Bom dia, Marcelo 👋')).toBeInTheDocument()
   })
 
+  it('mostra a logo da Nexora e o nome do tenant', () => {
+    renderHome({ tenantName: 'Construtora Beta' })
+    expect(screen.getByAltText('Nexora')).toBeInTheDocument()
+    expect(screen.getByText('Construtora Beta')).toBeInTheDocument()
+  })
+
   it('lista todos os setores do registro', () => {
     renderHome()
     expect(screen.getByText('Suprimentos')).toBeInTheDocument()
