@@ -1821,6 +1821,54 @@ export type Database = {
           },
         ]
       }
+      task_card_attachments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          file_name: string
+          file_path: string
+          id: string
+          task_card_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          task_card_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          task_card_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_card_attachments_task_card_id_fkey"
+            columns: ["task_card_id"]
+            isOneToOne: false
+            referencedRelation: "task_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_card_attachments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_cards: {
         Row: {
           created_at: string

@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -17,6 +18,8 @@ function baseProps() {
       fazendo: [card('c2', 'Card B', 'fazendo')],
       feito: [card('c3', 'Card C', 'feito')],
     } as Record<TaskStatus, TaskCard[]>,
+    tenantId: 'tenant-1',
+    userId: 'user-1',
     onCreateCard: vi.fn(),
     isCreating: false,
     onMoveCard: vi.fn(),
@@ -25,9 +28,18 @@ function baseProps() {
   }
 }
 
+function renderModal(props: Partial<ReturnType<typeof baseProps>> = {}) {
+  const queryClient = new QueryClient()
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <TaskBoardModal {...baseProps()} {...props} />
+    </QueryClientProvider>,
+  )
+}
+
 describe('TaskBoardModal', () => {
   it('mostra as três colunas com seus rótulos e cards', () => {
-    render(<TaskBoardModal {...baseProps()} />)
+    renderModal()
     expect(screen.getByText(/Realizar/)).toBeInTheDocument()
     expect(screen.getByText(/Realizando/)).toBeInTheDocument()
     expect(screen.getByText(/Realizado/)).toBeInTheDocument()
@@ -37,22 +49,22 @@ describe('TaskBoardModal', () => {
   })
 
   it('só a coluna "Realizar" tem campo de adicionar card', () => {
-    render(<TaskBoardModal {...baseProps()} />)
+    renderModal()
     expect(screen.getAllByLabelText('Título do novo card')).toHaveLength(1)
   })
 
   it('cria um card novo a partir do campo rápido', async () => {
-    const props = baseProps()
-    render(<TaskBoardModal {...props} />)
+    const onCreateCard = vi.fn()
+    renderModal({ onCreateCard })
 
     await userEvent.type(screen.getByLabelText('Título do novo card'), 'Nova tarefa')
     await userEvent.click(screen.getByRole('button', { name: 'Adicionar' }))
 
-    expect(props.onCreateCard).toHaveBeenCalledWith('Nova tarefa')
+    expect(onCreateCard).toHaveBeenCalledWith('Nova tarefa')
   })
 
   it('não mostra nada quando fechado', () => {
-    render(<TaskBoardModal {...baseProps()} isOpen={false} />)
+    renderModal({ isOpen: false })
     expect(screen.queryByText('Card A')).not.toBeInTheDocument()
   })
 })

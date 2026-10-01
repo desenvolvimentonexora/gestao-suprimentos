@@ -1,7 +1,9 @@
 import { supabase } from '../../lib/supabase'
-import type { TaskCard, TaskCardFormValues, TaskStatus } from './types'
+import type { TaskCard, TaskCardAttachment, TaskCardFormValues, TaskStatus } from './types'
 
 const TASK_CARD_COLUMNS = 'id, title, description, status, created_at'
+const ATTACHMENTS_BUCKET = 'task-card-attachments'
+const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
 
 function toTaskCard(row: Record<string, unknown>): TaskCard {
   return {
@@ -63,5 +65,66 @@ export async function deleteTaskCard(cardId: string): Promise<void> {
     .from('task_cards')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', cardId)
+  if (error) throw error
+}
+
+export async function fetchTaskCardAttachments(taskCardId: string): Promise<TaskCardAttachment[]> {
+  const { data, error } = await supabase
+    .from('task_card_attachments')
+    .select('id, file_name, file_path')
+    .eq('task_card_id', taskCardId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  if (data.length === 0) return []
+
+  const { data: signed, error: signedError } = await supabase.storage
+    .from(ATTACHMENTS_BUCKET)
+    .createSignedUrls(
+      data.map((row) => row.file_path),
+      SIGNED_URL_EXPIRES_IN_SECONDS,
+    )
+  if (signedError) throw signedError
+
+  const urlByPath = new Map(signed.map((entry) => [entry.path, entry.signedUrl]))
+
+  return data.map((row) => ({
+    id: row.id,
+    fileName: row.file_name,
+    filePath: row.file_path,
+    url: urlByPath.get(row.file_path) ?? '',
+  }))
+}
+
+export async function uploadTaskCardAttachment(
+  tenantId: string,
+  taskCardId: string,
+  userId: string,
+  file: File,
+): Promise<void> {
+  const filePath = `${tenantId}/${taskCardId}/${Date.now()}-${file.name}`
+
+  const { error: uploadError } = await supabase.storage.from(ATTACHMENTS_BUCKET).upload(filePath, file)
+  if (uploadError) throw uploadError
+
+  const { error } = await supabase.from('task_card_attachments').insert({
+    tenant_id: tenantId,
+    task_card_id: taskCardId,
+    created_by: userId,
+    file_path: filePath,
+    file_name: file.name,
+  })
+  if (error) throw error
+}
+
+export async function deleteTaskCardAttachment(attachmentId: string, filePath: string): Promise<void> {
+  const { error: storageError } = await supabase.storage.from(ATTACHMENTS_BUCKET).remove([filePath])
+  if (storageError) throw storageError
+
+  const { error } = await supabase
+    .from('task_card_attachments')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', attachmentId)
   if (error) throw error
 }

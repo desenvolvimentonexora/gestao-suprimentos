@@ -7,6 +7,8 @@ export interface TaskBoardModalProps {
   isOpen: boolean
   onClose: () => void
   cardsByStatus: Record<TaskStatus, TaskCard[]>
+  tenantId: string
+  userId: string
   onCreateCard: (title: string) => void
   isCreating: boolean
   onMoveCard: (cardId: string, status: TaskStatus) => void
@@ -18,6 +20,8 @@ export function TaskBoardModal({
   isOpen,
   onClose,
   cardsByStatus,
+  tenantId,
+  userId,
   onCreateCard,
   isCreating,
   onMoveCard,
@@ -32,6 +36,8 @@ export function TaskBoardModal({
             key={status}
             status={status}
             cards={cardsByStatus[status]}
+            tenantId={tenantId}
+            userId={userId}
             onMove={onMoveCard}
             onEdit={onEditCard}
             onDelete={onDeleteCard}

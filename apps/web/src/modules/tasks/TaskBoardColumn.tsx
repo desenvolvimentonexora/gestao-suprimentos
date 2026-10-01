@@ -7,6 +7,8 @@ import type { TaskCard, TaskCardFormValues, TaskStatus } from './types'
 export interface TaskBoardColumnProps {
   status: TaskStatus
   cards: TaskCard[]
+  tenantId: string
+  userId: string
   onMove: (cardId: string, status: TaskStatus) => void
   onEdit: (cardId: string, values: TaskCardFormValues) => void
   onDelete: (cardId: string) => void
@@ -17,6 +19,8 @@ export interface TaskBoardColumnProps {
 export function TaskBoardColumn({
   status,
   cards,
+  tenantId,
+  userId,
   onMove,
   onEdit,
   onDelete,
@@ -39,7 +43,15 @@ export function TaskBoardColumn({
       </h3>
       <div className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto">
         {cards.map((card) => (
-          <TaskCardItem key={card.id} card={card} onMove={onMove} onEdit={onEdit} onDelete={onDelete} />
+          <TaskCardItem
+            key={card.id}
+            card={card}
+            tenantId={tenantId}
+            userId={userId}
+            onMove={onMove}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         ))}
       </div>
       {onCreate && (

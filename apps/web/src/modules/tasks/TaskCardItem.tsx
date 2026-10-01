@@ -2,16 +2,19 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '../../components'
 import { getNextStatus, getPreviousStatus } from './taskStatus'
+import { TaskCardAttachmentsSection } from './TaskCardAttachmentsSection'
 import type { TaskCard, TaskCardFormValues } from './types'
 
 export interface TaskCardItemProps {
   card: TaskCard
+  tenantId: string
+  userId: string
   onMove: (cardId: string, status: 'a_fazer' | 'fazendo' | 'feito') => void
   onEdit: (cardId: string, values: TaskCardFormValues) => void
   onDelete: (cardId: string) => void
 }
 
-export function TaskCardItem({ card, onMove, onEdit, onDelete }: TaskCardItemProps) {
+export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete }: TaskCardItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [title, setTitle] = useState(card.title)
   const [description, setDescription] = useState(card.description ?? '')
@@ -54,6 +57,9 @@ export function TaskCardItem({ card, onMove, onEdit, onDelete }: TaskCardItemPro
           <Button variant="ghost" onClick={() => setIsEditing(false)}>
             Cancelar
           </Button>
+        </div>
+        <div className="border-t border-line pt-2">
+          <TaskCardAttachmentsSection taskCardId={card.id} tenantId={tenantId} userId={userId} />
         </div>
       </div>
     )

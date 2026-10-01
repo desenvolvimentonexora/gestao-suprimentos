@@ -12,3 +12,10 @@ export interface TaskCardFormValues {
   title: string
   description: string
 }
+
+export interface TaskCardAttachment {
+  id: string
+  fileName: string
+  filePath: string
+  url: string
+}

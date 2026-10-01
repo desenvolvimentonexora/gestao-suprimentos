@@ -35,6 +35,8 @@ export function TaskBoardContainer({ isOpen, onClose, tenantId, userId }: TaskBo
       isOpen={isOpen}
       onClose={onClose}
       cardsByStatus={groupByStatus(cardsQuery.data ?? [])}
+      tenantId={tenantId}
+      userId={userId}
       onCreateCard={(title) => createCard.mutate({ title, description: '' })}
       isCreating={createCard.isPending}
       onMoveCard={(cardId, status) => updateStatus.mutate({ cardId, status })}
