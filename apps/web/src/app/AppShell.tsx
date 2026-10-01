@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown, Kanban, Search } from 'lucide-react'
+import { CircleUserRound, Kanban, Search } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { TaskBoardContainer } from '../modules/tasks/TaskBoardContainer'
 
@@ -103,16 +103,19 @@ export function AppShell({
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex items-center gap-1 text-sm text-on-primary hover:underline"
+            aria-label={`Menu de ${userName}`}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-on-primary hover:bg-white/20"
           >
-            {userName}
-            <ChevronDown size={14} aria-hidden="true" />
+            <CircleUserRound size={20} aria-hidden="true" />
           </button>
           {menuOpen && (
             <div
               role="menu"
-              className="absolute right-0 z-10 mt-2 min-w-[140px] rounded border border-line bg-surface py-1 shadow-sm"
+              className="absolute right-0 z-10 mt-2 min-w-[160px] rounded border border-line bg-surface py-1 shadow-sm"
             >
+              <div className="border-b border-line px-3 py-2 text-sm font-medium text-ink">{userName}</div>
               {isAdmin && (
                 <Link
                   to="/admin"

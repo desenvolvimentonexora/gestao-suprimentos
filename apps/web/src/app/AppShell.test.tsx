@@ -59,10 +59,20 @@ describe('AppShell', () => {
     const onSignOut = vi.fn()
     renderShell({ onSignOut })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo' }))
     await userEvent.click(screen.getByRole('menuitem', { name: 'Sair' }))
 
     expect(onSignOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('mostra um ícone de perfil no lugar do nome, e só mostra o nome dentro do menu', async () => {
+    renderShell()
+
+    expect(screen.queryByText('Marcelo')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo' }))
+
+    expect(screen.getByText('Marcelo')).toBeInTheDocument()
   })
 
   it('usa a cor escura da marca na barra superior, para casar com o topo em degradê das telas de trabalho', () => {
@@ -74,7 +84,7 @@ describe('AppShell', () => {
   it('não mostra o item Administração para quem não é admin', async () => {
     renderShell()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo' }))
 
     expect(screen.queryByRole('menuitem', { name: 'Administração' })).not.toBeInTheDocument()
   })
@@ -82,7 +92,7 @@ describe('AppShell', () => {
   it('mostra o item Administração no menu para admins', async () => {
     renderShell({ isAdmin: true })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo' }))
 
     expect(screen.getByRole('menuitem', { name: 'Administração' })).toHaveAttribute('href', '/admin')
   })
@@ -99,7 +109,7 @@ describe('AppShell', () => {
   it('também abre o quadro de funcionalidades pelo item "Funcionalidades" no menu do usuário', async () => {
     renderShell()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo' }))
     await userEvent.click(screen.getByRole('menuitem', { name: 'Funcionalidades' }))
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
