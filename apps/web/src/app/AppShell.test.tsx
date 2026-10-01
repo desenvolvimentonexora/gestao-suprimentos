@@ -84,22 +84,22 @@ describe('AppShell', () => {
     expect(screen.getByRole('menuitem', { name: 'Administração' })).toHaveAttribute('href', '/admin')
   })
 
-  it('abre o quadro de tarefas ao clicar no botão do quadro', async () => {
+  it('abre o quadro de funcionalidades ao clicar no botão do quadro', async () => {
     renderShell()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de tarefas' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de funcionalidades' }))
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Quadro de tarefas')).toBeInTheDocument()
+    expect(screen.getByText('Quadro de Funcionalidades')).toBeInTheDocument()
   })
 
-  it('também abre o quadro de tarefas pelo item "Tarefas" no menu do usuário', async () => {
+  it('também abre o quadro de funcionalidades pelo item "Funcionalidades" no menu do usuário', async () => {
     renderShell()
 
     await userEvent.click(screen.getByRole('button', { name: 'Marcelo' }))
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Tarefas' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Funcionalidades' }))
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Quadro de tarefas')).toBeInTheDocument()
+    expect(screen.getByText('Quadro de Funcionalidades')).toBeInTheDocument()
   })
 })

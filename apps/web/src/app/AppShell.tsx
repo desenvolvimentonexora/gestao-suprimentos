@@ -85,12 +85,12 @@ export function AppShell({
 
         <button
           type="button"
-          aria-label="Abrir quadro de tarefas"
+          aria-label="Abrir quadro de funcionalidades"
           onClick={() => setTaskBoardOpen(true)}
           className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
         >
           <Kanban size={16} aria-hidden="true" />
-          Tarefas
+          Funcionalidades
         </button>
 
         <div ref={menuRef} className="relative shrink-0">
@@ -127,7 +127,7 @@ export function AppShell({
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-ink hover:bg-bg"
               >
                 <Kanban size={14} aria-hidden="true" />
-                Tarefas
+                Funcionalidades
               </button>
               <button
                 type="button"

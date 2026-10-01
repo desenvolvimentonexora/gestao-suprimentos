@@ -70,12 +70,12 @@ describe('HomePage', () => {
     expect(onSignOut).toHaveBeenCalledTimes(1)
   })
 
-  it('abre o quadro de tarefas ao clicar no botão Tarefas', async () => {
+  it('abre o quadro de funcionalidades ao clicar no botão Funcionalidades', async () => {
     renderHome()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de tarefas' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de funcionalidades' }))
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Quadro de tarefas')).toBeInTheDocument()
+    expect(screen.getByText('Quadro de Funcionalidades')).toBeInTheDocument()
   })
 })

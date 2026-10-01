@@ -49,7 +49,7 @@ values (
   jsonb_build_object(
     'name', 'Nexora',
     'subtitle', 'Gestão de Suprimentos',
-    'tagline', 'Sistema de Gestão Integrado',
+    'tagline', 'Gestão Integrada de Suprimentos',
     'logoUrl', '/assets/logo-nexora.png'
   ),
   -- Módulos de Suprimentos que já têm tela construída (têm rota real em

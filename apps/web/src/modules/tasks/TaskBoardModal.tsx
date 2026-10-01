@@ -29,7 +29,7 @@ export function TaskBoardModal({
   onDeleteCard,
 }: TaskBoardModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Quadro de tarefas" maxWidthClassName="max-w-5xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="Quadro de Funcionalidades" maxWidthClassName="max-w-5xl">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {STATUS_ORDER.map((status, index) => (
           <TaskBoardColumn

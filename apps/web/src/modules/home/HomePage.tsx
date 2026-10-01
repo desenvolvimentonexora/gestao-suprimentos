@@ -42,12 +42,12 @@ export function HomePage({
         </span>
         <button
           type="button"
-          aria-label="Abrir quadro de tarefas"
+          aria-label="Abrir quadro de funcionalidades"
           onClick={() => setTaskBoardOpen(true)}
           className="flex items-center gap-1.5 rounded-full border border-white/30 bg-black/20 px-4 py-1.5 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
         >
           <Kanban size={16} aria-hidden="true" />
-          Tarefas
+          Funcionalidades
         </button>
       </div>
 
