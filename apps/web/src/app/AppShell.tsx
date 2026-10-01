@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { TaskBoardContainer } from '../modules/tasks/TaskBoardContainer'
 
 export interface AppShellProps {
-  tenantName: string
   userName: string
   tenantId: string
   userId: string
@@ -22,7 +21,6 @@ function isTypingTarget(element: Element | null): boolean {
 }
 
 export function AppShell({
-  tenantName,
   userName,
   tenantId,
   userId,
@@ -59,14 +57,11 @@ export function AppShell({
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <header className="flex items-center justify-between gap-4 bg-primary-dark px-4 py-2">
-        <span className="flex shrink-0 items-center gap-2">
-          <img
-            src="/assets/logo-nexora.png"
-            alt="Nexora"
-            className="h-5 w-auto object-contain brightness-0 invert"
-          />
-          <span className="text-sm font-semibold text-on-primary">{tenantName}</span>
-        </span>
+        <img
+          src="/assets/logo-nexora.png"
+          alt="Nexora"
+          className="h-8 w-auto shrink-0 object-contain brightness-0 invert"
+        />
 
         <div className="relative w-full max-w-md">
           <Search

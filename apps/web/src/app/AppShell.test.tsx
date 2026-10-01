@@ -12,7 +12,6 @@ function renderShell(props: Partial<AppShellProps> = {}, children: ReactNode = <
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
         <AppShell
-          tenantName="Construtora Beta"
           userName="Marcelo"
           tenantId="tenant-1"
           userId="user-1"
@@ -27,10 +26,10 @@ function renderShell(props: Partial<AppShellProps> = {}, children: ReactNode = <
 }
 
 describe('AppShell', () => {
-  it('mostra o nome do tenant e o conteúdo', () => {
+  it('mostra a logo da Nexora e o conteúdo', () => {
     renderShell({}, <p>Conteúdo da página</p>)
 
-    expect(screen.getByText('Construtora Beta')).toBeInTheDocument()
+    expect(screen.getByAltText('Nexora')).toBeInTheDocument()
     expect(screen.getByText('Conteúdo da página')).toBeInTheDocument()
   })
 
@@ -65,7 +64,7 @@ describe('AppShell', () => {
   it('usa a cor escura da marca na barra superior, para casar com o topo em degradê das telas de trabalho', () => {
     renderShell()
 
-    expect(screen.getByText('Construtora Beta').closest('header')?.className).toContain('bg-primary-dark')
+    expect(screen.getByAltText('Nexora').closest('header')?.className).toContain('bg-primary-dark')
   })
 
   it('não mostra o item Administração para quem não é admin', async () => {

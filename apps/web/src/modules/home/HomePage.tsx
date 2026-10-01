@@ -9,7 +9,6 @@ import { getPendingWorkMessage, type PendingWorkSummary } from './getPendingWork
 
 export interface HomePageProps {
   fullName: string
-  tenantName?: string
   onSignOut: () => void
   tenantId?: string
   userId?: string
@@ -19,7 +18,6 @@ export interface HomePageProps {
 
 export function HomePage({
   fullName,
-  tenantName = '',
   onSignOut,
   tenantId = '',
   userId = '',
@@ -32,14 +30,11 @@ export function HomePage({
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-dark to-primary px-6 py-12">
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-2">
-          <img
-            src="/assets/logo-nexora.png"
-            alt="Nexora"
-            className="h-5 w-auto object-contain brightness-0 invert"
-          />
-          <span className="text-sm font-semibold text-on-primary">{tenantName}</span>
-        </span>
+        <img
+          src="/assets/logo-nexora.png"
+          alt="Nexora"
+          className="h-8 w-auto object-contain brightness-0 invert"
+        />
         <button
           type="button"
           aria-label="Abrir quadro de funcionalidades"

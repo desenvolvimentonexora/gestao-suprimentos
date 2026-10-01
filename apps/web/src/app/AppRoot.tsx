@@ -59,12 +59,10 @@ function LoginRoute({ brand }: { brand: Brand }) {
 
 function HomeRoute({
   fullName,
-  tenantName,
   tenantId,
   userId,
 }: {
   fullName: string
-  tenantName: string
   tenantId: string
   userId: string
 }) {
@@ -73,7 +71,6 @@ function HomeRoute({
   return (
     <HomePage
       fullName={fullName}
-      tenantName={tenantName}
       onSignOut={handleSignOut}
       tenantId={tenantId}
       userId={userId}
@@ -126,13 +123,11 @@ function AdminRoute({ tenantId }: { tenantId: string }) {
 }
 
 function ProtectedLayout({
-  tenantName,
   userName,
   tenantId,
   userId,
   isAdmin,
 }: {
-  tenantName: string
   userName: string
   tenantId: string
   userId: string
@@ -142,7 +137,6 @@ function ProtectedLayout({
 
   return (
     <AppShell
-      tenantName={tenantName}
       userName={userName}
       tenantId={tenantId}
       userId={userId}
@@ -216,7 +210,6 @@ export function AppRoot() {
             <RequireSession session={session ?? null}>
               <HomeRoute
                 fullName={userName}
-                tenantName={tenant.name}
                 tenantId={tenant.tenantId}
                 userId={session?.user.id ?? ''}
               />
@@ -239,7 +232,6 @@ export function AppRoot() {
           element={
             <RequireSession session={session ?? null}>
               <ProtectedLayout
-                tenantName={tenant.name}
                 userName={userName}
                 tenantId={tenant.tenantId}
                 userId={session?.user.id ?? ''}
