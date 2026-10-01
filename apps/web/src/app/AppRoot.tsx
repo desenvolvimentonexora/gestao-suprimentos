@@ -67,9 +67,7 @@ function HomeRoute({
   userId: string
 }) {
   const handleSignOut = useSignOutHandler()
-  const permissionsQuery = useUserPermissions(userId)
-  const canApprove = (permissionsQuery.data ?? []).includes('comparisons.approve')
-  const pendingWorkQuery = usePendingWorkSummary(canApprove)
+  const pendingWorkQuery = usePendingWorkSummary()
   return (
     <HomePage
       fullName={fullName}

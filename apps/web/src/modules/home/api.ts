@@ -1,30 +1,17 @@
 import { supabase } from '../../lib/supabase'
 import type { PendingWorkSummary } from './getPendingWorkMessage'
 
-export async function fetchPendingWorkSummary(canApprove: boolean): Promise<PendingWorkSummary> {
+export async function fetchPendingWorkSummary(): Promise<PendingWorkSummary> {
   const today = new Date().toISOString().slice(0, 10)
 
-  const [dueTodayResult, pendingApprovalsResult] = await Promise.all([
-    supabase
-      .from('requests')
-      .select('id', { count: 'exact', head: true })
-      .is('deleted_at', null)
-      .eq('needed_by', today)
-      .in('status', ['draft', 'open', 'negotiating']),
-    canApprove
-      ? supabase
-          .from('comparisons')
-          .select('id', { count: 'exact', head: true })
-          .is('deleted_at', null)
-          .eq('status', 'pending_approval')
-      : Promise.resolve({ count: 0, error: null }),
-  ])
+  const { count, error } = await supabase
+    .from('requests')
+    .select('id', { count: 'exact', head: true })
+    .is('deleted_at', null)
+    .eq('needed_by', today)
+    .in('status', ['draft', 'open', 'negotiating'])
 
-  if (dueTodayResult.error) throw dueTodayResult.error
-  if (pendingApprovalsResult.error) throw pendingApprovalsResult.error
+  if (error) throw error
 
-  return {
-    dueTodayCount: dueTodayResult.count ?? 0,
-    pendingApprovalsCount: pendingApprovalsResult.count ?? 0,
-  }
+  return { dueTodayCount: count ?? 0 }
 }

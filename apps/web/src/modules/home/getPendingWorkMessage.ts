@@ -1,6 +1,5 @@
 export interface PendingWorkSummary {
   dueTodayCount: number
-  pendingApprovalsCount?: number
 }
 
 export interface PendingWorkSegment {
@@ -9,22 +8,12 @@ export interface PendingWorkSegment {
 }
 
 export function getPendingWorkMessage(summary: PendingWorkSummary): PendingWorkSegment[] | null {
-  const segments: PendingWorkSegment[] = []
+  if (summary.dueTodayCount === 0) return null
 
-  if (summary.dueTodayCount > 0) {
-    segments.push({
+  return [
+    {
       text: `${summary.dueTodayCount} ${summary.dueTodayCount === 1 ? 'requisição vence' : 'requisições vencem'} hoje`,
       href: '/suprimentos/disparo-solicitacoes',
-    })
-  }
-
-  const pendingApprovalsCount = summary.pendingApprovalsCount ?? 0
-  if (pendingApprovalsCount > 0) {
-    segments.push({
-      text: `${pendingApprovalsCount} ${pendingApprovalsCount === 1 ? 'aprovação aguardando' : 'aprovações aguardando'} você`,
-      href: '/suprimentos/equalizacao',
-    })
-  }
-
-  return segments.length > 0 ? segments : null
+    },
+  ]
 }
