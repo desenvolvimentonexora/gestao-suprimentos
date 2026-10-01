@@ -117,6 +117,19 @@ describe('TaskCardItem', () => {
     expect(screen.getByText('Anexar imagem ou arquivo')).toBeInTheDocument()
   })
 
+  it('abre e fecha a seção de anexos pelo ícone de clipe, sem entrar em edição', async () => {
+    renderCard()
+
+    expect(screen.queryByText('Anexos')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Anexos de Configurar tema' }))
+    expect(screen.getByText('Anexos')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Título do card')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Anexos de Configurar tema' }))
+    expect(screen.queryByText('Anexos')).not.toBeInTheDocument()
+  })
+
   it('chama onDelete ao clicar em excluir', async () => {
     const onDelete = vi.fn()
     renderCard({ onDelete })

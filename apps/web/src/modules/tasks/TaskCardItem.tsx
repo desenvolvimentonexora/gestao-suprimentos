@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Paperclip, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '../../components'
 import { formatDateTime } from '../../lib/formatters'
 import { getNextStatus, getPreviousStatus } from './taskStatus'
@@ -17,6 +17,7 @@ export interface TaskCardItemProps {
 
 export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete }: TaskCardItemProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [showAttachments, setShowAttachments] = useState(false)
   const [title, setTitle] = useState(card.title)
   const [description, setDescription] = useState(card.description ?? '')
 
@@ -98,6 +99,16 @@ export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete 
         <div className="flex gap-1">
           <button
             type="button"
+            aria-label={`Anexos de ${card.title}`}
+            onClick={() => setShowAttachments((current) => !current)}
+            className={`rounded p-1 hover:bg-bg ${
+              showAttachments ? 'text-primary' : 'text-ink-muted hover:text-ink'
+            }`}
+          >
+            <Paperclip size={14} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
             aria-label={`Editar ${card.title}`}
             onClick={startEditing}
             className="rounded p-1 text-amber-600 hover:bg-bg hover:text-amber-700"
@@ -114,6 +125,11 @@ export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete 
           </button>
         </div>
       </div>
+      {showAttachments && (
+        <div className="border-t border-line pt-2">
+          <TaskCardAttachmentsSection taskCardId={card.id} tenantId={tenantId} userId={userId} />
+        </div>
+      )}
     </div>
   )
 }
