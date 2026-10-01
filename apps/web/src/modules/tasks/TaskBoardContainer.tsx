@@ -5,6 +5,7 @@ import {
   useTaskCards,
   useUpdateTaskCard,
   useUpdateTaskCardStatus,
+  useValidateTaskCard,
 } from './queries'
 import type { TaskCard, TaskStatus } from './types'
 
@@ -29,6 +30,7 @@ export function TaskBoardContainer({ isOpen, onClose, tenantId, userId }: TaskBo
   const updateStatus = useUpdateTaskCardStatus(userId)
   const updateCard = useUpdateTaskCard()
   const deleteCard = useDeleteTaskCard()
+  const validateCard = useValidateTaskCard(userId)
 
   return (
     <TaskBoardModal
@@ -42,6 +44,7 @@ export function TaskBoardContainer({ isOpen, onClose, tenantId, userId }: TaskBo
       onMoveCard={(cardId, status) => updateStatus.mutate({ cardId, status })}
       onEditCard={(cardId, values) => updateCard.mutate({ cardId, values })}
       onDeleteCard={(cardId) => deleteCard.mutate(cardId)}
+      onValidateCard={(cardId) => validateCard.mutate(cardId)}
     />
   )
 }

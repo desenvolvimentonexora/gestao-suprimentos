@@ -25,6 +25,7 @@ function baseProps(): TaskCardItemProps {
     onMove: vi.fn(),
     onEdit: vi.fn(),
     onDelete: vi.fn(),
+    onValidate: vi.fn(),
   }
 }
 
@@ -156,5 +157,34 @@ describe('TaskCardItem', () => {
     renderCard({ onDelete })
     await userEvent.click(screen.getByRole('button', { name: 'Excluir Configurar tema' }))
     expect(onDelete).toHaveBeenCalledWith('c1')
+  })
+
+  it('não mostra o botão Validar fora da coluna Concluído', () => {
+    renderCard({ card: { ...card, status: 'fazendo' } })
+    expect(screen.queryByRole('button', { name: 'Validar' })).not.toBeInTheDocument()
+  })
+
+  it('mostra o botão Validar para um card concluído ainda não validado', async () => {
+    const onValidate = vi.fn()
+    renderCard({ card: { ...card, status: 'feito' }, onValidate })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Validar' }))
+
+    expect(onValidate).toHaveBeenCalledWith('c1')
+  })
+
+  it('esconde o botão Validar depois de validado', () => {
+    renderCard({
+      card: {
+        ...card,
+        status: 'feito',
+        lastMovedEventType: 'validated',
+        lastMovedAt: '2026-09-06T00:00:00Z',
+        lastMovedByName: 'Ana Lima',
+      },
+    })
+
+    expect(screen.queryByRole('button', { name: 'Validar' })).not.toBeInTheDocument()
+    expect(screen.getByText(/Validado por Ana Lima em/)).toBeInTheDocument()
   })
 })

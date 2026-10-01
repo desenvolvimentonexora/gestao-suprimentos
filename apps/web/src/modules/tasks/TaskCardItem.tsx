@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Paperclip, Pencil, Trash2 } from 'lucide-react'
+import { CheckCircle2, ChevronLeft, ChevronRight, Paperclip, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '../../components'
 import { formatDateTime } from '../../lib/formatters'
 import { getNextStatus, getPreviousStatus } from './taskStatus'
 import { TaskCardAttachmentsSection } from './TaskCardAttachmentsSection'
-import type { TaskCard, TaskCardFormValues, TaskMoveEventType } from './types'
+import type { TaskCard, TaskCardEventType, TaskCardFormValues } from './types'
 
-const MOVE_EVENT_LABELS: Record<TaskMoveEventType, string> = {
+const EVENT_LABELS: Record<TaskCardEventType, string> = {
   moved_em_andamento: 'Movido para Em andamento por',
   moved_concluido: 'Movido para Concluído por',
+  validated: 'Validado por',
 }
 
 export interface TaskCardItemProps {
@@ -18,9 +19,18 @@ export interface TaskCardItemProps {
   onMove: (cardId: string, status: 'a_fazer' | 'fazendo' | 'feito') => void
   onEdit: (cardId: string, values: TaskCardFormValues) => void
   onDelete: (cardId: string) => void
+  onValidate: (cardId: string) => void
 }
 
-export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete }: TaskCardItemProps) {
+export function TaskCardItem({
+  card,
+  tenantId,
+  userId,
+  onMove,
+  onEdit,
+  onDelete,
+  onValidate,
+}: TaskCardItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [showAttachments, setShowAttachments] = useState(false)
   const [title, setTitle] = useState(card.title)
@@ -82,7 +92,7 @@ export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete 
       </p>
       {card.lastMovedEventType && card.lastMovedAt && (
         <p className="text-xs text-ink-muted">
-          {MOVE_EVENT_LABELS[card.lastMovedEventType]} {card.lastMovedByName ?? 'alguém'} em{' '}
+          {EVENT_LABELS[card.lastMovedEventType]} {card.lastMovedByName ?? 'alguém'} em{' '}
           {formatDateTime(new Date(card.lastMovedAt))}
         </p>
       )}
@@ -136,6 +146,12 @@ export function TaskCardItem({ card, tenantId, userId, onMove, onEdit, onDelete 
           </button>
         </div>
       </div>
+      {card.status === 'feito' && card.lastMovedEventType !== 'validated' && (
+        <Button variant="success" className="w-full" onClick={() => onValidate(card.id)}>
+          <CheckCircle2 size={14} className="mr-1 inline" aria-hidden="true" />
+          Validar
+        </Button>
+      )}
       {showAttachments && (
         <div className="border-t border-line pt-2">
           <TaskCardAttachmentsSection taskCardId={card.id} tenantId={tenantId} userId={userId} />

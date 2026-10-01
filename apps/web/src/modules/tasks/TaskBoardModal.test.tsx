@@ -35,6 +35,7 @@ function baseProps() {
     onMoveCard: vi.fn(),
     onEditCard: vi.fn(),
     onDeleteCard: vi.fn(),
+    onValidateCard: vi.fn(),
   }
 }
 

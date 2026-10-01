@@ -1,6 +1,6 @@
 export type TaskStatus = 'a_fazer' | 'fazendo' | 'feito'
 
-export type TaskMoveEventType = 'moved_em_andamento' | 'moved_concluido'
+export type TaskCardEventType = 'moved_em_andamento' | 'moved_concluido' | 'validated'
 
 export interface TaskCard {
   id: string
@@ -9,7 +9,7 @@ export interface TaskCard {
   status: TaskStatus
   createdAt: string
   createdByName: string | null
-  lastMovedEventType: TaskMoveEventType | null
+  lastMovedEventType: TaskCardEventType | null
   lastMovedAt: string | null
   lastMovedByName: string | null
 }

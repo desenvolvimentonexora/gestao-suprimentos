@@ -8,6 +8,7 @@ import {
   updateTaskCard,
   updateTaskCardStatus,
   uploadTaskCardAttachment,
+  validateTaskCard,
 } from './api'
 import type { TaskCardFormValues, TaskStatus } from './types'
 
@@ -32,6 +33,16 @@ export function useUpdateTaskCardStatus(userId: string) {
   return useMutation({
     mutationFn: ({ cardId, status }: { cardId: string; status: TaskStatus }) =>
       updateTaskCardStatus(userId, cardId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASK_CARDS_KEY })
+    },
+  })
+}
+
+export function useValidateTaskCard(userId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (cardId: string) => validateTaskCard(userId, cardId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TASK_CARDS_KEY })
     },

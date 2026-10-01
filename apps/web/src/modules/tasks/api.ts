@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase'
-import type { TaskCard, TaskCardAttachment, TaskCardFormValues, TaskMoveEventType, TaskStatus } from './types'
+import type { TaskCard, TaskCardAttachment, TaskCardFormValues, TaskCardEventType, TaskStatus } from './types'
 
 const TASK_CARD_COLUMNS =
   'id, title, description, status, created_at, created_by, last_moved_event_type, last_moved_at, last_moved_by'
@@ -29,7 +29,7 @@ function toTaskCard(
     status: row.status as TaskStatus,
     createdAt: row.created_at as string,
     createdByName,
-    lastMovedEventType: (row.last_moved_event_type as TaskMoveEventType | null) ?? null,
+    lastMovedEventType: (row.last_moved_event_type as TaskCardEventType | null) ?? null,
     lastMovedAt: (row.last_moved_at as string | null) ?? null,
     lastMovedByName,
   }
@@ -72,7 +72,7 @@ export async function createTaskCard(
   if (error) throw error
 }
 
-const MOVE_EVENT_BY_STATUS: Partial<Record<TaskStatus, TaskMoveEventType>> = {
+const MOVE_EVENT_BY_STATUS: Partial<Record<TaskStatus, TaskCardEventType>> = {
   fazendo: 'moved_em_andamento',
   feito: 'moved_concluido',
 }
@@ -94,6 +94,19 @@ export async function updateTaskCardStatus(
         last_moved_at: new Date().toISOString(),
         last_moved_by: userId,
       }),
+    })
+    .eq('id', cardId)
+  if (error) throw error
+}
+
+export async function validateTaskCard(userId: string, cardId: string): Promise<void> {
+  const { error } = await supabase
+    .from('task_cards')
+    .update({
+      updated_at: new Date().toISOString(),
+      last_moved_event_type: 'validated' satisfies TaskCardEventType,
+      last_moved_at: new Date().toISOString(),
+      last_moved_by: userId,
     })
     .eq('id', cardId)
   if (error) throw error

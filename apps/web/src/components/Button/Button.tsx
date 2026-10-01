@@ -10,6 +10,7 @@ export type ButtonVariant =
   | 'danger'
   | 'violet'
   | 'warning'
+  | 'success'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -32,6 +33,10 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   // Ação de recusa dentro de um fluxo de decisão (não liberar) — laranja,
   // distinto de danger (que é para exclusão irreversível).
   warning: 'bg-orange-500 text-white hover:opacity-90',
+  // Ação de aceite/validação (ex.: cliente confirma uma entrega concluída)
+  // — verde esmeralda, não o verde da marca (CLAUDE.md §7: cor semântica de
+  // aprovação nunca é substituída pela cor da marca, mesmo sendo parecidas).
+  success: 'border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
 }
 
 export function Button({ variant = 'primary', className = '', ...props }: ButtonProps) {

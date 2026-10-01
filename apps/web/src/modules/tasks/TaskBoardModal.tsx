@@ -14,6 +14,7 @@ export interface TaskBoardModalProps {
   onMoveCard: (cardId: string, status: TaskStatus) => void
   onEditCard: (cardId: string, values: TaskCardFormValues) => void
   onDeleteCard: (cardId: string) => void
+  onValidateCard: (cardId: string) => void
 }
 
 export function TaskBoardModal({
@@ -27,6 +28,7 @@ export function TaskBoardModal({
   onMoveCard,
   onEditCard,
   onDeleteCard,
+  onValidateCard,
 }: TaskBoardModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Quadro de Funcionalidades" maxWidthClassName="max-w-5xl">
@@ -41,6 +43,7 @@ export function TaskBoardModal({
             onMove={onMoveCard}
             onEdit={onEditCard}
             onDelete={onDeleteCard}
+            onValidate={onValidateCard}
             onCreate={index === 0 ? onCreateCard : undefined}
             isCreating={isCreating}
           />

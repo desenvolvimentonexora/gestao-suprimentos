@@ -65,4 +65,9 @@ describe('Button', () => {
     render(<Button variant="warning">Não liberar</Button>)
     expect(screen.getByRole('button', { name: 'Não liberar' }).className).toContain('bg-orange')
   })
+
+  it('aplica verde esmeralda no variant success, distinto da cor de marca', () => {
+    render(<Button variant="success">Validar</Button>)
+    expect(screen.getByRole('button', { name: 'Validar' }).className).toContain('emerald')
+  })
 })

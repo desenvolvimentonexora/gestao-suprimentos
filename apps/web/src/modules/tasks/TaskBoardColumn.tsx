@@ -12,6 +12,7 @@ export interface TaskBoardColumnProps {
   onMove: (cardId: string, status: TaskStatus) => void
   onEdit: (cardId: string, values: TaskCardFormValues) => void
   onDelete: (cardId: string) => void
+  onValidate: (cardId: string) => void
   onCreate?: (title: string) => void
   isCreating?: boolean
 }
@@ -24,6 +25,7 @@ export function TaskBoardColumn({
   onMove,
   onEdit,
   onDelete,
+  onValidate,
   onCreate,
   isCreating = false,
 }: TaskBoardColumnProps) {
@@ -51,6 +53,7 @@ export function TaskBoardColumn({
             onMove={onMove}
             onEdit={onEdit}
             onDelete={onDelete}
+            onValidate={onValidate}
           />
         ))}
       </div>
