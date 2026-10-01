@@ -31,7 +31,12 @@ function LoginPanel({ brand }: { brand: Brand }) {
     <div className="relative flex flex-col sm:w-[70%]">
       <div className="flex flex-col items-start gap-2 bg-bg py-10 pl-16 pr-8">
         <div className="flex items-center gap-3">
-          <img src="/assets/icon-nexora.png" alt="" aria-hidden="true" className="h-28 w-auto max-w-full object-contain" />
+          <img
+            src="/assets/icon-nexora.png"
+            alt=""
+            aria-hidden="true"
+            className="-ml-[13px] h-28 w-auto max-w-full object-contain"
+          />
           <img
             src={brand.logoUrl}
             alt={brand.name ?? ''}
@@ -49,7 +54,7 @@ function LoginPanel({ brand }: { brand: Brand }) {
         src="/assets/conexoes.png"
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute right-6 top-0 hidden h-full w-auto max-w-md object-contain object-[right_25%] sm:block"
+        className="pointer-events-none absolute right-20 top-0 hidden h-full w-auto max-w-md object-contain object-[right_25%] sm:block"
       />
     </div>
   )
