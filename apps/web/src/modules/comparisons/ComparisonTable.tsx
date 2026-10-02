@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
-import { Flag, TriangleAlert } from 'lucide-react'
+import { TriangleAlert, Trophy } from 'lucide-react'
 import { getCheapestQuotationId, getQuotationTotal } from './combinedPrice'
 import { getSupplierColor } from './supplierColor'
 import type { ComparisonQuotationRow, ComparisonRequestItemRow } from './types'
@@ -118,12 +118,12 @@ export function ComparisonTable({
                     colSpan={2}
                     className={`${COLUMN_DIVIDER} px-3 py-2 font-semibold ${isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.tableHeader}`}
                   >
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="relative flex items-center justify-center gap-2">
                       <span className="flex items-center gap-1">
-                        {isWinner && <Flag size={14} aria-hidden="true" />}
+                        {isWinner && <Trophy size={14} aria-hidden="true" />}
                         {quotation.supplierName}
                       </span>
-                      <div className="flex items-center gap-1">
+                      <div className="absolute right-0 flex items-center gap-1">
                         {quotation.unmatchedItemsCount > 0 && (
                           <button
                             type="button"
@@ -153,7 +153,7 @@ export function ComparisonTable({
               })}
               <th rowSpan={2} className={`${COLUMN_DIVIDER} bg-emerald-700 py-2 px-3 font-semibold text-white`}>
                 <span className="flex items-center gap-1">
-                  <Flag size={14} aria-hidden="true" />
+                  <Trophy size={14} aria-hidden="true" />
                   Melhor Forn.
                 </span>
               </th>
@@ -165,8 +165,10 @@ export function ComparisonTable({
                 const tagClasses = isExcluded ? 'bg-surface text-ink-muted opacity-40' : color.tag
                 return (
                   <Fragment key={quotation.quotationId}>
-                    <th className={`${COLUMN_DIVIDER} px-3 py-1 text-xs font-semibold ${tagClasses}`}>V.Unit.</th>
-                    <th className={`px-3 py-1 text-xs font-semibold ${tagClasses}`}>Total</th>
+                    <th className={`${COLUMN_DIVIDER} px-3 py-1 text-right text-xs font-semibold ${tagClasses}`}>
+                      V.Unit.
+                    </th>
+                    <th className={`px-3 py-1 text-right text-xs font-semibold ${tagClasses}`}>Total</th>
                   </Fragment>
                 )
               })}
@@ -194,13 +196,13 @@ export function ComparisonTable({
                       <Fragment key={quotation.quotationId}>
                         <td
                           data-testid={`price-${quotation.quotationId}-${item.id}`}
-                          className={`${COLUMN_DIVIDER} px-3 py-2.5 ${cellClasses}`}
+                          className={`${COLUMN_DIVIDER} px-3 py-2.5 text-right ${cellClasses}`}
                         >
                           {price?.unitPrice == null ? '—' : currencyFormatter.format(price.unitPrice)}
                         </td>
                         <td
                           data-testid={`itemTotal-${quotation.quotationId}-${item.id}`}
-                          className={`px-3 py-2.5 ${cellClasses}`}
+                          className={`px-3 py-2.5 text-right ${cellClasses}`}
                         >
                           {itemTotal === null ? '—' : currencyFormatter.format(itemTotal)}
                         </td>
@@ -209,7 +211,7 @@ export function ComparisonTable({
                   })}
                   <td
                     data-testid={`best-${item.id}`}
-                    className={`${COLUMN_DIVIDER} bg-surface px-3 py-2.5 font-semibold ${bestSupplier ? CHEAPEST_UNIT_PRICE_TEXT : 'text-ink-muted'}`}
+                    className={`${COLUMN_DIVIDER} bg-surface px-3 py-2.5 text-right font-semibold ${bestSupplier ? CHEAPEST_UNIT_PRICE_TEXT : 'text-ink-muted'}`}
                   >
                     {bestSupplier
                       ? `${bestSupplier.supplierName} — ${currencyFormatter.format(bestSupplier.unitPrice)}`
@@ -227,14 +229,14 @@ export function ComparisonTable({
                 <td
                   key={quotation.quotationId}
                   colSpan={2}
-                  className={`${COLUMN_DIVIDER} px-3 py-2 ${footerCellClasses(quotation.quotationId)}`}
+                  className={`${COLUMN_DIVIDER} px-3 py-2 text-right ${footerCellClasses(quotation.quotationId)}`}
                 >
                   {isEditable ? (
                     <input
                       type="number"
                       defaultValue={quotation.freight ?? ''}
                       aria-label={`Frete ${quotation.supplierName}`}
-                      className="w-24 rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
+                      className="w-24 rounded-sm border border-line bg-surface px-2 py-1 text-right text-sm text-ink"
                       onBlur={(e) =>
                         onUpdateQuotationTerms(quotation.quotationId, {
                           freight: parseNumberInput(e.target.value),
@@ -264,7 +266,7 @@ export function ComparisonTable({
                     key={quotation.quotationId}
                     data-testid={`total-${quotation.quotationId}`}
                     colSpan={2}
-                    className={`${COLUMN_DIVIDER} px-3 py-2.5 font-semibold ${footerCellClasses(quotation.quotationId)}`}
+                    className={`${COLUMN_DIVIDER} px-3 py-2.5 text-right font-semibold ${footerCellClasses(quotation.quotationId)}`}
                   >
                     {total === null ? '—' : currencyFormatter.format(total)}
                   </td>
@@ -306,13 +308,17 @@ export function ComparisonTable({
                 Entrega (dias)
               </td>
               {quotations.map((quotation) => (
-                <td key={quotation.quotationId} colSpan={2} className={`${COLUMN_DIVIDER} px-3 py-2`}>
+                <td
+                  key={quotation.quotationId}
+                  colSpan={2}
+                  className={`${COLUMN_DIVIDER} px-3 py-2 text-right`}
+                >
                   {isEditable ? (
                     <input
                       type="number"
                       defaultValue={quotation.deliveryDays ?? ''}
                       aria-label={`Entrega ${quotation.supplierName}`}
-                      className="w-20 rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
+                      className="w-20 rounded-sm border border-line bg-surface px-2 py-1 text-right text-sm text-ink"
                       onBlur={(e) =>
                         onUpdateQuotationTerms(quotation.quotationId, {
                           freight: quotation.freight,
