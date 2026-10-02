@@ -136,15 +136,11 @@ export function SupplierCard({
         </Button>
         <Button variant="secondary" className="w-full" onClick={() => onFindSimilar(supplier.id)}>
           <Search size={14} className="mr-1 inline" aria-hidden="true" />
-          Buscar semelhantes
+          Semelhantes
         </Button>
-        <ComingSoonButton
-          label="Copiar"
-          variant="secondary"
-          className="flex h-full w-full items-center justify-center"
-        />
+        <ComingSoonButton label="Copiar" variant="secondary" className="w-full" />
         <Button variant="secondary" className="w-full" onClick={() => onMoveToOtherMaterial(supplier.id)}>
-          Mover para setor
+          Mover
         </Button>
         <Button variant="danger" className="w-full" onClick={() => onDelete(supplier.id)}>
           Excluir
