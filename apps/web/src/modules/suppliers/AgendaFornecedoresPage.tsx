@@ -216,12 +216,10 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         tenantId={tenantId}
         activePopup={activePopup}
         onClose={() => setActivePopup(null)}
-        selectedMaterialId={selectedMaterialId}
-        selectedMaterialName={selectedMaterial?.name ?? null}
         allMaterials={materialsQuery.data ?? []}
         allMaterialVariants={materialVariantsQuery.data ?? []}
-        onCreateMaterialVariant={(materialId, code, description) =>
-          createMaterialVariant.mutateAsync({ materialId, code, description })
+        onCreateMaterialVariant={(materialId, code, description, unitOfMeasure) =>
+          createMaterialVariant.mutateAsync({ materialId, code, description, unitOfMeasure })
         }
       />
 
@@ -266,8 +264,8 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         onClose={() => setInsumosOpen(false)}
         materials={materialsQuery.data ?? []}
         variants={materialVariantsQuery.data ?? []}
-        onCreateVariant={(materialId, code, description) =>
-          createMaterialVariant.mutate({ materialId, code, description })
+        onCreateVariant={(materialId, code, description, unitOfMeasure) =>
+          createMaterialVariant.mutate({ materialId, code, description, unitOfMeasure })
         }
         isCreating={createMaterialVariant.isPending}
         onDeleteVariant={(variantId) =>

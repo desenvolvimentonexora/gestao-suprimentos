@@ -77,7 +77,7 @@ export async function updateMaterial(
 export async function fetchMaterialVariants(): Promise<MaterialVariantRow[]> {
   const { data, error } = await supabase
     .from('material_variants')
-    .select('id, material_id, code, description, materials(name)')
+    .select('id, material_id, code, description, unit_of_measure, materials(name)')
     .is('deleted_at', null)
     .order('code')
 
@@ -89,6 +89,7 @@ export async function fetchMaterialVariants(): Promise<MaterialVariantRow[]> {
     materialName: row.materials?.name ?? '',
     code: row.code,
     description: row.description,
+    unitOfMeasure: row.unit_of_measure,
   }))
 }
 
@@ -97,6 +98,7 @@ export async function createMaterialVariant(
   materialId: string,
   code: string,
   description: string,
+  unitOfMeasure: string,
 ): Promise<MaterialVariantRow> {
   const { data, error } = await supabase
     .from('material_variants')
@@ -105,8 +107,9 @@ export async function createMaterialVariant(
       material_id: materialId,
       code: code || null,
       description: description || null,
+      unit_of_measure: unitOfMeasure || null,
     })
-    .select('id, material_id, code, description, materials(name)')
+    .select('id, material_id, code, description, unit_of_measure, materials(name)')
     .single()
 
   if (error) throw error
@@ -117,6 +120,7 @@ export async function createMaterialVariant(
     materialName: data.materials?.name ?? '',
     code: data.code,
     description: data.description,
+    unitOfMeasure: data.unit_of_measure,
   }
 }
 

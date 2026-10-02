@@ -5,8 +5,8 @@ import { SupplierFormModal } from './SupplierFormModal'
 import type { MaterialVariantRow } from './types'
 
 const allMaterialVariants: MaterialVariantRow[] = [
-  { id: 'v1', materialId: 'm1', materialName: 'Cimento', code: '1023', description: null },
-  { id: 'v2', materialId: 'm2', materialName: 'Areia', code: '1024', description: null },
+  { id: 'v1', materialId: 'm1', materialName: 'Cimento', code: '1023', description: null, unitOfMeasure: null },
+  { id: 'v2', materialId: 'm2', materialName: 'Areia', code: '1024', description: null, unitOfMeasure: null },
 ]
 
 function baseProps() {

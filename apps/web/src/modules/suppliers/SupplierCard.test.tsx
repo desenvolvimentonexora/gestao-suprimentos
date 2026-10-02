@@ -48,7 +48,7 @@ describe('SupplierCard', () => {
     expect(props.onToggleFavorite).toHaveBeenCalledWith('s1')
   })
 
-  it.each(['certificados', 'prazo', 'materiais', 'avaliacoes'] as const)(
+  it.each(['certificados', 'materiais', 'avaliacoes'] as const)(
     'abre o pop-up %s ao clicar no indicador',
     async (kind) => {
       const props = baseProps()

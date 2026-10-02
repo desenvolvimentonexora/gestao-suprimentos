@@ -1,9 +1,9 @@
-import { Award, Clock, Mail, Package, Phone, Search, Star, User, Users } from 'lucide-react'
+import { Award, Mail, Package, Phone, Search, Star, User, Users } from 'lucide-react'
 import { Badge, Button, ComingSoonButton } from '../../components'
 import { getSupplierColor } from './supplierColor'
 import type { SupplierRow } from './types'
 
-export type SupplierPopupKind = 'certificados' | 'prazo' | 'materiais' | 'avaliacoes'
+export type SupplierPopupKind = 'certificados' | 'materiais' | 'avaliacoes'
 
 export interface SupplierCardProps {
   supplier: SupplierRow
@@ -18,7 +18,6 @@ export interface SupplierCardProps {
 
 const INDICATORS: { kind: SupplierPopupKind; label: string; icon: typeof Award; iconClassName: string }[] = [
   { kind: 'certificados', label: 'Certificados', icon: Award, iconClassName: 'text-blue-600' },
-  { kind: 'prazo', label: 'Prazo', icon: Clock, iconClassName: 'text-amber-600' },
   { kind: 'materiais', label: 'Materiais', icon: Package, iconClassName: 'text-purple-600' },
   { kind: 'avaliacoes', label: 'Avaliações', icon: Star, iconClassName: 'text-amber-500' },
 ]
@@ -112,7 +111,7 @@ export function SupplierCard({
         <p className="text-xs text-ink-muted">Nenhum contato extra. Clique em + Adicionar.</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-1 border-t border-line pt-3">
+      <div className="grid grid-cols-3 gap-1 border-t border-line pt-3">
         {INDICATORS.map(({ kind, label, icon: Icon, iconClassName }) => (
           <button
             key={kind}

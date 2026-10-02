@@ -10,8 +10,22 @@ const materials: MaterialRow[] = [
 ]
 
 const variants: MaterialVariantRow[] = [
-  { id: 'v1', materialId: 'm1', materialName: 'Cimento', code: 'CP-II', description: '50kg' },
-  { id: 'v2', materialId: 'm2', materialName: 'Parafuso', code: '3/4', description: 'rosca soberba' },
+  {
+    id: 'v1',
+    materialId: 'm1',
+    materialName: 'Cimento',
+    code: 'CP-II',
+    description: '50kg',
+    unitOfMeasure: null,
+  },
+  {
+    id: 'v2',
+    materialId: 'm2',
+    materialName: 'Parafuso',
+    code: '3/4',
+    description: 'rosca soberba',
+    unitOfMeasure: null,
+  },
 ]
 
 function baseProps() {
@@ -57,9 +71,10 @@ describe('InsumosModal', () => {
     await userEvent.selectOptions(screen.getByLabelText('Material'), 'm2')
     await userEvent.type(screen.getByLabelText('Código'), '1/2')
     await userEvent.type(screen.getByLabelText('Descrição'), 'rosca fina')
+    await userEvent.type(screen.getByLabelText('Unidade'), 'un')
     await userEvent.click(screen.getByRole('button', { name: 'Adicionar insumo' }))
 
-    expect(onCreateVariant).toHaveBeenCalledWith('m2', '1/2', 'rosca fina')
+    expect(onCreateVariant).toHaveBeenCalledWith('m2', '1/2', 'rosca fina', 'un')
   })
 
   it('cancela o formulário de novo insumo sem chamar onCreateVariant', async () => {
@@ -91,5 +106,25 @@ describe('InsumosModal', () => {
     render(<InsumosModal {...baseProps()} isDeleting />)
 
     expect(screen.getByRole('button', { name: 'Excluir Cimento — CP-II — 50kg' })).toBeDisabled()
+  })
+
+  it('mostra a unidade junto com o insumo quando cadastrada', () => {
+    render(
+      <InsumosModal
+        {...baseProps()}
+        variants={[
+          {
+            id: 'v1',
+            materialId: 'm1',
+            materialName: 'Cimento',
+            code: 'CP-II',
+            description: '50kg',
+            unitOfMeasure: 'sc',
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByText('Cimento — CP-II — 50kg (sc)')).toBeInTheDocument()
   })
 })

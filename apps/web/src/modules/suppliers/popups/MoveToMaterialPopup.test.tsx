@@ -15,9 +15,23 @@ const materials: MaterialRow[] = [
 ]
 
 const materialVariants: MaterialVariantRow[] = [
-  { id: 'v1', materialId: 'm1', materialName: 'Cabo CCI', code: '001', description: null },
-  { id: 'v2', materialId: 'm2', materialName: 'Abraçadeira Tipo U', code: '005', description: 'ABRAÇADEIRA "U" 5"' },
-  { id: 'v3', materialId: 'm2', materialName: 'Abraçadeira Tipo U', code: '006', description: 'ABRAÇADEIRA "U" 6"' },
+  { id: 'v1', materialId: 'm1', materialName: 'Cabo CCI', code: '001', description: null, unitOfMeasure: null },
+  {
+    id: 'v2',
+    materialId: 'm2',
+    materialName: 'Abraçadeira Tipo U',
+    code: '005',
+    description: 'ABRAÇADEIRA "U" 5"',
+    unitOfMeasure: null,
+  },
+  {
+    id: 'v3',
+    materialId: 'm2',
+    materialName: 'Abraçadeira Tipo U',
+    code: '006',
+    description: 'ABRAÇADEIRA "U" 6"',
+    unitOfMeasure: null,
+  },
 ]
 
 function baseProps() {

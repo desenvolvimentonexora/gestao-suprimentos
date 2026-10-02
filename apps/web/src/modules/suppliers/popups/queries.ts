@@ -4,37 +4,28 @@ import {
   createReview,
   deleteCertificate,
   fetchCertificates,
-  fetchLeadTimeDays,
   fetchReviews,
   fetchSupplierMaterialLinks,
   removeSupplierMaterialLink,
-  updateLeadTimeDays,
+  updateSupplierMaterialLeadTimes,
   uploadCertificate,
 } from './api'
 
-export function useLeadTimeDays(supplierId: string, materialVariantId: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ['lead-time', supplierId, materialVariantId],
-    queryFn: () => fetchLeadTimeDays(supplierId, materialVariantId),
-    enabled,
-  })
-}
-
-export function useUpdateLeadTimeDays() {
+export function useUpdateSupplierMaterialLeadTimes() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({
       supplierId,
       materialVariantId,
-      days,
+      leadTimes,
     }: {
       supplierId: string
       materialVariantId: string
-      days: number | null
-    }) => updateLeadTimeDays(supplierId, materialVariantId, days),
+      leadTimes: { purchaseDays: number | null; pickingDays: number | null; deliveryDays: number | null }
+    }) => updateSupplierMaterialLeadTimes(supplierId, materialVariantId, leadTimes),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['lead-time', variables.supplierId, variables.materialVariantId],
+        queryKey: ['supplier-material-links', variables.supplierId],
       })
     },
   })

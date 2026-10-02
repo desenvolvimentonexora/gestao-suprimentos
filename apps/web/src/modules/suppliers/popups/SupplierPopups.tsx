@@ -1,7 +1,6 @@
 import type { SupplierPopupKind } from '../SupplierCard'
 import type { MaterialRow, MaterialVariantRow } from '../types'
 import { CertificatesPopup } from './CertificatesPopup'
-import { LeadTimePopup } from './LeadTimePopup'
 import { MaterialsPopup } from './MaterialsPopup'
 import { ReviewsPopup } from './ReviewsPopup'
 import {
@@ -9,11 +8,10 @@ import {
   useCertificates,
   useCreateReview,
   useDeleteCertificate,
-  useLeadTimeDays,
   useRemoveSupplierMaterialLink,
   useReviews,
   useSupplierMaterialLinks,
-  useUpdateLeadTimeDays,
+  useUpdateSupplierMaterialLeadTimes,
   useUploadCertificate,
 } from './queries'
 
@@ -26,14 +24,13 @@ export interface SupplierPopupsProps {
   tenantId: string
   activePopup: ActivePopup | null
   onClose: () => void
-  selectedMaterialId: string | null
-  selectedMaterialName: string | null
   allMaterials: MaterialRow[]
   allMaterialVariants: MaterialVariantRow[]
   onCreateMaterialVariant: (
     materialId: string,
     code: string,
     description: string,
+    unitOfMeasure: string,
   ) => Promise<MaterialVariantRow>
 }
 
@@ -41,26 +38,11 @@ export function SupplierPopups({
   tenantId,
   activePopup,
   onClose,
-  selectedMaterialId,
-  selectedMaterialName,
   allMaterials,
   allMaterialVariants,
   onCreateMaterialVariant,
 }: SupplierPopupsProps) {
   const supplierId = activePopup?.supplierId ?? ''
-
-  // Prazo de entrega é por variante (código específico); quando a tela tem
-  // um material genérico selecionado, usamos a primeira variante dele —
-  // suficiente enquanto a maioria dos materiais tem uma única variante.
-  const leadTimeVariantId =
-    allMaterialVariants.find((variant) => variant.materialId === selectedMaterialId)?.id ?? ''
-
-  const leadTimeQuery = useLeadTimeDays(
-    supplierId,
-    leadTimeVariantId,
-    activePopup?.kind === 'prazo' && Boolean(leadTimeVariantId),
-  )
-  const updateLeadTime = useUpdateLeadTimeDays()
 
   const reviewsQuery = useReviews(supplierId, activePopup?.kind === 'avaliacoes')
   const createReview = useCreateReview(tenantId)
@@ -68,6 +50,7 @@ export function SupplierPopups({
   const linksQuery = useSupplierMaterialLinks(supplierId, activePopup?.kind === 'materiais')
   const addLink = useAddSupplierMaterialLink(tenantId)
   const removeLink = useRemoveSupplierMaterialLink()
+  const updateLeadTimes = useUpdateSupplierMaterialLeadTimes()
 
   const certificatesQuery = useCertificates(supplierId, activePopup?.kind === 'certificados')
   const uploadCertificate = useUploadCertificate(tenantId)
@@ -75,22 +58,6 @@ export function SupplierPopups({
 
   return (
     <>
-      <LeadTimePopup
-        key={`${supplierId}:${leadTimeVariantId}`}
-        isOpen={activePopup?.kind === 'prazo'}
-        onClose={onClose}
-        materialName={selectedMaterialName ?? ''}
-        initialDays={leadTimeQuery.data ?? null}
-        onSave={(days) => {
-          if (!leadTimeVariantId) return
-          updateLeadTime.mutate(
-            { supplierId, materialVariantId: leadTimeVariantId, days },
-            { onSuccess: onClose },
-          )
-        }}
-        isSaving={updateLeadTime.isPending}
-      />
-
       <ReviewsPopup
         isOpen={activePopup?.kind === 'avaliacoes'}
         onClose={onClose}
@@ -108,6 +75,9 @@ export function SupplierPopups({
         onAddLink={(materialVariantId) => addLink.mutate({ supplierId, materialVariantId })}
         onRemoveLink={(materialVariantId) => removeLink.mutate({ supplierId, materialVariantId })}
         onCreateVariant={onCreateMaterialVariant}
+        onUpdateLeadTimes={(materialVariantId, leadTimes) =>
+          updateLeadTimes.mutate({ supplierId, materialVariantId, leadTimes })
+        }
       />
 
       <CertificatesPopup

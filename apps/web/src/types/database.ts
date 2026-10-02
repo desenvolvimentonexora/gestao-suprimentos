@@ -402,6 +402,7 @@ export type Database = {
           id: string
           material_id: string
           tenant_id: string
+          unit_of_measure: string | null
           updated_at: string
         }
         Insert: {
@@ -413,6 +414,7 @@ export type Database = {
           id?: string
           material_id: string
           tenant_id: string
+          unit_of_measure?: string | null
           updated_at?: string
         }
         Update: {
@@ -424,6 +426,7 @@ export type Database = {
           id?: string
           material_id?: string
           tenant_id?: string
+          unit_of_measure?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1637,6 +1640,9 @@ export type Database = {
         Row: {
           created_at: string
           lead_time_days: number | null
+          lead_time_delivery_days: number | null
+          lead_time_picking_days: number | null
+          lead_time_purchase_days: number | null
           material_variant_id: string
           supplier_id: string
           tenant_id: string
@@ -1644,6 +1650,9 @@ export type Database = {
         Insert: {
           created_at?: string
           lead_time_days?: number | null
+          lead_time_delivery_days?: number | null
+          lead_time_picking_days?: number | null
+          lead_time_purchase_days?: number | null
           material_variant_id: string
           supplier_id: string
           tenant_id: string
@@ -1651,6 +1660,9 @@ export type Database = {
         Update: {
           created_at?: string
           lead_time_days?: number | null
+          lead_time_delivery_days?: number | null
+          lead_time_picking_days?: number | null
+          lead_time_purchase_days?: number | null
           material_variant_id?: string
           supplier_id?: string
           tenant_id?: string

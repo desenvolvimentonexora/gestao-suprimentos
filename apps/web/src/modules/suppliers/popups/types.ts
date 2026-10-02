@@ -18,4 +18,8 @@ export interface SupplierMaterialLinkRow {
   materialName: string
   code: string | null
   description: string | null
+  unitOfMeasure: string | null
+  purchaseDays: number | null
+  pickingDays: number | null
+  deliveryDays: number | null
 }

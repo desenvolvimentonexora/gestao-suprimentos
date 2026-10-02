@@ -6,7 +6,16 @@ import type { MaterialRow, MaterialVariantRow } from '../types'
 import type { SupplierMaterialLinkRow } from './types'
 
 const links: SupplierMaterialLinkRow[] = [
-  { materialVariantId: 'v1', materialName: 'Cimento', code: null, description: null },
+  {
+    materialVariantId: 'v1',
+    materialName: 'Cimento',
+    code: null,
+    description: null,
+    unitOfMeasure: null,
+    purchaseDays: null,
+    pickingDays: null,
+    deliveryDays: null,
+  },
 ]
 
 const allMaterials: MaterialRow[] = [
@@ -16,10 +25,24 @@ const allMaterials: MaterialRow[] = [
 ]
 
 const allMaterialVariants: MaterialVariantRow[] = [
-  { id: 'v1', materialId: 'm1', materialName: 'Cimento', code: null, description: null },
-  { id: 'v2', materialId: 'm2', materialName: 'Areia', code: 'ARE-1', description: null },
-  { id: 'v3', materialId: 'm3', materialName: 'Aço', code: 'CA-50', description: 'Vergalhão 10mm' },
-  { id: 'v4', materialId: 'm3', materialName: 'Aço', code: 'CA-60', description: null },
+  { id: 'v1', materialId: 'm1', materialName: 'Cimento', code: null, description: null, unitOfMeasure: null },
+  {
+    id: 'v2',
+    materialId: 'm2',
+    materialName: 'Areia',
+    code: 'ARE-1',
+    description: null,
+    unitOfMeasure: 'm3',
+  },
+  {
+    id: 'v3',
+    materialId: 'm3',
+    materialName: 'Aço',
+    code: 'CA-50',
+    description: 'Vergalhão 10mm',
+    unitOfMeasure: 'un',
+  },
+  { id: 'v4', materialId: 'm3', materialName: 'Aço', code: 'CA-60', description: null, unitOfMeasure: null },
 ]
 
 function baseProps() {
@@ -32,6 +55,7 @@ function baseProps() {
     onAddLink: vi.fn(),
     onRemoveLink: vi.fn(),
     onCreateVariant: vi.fn(),
+    onUpdateLeadTimes: vi.fn(),
   }
 }
 
@@ -64,10 +88,21 @@ describe('MaterialsPopup', () => {
     render(
       <MaterialsPopup
         {...baseProps()}
-        links={[{ materialVariantId: 'v3', materialName: 'Aço', code: 'CA-50', description: 'Vergalhão 10mm' }]}
+        links={[
+          {
+            materialVariantId: 'v3',
+            materialName: 'Aço',
+            code: 'CA-50',
+            description: 'Vergalhão 10mm',
+            unitOfMeasure: 'un',
+            purchaseDays: null,
+            pickingDays: null,
+            deliveryDays: null,
+          },
+        ]}
       />,
     )
-    expect(screen.getByText(/CA-50/)).toBeInTheDocument()
+    expect(screen.getByText('CA-50')).toBeInTheDocument()
   })
 
   it('distingue sugestões do mesmo material pelo código, na busca e no rótulo do botão', async () => {
@@ -98,6 +133,7 @@ describe('MaterialsPopup', () => {
 
     expect(screen.getByLabelText('Material')).toBeInTheDocument()
     expect(screen.getByLabelText('Código')).toBeInTheDocument()
+    expect(screen.getByLabelText('Unidade')).toBeInTheDocument()
   })
 
   it('cadastra uma nova variante pelo formulário aberto no botão', async () => {
@@ -107,6 +143,7 @@ describe('MaterialsPopup', () => {
       materialName: 'Aço',
       code: 'CA-25',
       description: 'Vergalhão 6mm',
+      unitOfMeasure: 'un',
     })
     const onAddLink = vi.fn()
     render(<MaterialsPopup {...baseProps()} onCreateVariant={onCreateVariant} onAddLink={onAddLink} />)
@@ -115,9 +152,10 @@ describe('MaterialsPopup', () => {
     await userEvent.selectOptions(screen.getByLabelText('Material'), 'm3')
     await userEvent.type(screen.getByLabelText('Código'), 'CA-25')
     await userEvent.type(screen.getByLabelText('Descrição'), 'Vergalhão 6mm')
+    await userEvent.type(screen.getByLabelText('Unidade'), 'un')
     await userEvent.click(screen.getByRole('button', { name: '+ Adicionar variante' }))
 
-    expect(onCreateVariant).toHaveBeenCalledWith('m3', 'CA-25', 'Vergalhão 6mm')
+    expect(onCreateVariant).toHaveBeenCalledWith('m3', 'CA-25', 'Vergalhão 6mm', 'un')
     expect(onAddLink).toHaveBeenCalledWith('v5')
   })
 
@@ -137,5 +175,64 @@ describe('MaterialsPopup', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
 
     expect(screen.queryByLabelText('Material')).not.toBeInTheDocument()
+  })
+
+  it('mostra unidade e o prazo (compra, picking, entrega) de cada insumo vinculado', () => {
+    render(
+      <MaterialsPopup
+        {...baseProps()}
+        links={[
+          {
+            materialVariantId: 'v3',
+            materialName: 'Aço',
+            code: 'CA-50',
+            description: 'Vergalhão 10mm',
+            unitOfMeasure: 'un',
+            purchaseDays: 5,
+            pickingDays: 1,
+            deliveryDays: 2,
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByText('un')).toBeInTheDocument()
+    expect(screen.getByLabelText('Compra Aço — CA-50 — Vergalhão 10mm')).toHaveValue(5)
+    expect(screen.getByLabelText('Picking Aço — CA-50 — Vergalhão 10mm')).toHaveValue(1)
+    expect(screen.getByLabelText('Entrega Aço — CA-50 — Vergalhão 10mm')).toHaveValue(2)
+    expect(screen.getByText('8')).toBeInTheDocument()
+  })
+
+  it('chama onUpdateLeadTimes com os 3 valores ao editar um campo de prazo', async () => {
+    const onUpdateLeadTimes = vi.fn()
+    render(
+      <MaterialsPopup
+        {...baseProps()}
+        onUpdateLeadTimes={onUpdateLeadTimes}
+        links={[
+          {
+            materialVariantId: 'v3',
+            materialName: 'Aço',
+            code: 'CA-50',
+            description: 'Vergalhão 10mm',
+            unitOfMeasure: 'un',
+            purchaseDays: 5,
+            pickingDays: 1,
+            deliveryDays: 2,
+          },
+        ]}
+      />,
+    )
+
+    const pickingInput = screen.getByLabelText('Picking Aço — CA-50 — Vergalhão 10mm')
+    await userEvent.clear(pickingInput)
+    await userEvent.type(pickingInput, '3')
+    await userEvent.tab()
+
+    expect(onUpdateLeadTimes).toHaveBeenCalledWith('v3', {
+      purchaseDays: 5,
+      pickingDays: 3,
+      deliveryDays: 2,
+    })
   })
 })

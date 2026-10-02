@@ -46,11 +46,13 @@ export function useCreateMaterialVariant(tenantId: string) {
       materialId,
       code,
       description,
+      unitOfMeasure,
     }: {
       materialId: string
       code: string
       description: string
-    }) => createMaterialVariant(tenantId, materialId, code, description),
+      unitOfMeasure: string
+    }) => createMaterialVariant(tenantId, materialId, code, description, unitOfMeasure),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['material-variants'] })
       queryClient.invalidateQueries({ queryKey: ['materials'] })

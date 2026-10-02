@@ -4,34 +4,6 @@ import type { CertificateRow, ReviewRow, SupplierMaterialLinkRow } from './types
 const CERTIFICATES_BUCKET = 'supplier-certificates'
 const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10
 
-export async function fetchLeadTimeDays(
-  supplierId: string,
-  materialVariantId: string,
-): Promise<number | null> {
-  const { data, error } = await supabase
-    .from('supplier_materials')
-    .select('lead_time_days')
-    .eq('supplier_id', supplierId)
-    .eq('material_variant_id', materialVariantId)
-    .maybeSingle()
-
-  if (error) throw error
-  return data?.lead_time_days ?? null
-}
-
-export async function updateLeadTimeDays(
-  supplierId: string,
-  materialVariantId: string,
-  days: number | null,
-): Promise<void> {
-  const { error } = await supabase
-    .from('supplier_materials')
-    .update({ lead_time_days: days })
-    .eq('supplier_id', supplierId)
-    .eq('material_variant_id', materialVariantId)
-  if (error) throw error
-}
-
 export async function fetchReviews(supplierId: string): Promise<ReviewRow[]> {
   const { data, error } = await supabase
     .from('supplier_reviews')
@@ -79,7 +51,9 @@ export async function fetchSupplierMaterialLinks(
 ): Promise<SupplierMaterialLinkRow[]> {
   const { data, error } = await supabase
     .from('supplier_materials')
-    .select('material_variant_id, material_variants(code, description, materials(name))')
+    .select(
+      'material_variant_id, lead_time_purchase_days, lead_time_picking_days, lead_time_delivery_days, material_variants(code, description, unit_of_measure, materials(name))',
+    )
     .eq('supplier_id', supplierId)
 
   if (error) throw error
@@ -89,7 +63,28 @@ export async function fetchSupplierMaterialLinks(
     materialName: row.material_variants?.materials?.name ?? '',
     code: row.material_variants?.code ?? null,
     description: row.material_variants?.description ?? null,
+    unitOfMeasure: row.material_variants?.unit_of_measure ?? null,
+    purchaseDays: row.lead_time_purchase_days,
+    pickingDays: row.lead_time_picking_days,
+    deliveryDays: row.lead_time_delivery_days,
   }))
+}
+
+export async function updateSupplierMaterialLeadTimes(
+  supplierId: string,
+  materialVariantId: string,
+  leadTimes: { purchaseDays: number | null; pickingDays: number | null; deliveryDays: number | null },
+): Promise<void> {
+  const { error } = await supabase
+    .from('supplier_materials')
+    .update({
+      lead_time_purchase_days: leadTimes.purchaseDays,
+      lead_time_picking_days: leadTimes.pickingDays,
+      lead_time_delivery_days: leadTimes.deliveryDays,
+    })
+    .eq('supplier_id', supplierId)
+    .eq('material_variant_id', materialVariantId)
+  if (error) throw error
 }
 
 export async function addSupplierMaterialLink(

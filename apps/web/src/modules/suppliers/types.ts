@@ -19,6 +19,7 @@ export interface MaterialVariantRow {
   materialName: string
   code: string | null
   description: string | null
+  unitOfMeasure: string | null
 }
 
 export interface SupplierContactRow {

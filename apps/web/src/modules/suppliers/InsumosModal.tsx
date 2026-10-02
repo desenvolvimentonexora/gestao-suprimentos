@@ -8,15 +8,21 @@ export interface InsumosModalProps {
   onClose: () => void
   materials: MaterialRow[]
   variants: MaterialVariantRow[]
-  onCreateVariant: (materialId: string, code: string, description: string) => void
+  onCreateVariant: (materialId: string, code: string, description: string, unitOfMeasure: string) => void
   isCreating: boolean
   onDeleteVariant: (variantId: string) => void
   isDeleting: boolean
 }
 
-function variantLabel(variant: { materialName: string; code: string | null; description: string | null }) {
+function variantLabel(variant: {
+  materialName: string
+  code: string | null
+  description: string | null
+  unitOfMeasure?: string | null
+}) {
   const parts = [variant.materialName, variant.code, variant.description].filter(Boolean)
-  return parts.join(' — ')
+  const label = parts.join(' — ')
+  return variant.unitOfMeasure ? `${label} (${variant.unitOfMeasure})` : label
 }
 
 export function InsumosModal({
@@ -34,6 +40,7 @@ export function InsumosModal({
   const [materialId, setMaterialId] = useState(materials[0]?.id ?? '')
   const [code, setCode] = useState('')
   const [description, setDescription] = useState('')
+  const [unitOfMeasure, setUnitOfMeasure] = useState('')
 
   const normalizedSearch = search.trim().toLowerCase()
   const filteredVariants =
@@ -49,6 +56,7 @@ export function InsumosModal({
     setMaterialId(materials[0]?.id ?? '')
     setCode('')
     setDescription('')
+    setUnitOfMeasure('')
     setShowNewForm(true)
   }
 
@@ -58,7 +66,7 @@ export function InsumosModal({
 
   function handleCreate() {
     if (!materialId || !code.trim()) return
-    onCreateVariant(materialId, code.trim(), description.trim())
+    onCreateVariant(materialId, code.trim(), description.trim(), unitOfMeasure.trim())
     closeNewForm()
   }
 
@@ -101,6 +109,11 @@ export function InsumosModal({
             </div>
             <Input label="Código" value={code} onChange={(e) => setCode(e.target.value)} />
             <Input label="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Input
+              label="Unidade"
+              value={unitOfMeasure}
+              onChange={(e) => setUnitOfMeasure(e.target.value)}
+            />
             <div className="flex gap-2">
               <Button type="button" onClick={handleCreate} disabled={!materialId || !code.trim() || isCreating}>
                 Adicionar insumo
