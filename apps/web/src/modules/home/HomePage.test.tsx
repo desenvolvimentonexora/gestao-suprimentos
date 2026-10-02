@@ -88,4 +88,20 @@ describe('HomePage', () => {
     expect(screen.getByText('Marcelo Souza')).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Sair' })).toBeInTheDocument()
   })
+
+  it('não mostra o item Administração para quem não é admin', async () => {
+    renderHome()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo Souza' }))
+
+    expect(screen.queryByRole('menuitem', { name: 'Administração' })).not.toBeInTheDocument()
+  })
+
+  it('mostra o item Administração no menu para admins', async () => {
+    renderHome({ isAdmin: true })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo Souza' }))
+
+    expect(screen.getByRole('menuitem', { name: 'Administração' })).toHaveAttribute('href', '/admin')
+  })
 })

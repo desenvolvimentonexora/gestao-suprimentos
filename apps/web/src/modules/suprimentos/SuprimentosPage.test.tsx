@@ -3,14 +3,19 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { SuprimentosPage } from './SuprimentosPage'
+import { SuprimentosPage, type SuprimentosPageProps } from './SuprimentosPage'
 
-function renderPage(now = new Date('2026-09-08T09:00:00')) {
+function renderPage(props: Partial<SuprimentosPageProps> = {}) {
   const queryClient = new QueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
-        <SuprimentosPage fullName="Marcelo Souza" onSignOut={vi.fn()} now={now} />
+        <SuprimentosPage
+          fullName="Marcelo Souza"
+          onSignOut={vi.fn()}
+          now={new Date('2026-09-08T09:00:00')}
+          {...props}
+        />
       </MemoryRouter>
     </QueryClientProvider>,
   )
@@ -45,14 +50,7 @@ describe('SuprimentosPage', () => {
 
   it('chama onSignOut ao clicar em sair da conta', async () => {
     const onSignOut = vi.fn()
-    const queryClient = new QueryClient()
-    render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <SuprimentosPage fullName="Marcelo Souza" onSignOut={onSignOut} />
-        </MemoryRouter>
-      </QueryClientProvider>,
-    )
+    renderPage({ onSignOut })
 
     await userEvent.click(screen.getByRole('button', { name: /Sair da conta/ }))
 
@@ -77,5 +75,21 @@ describe('SuprimentosPage', () => {
 
     expect(screen.getByText('Marcelo Souza')).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Sair' })).toBeInTheDocument()
+  })
+
+  it('não mostra o item Administração para quem não é admin', async () => {
+    renderPage()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo Souza' }))
+
+    expect(screen.queryByRole('menuitem', { name: 'Administração' })).not.toBeInTheDocument()
+  })
+
+  it('mostra o item Administração no menu para admins', async () => {
+    renderPage({ isAdmin: true })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo Souza' }))
+
+    expect(screen.getByRole('menuitem', { name: 'Administração' })).toHaveAttribute('href', '/admin')
   })
 })

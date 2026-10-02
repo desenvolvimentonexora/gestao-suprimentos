@@ -61,10 +61,12 @@ function HomeRoute({
   fullName,
   tenantId,
   userId,
+  isAdmin,
 }: {
   fullName: string
   tenantId: string
   userId: string
+  isAdmin: boolean
 }) {
   const handleSignOut = useSignOutHandler()
   const pendingWorkQuery = usePendingWorkSummary()
@@ -74,6 +76,7 @@ function HomeRoute({
       onSignOut={handleSignOut}
       tenantId={tenantId}
       userId={userId}
+      isAdmin={isAdmin}
       pendingWork={pendingWorkQuery.data}
     />
   )
@@ -83,14 +86,22 @@ function SuprimentosRoute({
   fullName,
   tenantId,
   userId,
+  isAdmin,
 }: {
   fullName: string
   tenantId: string
   userId: string
+  isAdmin: boolean
 }) {
   const handleSignOut = useSignOutHandler()
   return (
-    <SuprimentosPage fullName={fullName} onSignOut={handleSignOut} tenantId={tenantId} userId={userId} />
+    <SuprimentosPage
+      fullName={fullName}
+      onSignOut={handleSignOut}
+      tenantId={tenantId}
+      userId={userId}
+      isAdmin={isAdmin}
+    />
   )
 }
 
@@ -212,6 +223,7 @@ export function AppRoot() {
                 fullName={userName}
                 tenantId={tenant.tenantId}
                 userId={session?.user.id ?? ''}
+                isAdmin={isAdmin}
               />
             </RequireSession>
           }
@@ -224,6 +236,7 @@ export function AppRoot() {
                 fullName={userName}
                 tenantId={tenant.tenantId}
                 userId={session?.user.id ?? ''}
+                isAdmin={isAdmin}
               />
             </RequireSession>
           }

@@ -12,6 +12,7 @@ export interface HomePageProps {
   onSignOut: () => void
   tenantId?: string
   userId?: string
+  isAdmin?: boolean
   now?: Date
   pendingWork?: PendingWorkSummary
 }
@@ -21,6 +22,7 @@ export function HomePage({
   onSignOut,
   tenantId = '',
   userId = '',
+  isAdmin = false,
   now = new Date(),
   pendingWork,
 }: HomePageProps) {
@@ -49,7 +51,20 @@ export function HomePage({
             userName={fullName}
             onSignOut={onSignOut}
             triggerClassName="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/20 text-on-primary hover:bg-black/30"
-          />
+          >
+            {(closeMenu) =>
+              isAdmin && (
+                <Link
+                  to="/admin"
+                  role="menuitem"
+                  onClick={closeMenu}
+                  className="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-bg"
+                >
+                  Administração
+                </Link>
+              )
+            }
+          </UserMenu>
         </div>
       </div>
 
