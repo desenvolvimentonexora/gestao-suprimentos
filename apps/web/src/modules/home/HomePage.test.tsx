@@ -77,4 +77,15 @@ describe('HomePage', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Quadro de Funcionalidades')).toBeInTheDocument()
   })
+
+  it('mostra o ícone de perfil, com o nome e o sair dentro do menu', async () => {
+    renderHome()
+
+    expect(screen.queryByText('Marcelo Souza')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo Souza' }))
+
+    expect(screen.getByText('Marcelo Souza')).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Sair' })).toBeInTheDocument()
+  })
 })

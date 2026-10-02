@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Paperclip } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { ModuleCard, ModuleGrid } from '../../components'
+import { ModuleCard, ModuleGrid, UserMenu } from '../../components'
 import { TaskBoardContainer } from '../tasks/TaskBoardContainer'
 import { sectorRegistry } from '../registry'
 import { getGreeting } from './getGreeting'
@@ -35,15 +35,22 @@ export function HomePage({
           alt="Nexora"
           className="h-10 w-auto object-contain brightness-0 invert"
         />
-        <button
-          type="button"
-          aria-label="Abrir suporte"
-          onClick={() => setTaskBoardOpen(true)}
-          className="flex items-center gap-1.5 rounded-full border border-white/30 bg-black/20 px-4 py-1.5 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
-        >
-          <Paperclip size={16} aria-hidden="true" />
-          Suporte
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Abrir suporte"
+            onClick={() => setTaskBoardOpen(true)}
+            className="flex items-center gap-1.5 rounded-full border border-white/30 bg-black/20 px-4 py-1.5 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
+          >
+            <Paperclip size={16} aria-hidden="true" />
+            Suporte
+          </button>
+          <UserMenu
+            userName={fullName}
+            onSignOut={onSignOut}
+            triggerClassName="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/20 text-on-primary hover:bg-black/30"
+          />
+        </div>
       </div>
 
       <h1 className="text-center text-3xl font-semibold text-on-primary">

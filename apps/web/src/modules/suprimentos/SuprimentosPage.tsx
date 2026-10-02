@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Paperclip, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { ModuleCard, ModuleGrid } from '../../components'
+import { ModuleCard, ModuleGrid, UserMenu } from '../../components'
 import { useSettings } from '../../core/config'
 import { TaskBoardContainer } from '../tasks/TaskBoardContainer'
 import { getGreeting } from '../home/getGreeting'
@@ -66,6 +66,11 @@ export function SuprimentosPage({
           >
             ← Setores
           </Link>
+          <UserMenu
+            userName={fullName}
+            onSignOut={onSignOut}
+            triggerClassName="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/20 text-on-primary hover:bg-black/30"
+          />
         </div>
       </div>
 

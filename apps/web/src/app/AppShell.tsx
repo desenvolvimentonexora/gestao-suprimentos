@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleUserRound, Paperclip, Search } from 'lucide-react'
+import { Paperclip, Search } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
+import { UserMenu } from '../components'
 import { TaskBoardContainer } from '../modules/tasks/TaskBoardContainer'
 
 export interface AppShellProps {
@@ -29,8 +30,6 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const searchRef = useRef<HTMLInputElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const [menuOpen, setMenuOpen] = useState(false)
   const [taskBoardOpen, setTaskBoardOpen] = useState(false)
   const location = useLocation()
   const showSuprimentosBack = location.pathname.startsWith('/suprimentos/')
@@ -44,17 +43,6 @@ export function AppShell({
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
-
-  useEffect(() => {
-    if (!menuOpen) return
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [menuOpen])
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -101,28 +89,14 @@ export function AppShell({
           )}
         </div>
 
-        <div ref={menuRef} className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-label={`Menu de ${userName}`}
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-on-primary hover:bg-white/20"
-          >
-            <CircleUserRound size={20} aria-hidden="true" />
-          </button>
-          {menuOpen && (
-            <div
-              role="menu"
-              className="absolute right-0 z-10 mt-2 min-w-[160px] rounded border border-line bg-surface py-1 shadow-sm"
-            >
-              <div className="border-b border-line px-3 py-2 text-sm font-medium text-ink">{userName}</div>
+        <UserMenu userName={userName} onSignOut={onSignOut}>
+          {(closeMenu) => (
+            <>
               {isAdmin && (
                 <Link
                   to="/admin"
                   role="menuitem"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={closeMenu}
                   className="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-bg"
                 >
                   Administração
@@ -132,7 +106,7 @@ export function AppShell({
                 type="button"
                 role="menuitem"
                 onClick={() => {
-                  setMenuOpen(false)
+                  closeMenu()
                   setTaskBoardOpen(true)
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-ink hover:bg-bg"
@@ -140,20 +114,9 @@ export function AppShell({
                 <Paperclip size={14} aria-hidden="true" />
                 Suporte
               </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setMenuOpen(false)
-                  onSignOut()
-                }}
-                className="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-bg"
-              >
-                Sair
-              </button>
-            </div>
+            </>
           )}
-        </div>
+        </UserMenu>
       </header>
       <main className="flex-1">{children}</main>
 
