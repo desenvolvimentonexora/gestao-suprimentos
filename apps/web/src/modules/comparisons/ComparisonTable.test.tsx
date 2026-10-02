@@ -205,6 +205,12 @@ describe('ComparisonTable', () => {
     expect(screen.getByTestId('total-q1').className).not.toContain('bg-blue-900')
   })
 
+  it('não destaca a célula de Frete do fornecedor vencedor, só a de Total', () => {
+    render(<ComparisonTable {...baseProps()} />)
+    const freteCell = screen.getByLabelText('Frete Votorantim').closest('td')
+    expect(freteCell!.className).not.toContain('bg-blue-900')
+  })
+
   it('exclui um fornecedor da comparação e recalcula o vencedor', async () => {
     const user = userEvent.setup()
     const onWinnerChange = vi.fn()

@@ -23,7 +23,7 @@ const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', cu
 const COLUMN_DIVIDER = 'border-l border-line'
 // Verde escuro é sempre "menor preço unitário desta linha" (não a cor do
 // fornecedor) — azul-marinho, à parte, é reservado pro menor total
-// combinado (ver footerCellClasses).
+// combinado (ver totalRowCellClasses).
 const CHEAPEST_UNIT_PRICE_CLASSES = 'bg-emerald-50 text-emerald-800'
 const CHEAPEST_UNIT_PRICE_TEXT = 'text-emerald-700'
 
@@ -84,13 +84,18 @@ export function ComparisonTable({
   const winningQuotation = quotations.find((quotation) => quotation.quotationId === winningQuotationId) ?? null
   const combinedBestPrice = winningQuotation ? getQuotationTotal(requestItems, winningQuotation) : null
 
-  // Frete/Total ficam neutros pra todo mundo — só o vencedor (menor total
-  // combinado) recebe o preenchimento sólido, igual à referência (a cor por
-  // fornecedor fica só no cabeçalho e na célula mais barata de cada item).
-  function footerCellClasses(quotationId: string): string {
+  // Só a linha Total recebe o preenchimento sólido do vencedor (menor total
+  // combinado) — Frete fica neutro pra todo mundo, igual Pagamento e Entrega
+  // (a cor por fornecedor fica só no cabeçalho e na célula mais barata de
+  // cada item).
+  function totalRowCellClasses(quotationId: string): string {
     if (excludedQuotationIds.includes(quotationId)) return 'opacity-40'
     if (quotationId === winningQuotationId) return 'bg-blue-900 text-white'
     return 'text-ink'
+  }
+
+  function neutralFooterCellClasses(quotationId: string): string {
+    return excludedQuotationIds.includes(quotationId) ? 'opacity-40' : 'text-ink'
   }
 
   return (
@@ -234,7 +239,7 @@ export function ComparisonTable({
                 <td
                   key={quotation.quotationId}
                   colSpan={2}
-                  className={`${COLUMN_DIVIDER} px-3 py-2 text-right ${footerCellClasses(quotation.quotationId)}`}
+                  className={`${COLUMN_DIVIDER} px-3 py-2 text-right ${neutralFooterCellClasses(quotation.quotationId)}`}
                 >
                   {isEditable ? (
                     <input
@@ -271,7 +276,7 @@ export function ComparisonTable({
                     key={quotation.quotationId}
                     data-testid={`total-${quotation.quotationId}`}
                     colSpan={2}
-                    className={`${COLUMN_DIVIDER} px-3 py-2.5 text-right font-semibold ${footerCellClasses(quotation.quotationId)}`}
+                    className={`${COLUMN_DIVIDER} px-3 py-2.5 text-right font-semibold ${totalRowCellClasses(quotation.quotationId)}`}
                   >
                     {total === null ? '—' : currencyFormatter.format(total)}
                   </td>
