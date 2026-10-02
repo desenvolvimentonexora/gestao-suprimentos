@@ -3,6 +3,7 @@ import { Button } from '../../components'
 import { useSettings } from '../../core/config'
 import { CategoryColumn } from './CategoryColumn'
 import { CnpjLookupBlock } from './CnpjLookupBlock'
+import { InsumosModal } from './InsumosModal'
 import { MaterialColumn } from './MaterialColumn'
 import { MoveSupplierMaterialContainer } from './MoveSupplierMaterialContainer'
 import { SimilarSuppliersContainer } from './SimilarSuppliersContainer'
@@ -51,6 +52,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [similarSuppliersFor, setSimilarSuppliersFor] = useState<string | null>(null)
   const [manualCnpjSearch, setManualCnpjSearch] = useState<string | null>(null)
   const [movingSupplierId, setMovingSupplierId] = useState<string | null>(null)
+  const [insumosOpen, setInsumosOpen] = useState(false)
 
   const settingsQuery = useSettings(tenantId)
   const supplierLabel = settingsQuery.data?.vocabulary.supplier
@@ -103,7 +105,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
           placeholder={`Buscar ${materialLabel ?? 'material'}`}
           value={materialSearch}
           onChange={(e) => setMaterialSearch(e.target.value)}
-          className="min-w-[200px] flex-1 rounded border border-line bg-bg px-3 py-2 text-sm text-ink"
+          className="min-w-[140px] flex-1 rounded border border-line bg-bg px-3 py-2 text-sm text-ink"
         />
         <input
           type="search"
@@ -113,8 +115,11 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
             setSupplierSearch(e.target.value)
             setPage(0)
           }}
-          className="min-w-[200px] flex-1 rounded border border-line bg-bg px-3 py-2 text-sm text-ink"
+          className="min-w-[140px] flex-1 rounded border border-line bg-bg px-3 py-2 text-sm text-ink"
         />
+        <Button variant="secondary" onClick={() => setInsumosOpen(true)}>
+          Insumos
+        </Button>
       </div>
       <div className="grid grid-cols-1 items-start gap-6 lg:h-[calc(100vh-14rem)] lg:grid-cols-[200px_320px_1fr]">
         <div className="flex flex-col lg:h-full">
@@ -234,6 +239,17 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
         isOpen={reportOpen}
         onClose={() => setReportOpen(false)}
         rows={reportQuery.data ?? []}
+      />
+
+      <InsumosModal
+        isOpen={insumosOpen}
+        onClose={() => setInsumosOpen(false)}
+        materials={materialsQuery.data ?? []}
+        variants={materialVariantsQuery.data ?? []}
+        onCreateVariant={(materialId, code, description) =>
+          createMaterialVariant.mutate({ materialId, code, description })
+        }
+        isCreating={createMaterialVariant.isPending}
       />
 
       <MoveSupplierMaterialContainer
