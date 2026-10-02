@@ -151,8 +151,11 @@ export function ComparisonTable({
                   </th>
                 )
               })}
-              <th rowSpan={2} className={`${COLUMN_DIVIDER} bg-emerald-700 py-2 px-3 font-semibold text-white`}>
-                <span className="flex items-center gap-1">
+              <th
+                rowSpan={2}
+                className={`${COLUMN_DIVIDER} w-36 max-w-[9rem] bg-emerald-700 py-2 px-3 font-semibold text-white`}
+              >
+                <span className="flex items-center justify-center gap-1">
                   <Trophy size={14} aria-hidden="true" />
                   Melhor Forn.
                 </span>
@@ -168,7 +171,9 @@ export function ComparisonTable({
                     <th className={`${COLUMN_DIVIDER} px-3 py-1 text-right text-xs font-semibold ${tagClasses}`}>
                       V.Unit.
                     </th>
-                    <th className={`px-3 py-1 text-right text-xs font-semibold ${tagClasses}`}>Total</th>
+                    <th className={`${COLUMN_DIVIDER} px-3 py-1 text-right text-xs font-semibold ${tagClasses}`}>
+                      Total
+                    </th>
                   </Fragment>
                 )
               })}
@@ -202,7 +207,7 @@ export function ComparisonTable({
                         </td>
                         <td
                           data-testid={`itemTotal-${quotation.quotationId}-${item.id}`}
-                          className={`px-3 py-2.5 text-right ${cellClasses}`}
+                          className={`${COLUMN_DIVIDER} px-3 py-2.5 text-right ${cellClasses}`}
                         >
                           {itemTotal === null ? '—' : currencyFormatter.format(itemTotal)}
                         </td>
