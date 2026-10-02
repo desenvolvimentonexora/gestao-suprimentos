@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Button } from '../../components'
+import { useEffect, useState } from 'react'
+import { Button, Toast, type ToastVariant } from '../../components'
 import { useSettings } from '../../core/config'
 import { CategoryColumn } from './CategoryColumn'
 import { CnpjLookupBlock } from './CnpjLookupBlock'
@@ -18,6 +18,7 @@ import {
   useCreateMaterial,
   useCreateMaterialVariant,
   useDeleteMaterial,
+  useDeleteMaterialVariant,
   useDeleteSupplier,
   useFavoriteSupplierIds,
   useMaterials,
@@ -31,6 +32,11 @@ import {
 } from './queries'
 
 const PAGE_SIZE = 20
+
+function errorMessage(error: unknown): string | null {
+  if (!error) return null
+  return error instanceof Error ? error.message : 'Não foi possível concluir a ação. Tente novamente.'
+}
 
 export interface AgendaFornecedoresPageProps {
   tenantId: string
@@ -53,6 +59,13 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const [manualCnpjSearch, setManualCnpjSearch] = useState<string | null>(null)
   const [movingSupplierId, setMovingSupplierId] = useState<string | null>(null)
   const [insumosOpen, setInsumosOpen] = useState(false)
+  const [toast, setToast] = useState<{ variant: ToastVariant; message: string } | null>(null)
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(null), 6000)
+    return () => clearTimeout(timer)
+  }, [toast])
 
   const settingsQuery = useSettings(tenantId)
   const supplierLabel = settingsQuery.data?.vocabulary.supplier
@@ -63,6 +76,7 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
   const materialVariantsQuery = useMaterialVariants()
   const createMaterial = useCreateMaterial(tenantId)
   const createMaterialVariant = useCreateMaterialVariant(tenantId)
+  const deleteMaterialVariant = useDeleteMaterialVariant()
   const updateMaterial = useUpdateMaterial()
   const deleteMaterial = useDeleteMaterial()
   const deleteSupplier = useDeleteSupplier()
@@ -91,6 +105,12 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
 
   return (
     <div className="min-h-screen bg-bg">
+      {toast && (
+        <div className="fixed right-4 top-4 z-[60] w-full max-w-sm">
+          <Toast variant={toast.variant} message={toast.message} onDismiss={() => setToast(null)} />
+        </div>
+      )}
+
       <div className="bg-gradient-to-b from-primary-dark to-primary px-6 py-8">
         <div className="mx-auto max-w-7xl">
           <h1 className="text-2xl font-semibold text-on-primary">Agenda de Fornecedores</h1>
@@ -250,6 +270,12 @@ export function AgendaFornecedoresPage({ tenantId, userId }: AgendaFornecedoresP
           createMaterialVariant.mutate({ materialId, code, description })
         }
         isCreating={createMaterialVariant.isPending}
+        onDeleteVariant={(variantId) =>
+          deleteMaterialVariant.mutate(variantId, {
+            onError: (error) => setToast({ variant: 'error', message: errorMessage(error) ?? '' }),
+          })
+        }
+        isDeleting={deleteMaterialVariant.isPending}
       />
 
       <MoveSupplierMaterialContainer

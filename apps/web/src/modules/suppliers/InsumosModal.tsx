@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { Button, Input, Modal } from '../../components'
 import type { MaterialRow, MaterialVariantRow } from './types'
 
@@ -9,6 +10,8 @@ export interface InsumosModalProps {
   variants: MaterialVariantRow[]
   onCreateVariant: (materialId: string, code: string, description: string) => void
   isCreating: boolean
+  onDeleteVariant: (variantId: string) => void
+  isDeleting: boolean
 }
 
 function variantLabel(variant: { materialName: string; code: string | null; description: string | null }) {
@@ -23,6 +26,8 @@ export function InsumosModal({
   variants,
   onCreateVariant,
   isCreating,
+  onDeleteVariant,
+  isDeleting,
 }: InsumosModalProps) {
   const [search, setSearch] = useState('')
   const [showNewForm, setShowNewForm] = useState(false)
@@ -112,8 +117,17 @@ export function InsumosModal({
             <p className="py-4 text-sm text-ink-muted">Nenhum insumo encontrado.</p>
           ) : (
             filteredVariants.map((variant) => (
-              <div key={variant.id} className="py-2 text-sm text-ink">
-                {variantLabel(variant)}
+              <div key={variant.id} className="flex items-center justify-between gap-2 py-2">
+                <span className="text-sm text-ink">{variantLabel(variant)}</span>
+                <button
+                  type="button"
+                  aria-label={`Excluir ${variantLabel(variant)}`}
+                  onClick={() => onDeleteVariant(variant.id)}
+                  disabled={isDeleting}
+                  className="shrink-0 text-ink-muted hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                </button>
               </div>
             ))
           )}

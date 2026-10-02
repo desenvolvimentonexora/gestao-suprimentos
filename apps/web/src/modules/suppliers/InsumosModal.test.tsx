@@ -22,6 +22,8 @@ function baseProps() {
     variants,
     onCreateVariant: vi.fn(),
     isCreating: false,
+    onDeleteVariant: vi.fn(),
+    isDeleting: false,
   }
 }
 
@@ -74,5 +76,20 @@ describe('InsumosModal', () => {
   it('não mostra nada quando fechado', () => {
     render(<InsumosModal {...baseProps()} isOpen={false} />)
     expect(screen.queryByText('Insumos')).not.toBeInTheDocument()
+  })
+
+  it('chama onDeleteVariant ao clicar no ícone de excluir de um insumo', async () => {
+    const onDeleteVariant = vi.fn()
+    render(<InsumosModal {...baseProps()} onDeleteVariant={onDeleteVariant} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir Cimento — CP-II — 50kg' }))
+
+    expect(onDeleteVariant).toHaveBeenCalledWith('v1')
+  })
+
+  it('desabilita os botões de excluir enquanto isDeleting é true', () => {
+    render(<InsumosModal {...baseProps()} isDeleting />)
+
+    expect(screen.getByRole('button', { name: 'Excluir Cimento — CP-II — 50kg' })).toBeDisabled()
   })
 })

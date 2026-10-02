@@ -4,6 +4,7 @@ import {
   createMaterialVariant,
   createSupplier,
   deleteMaterial,
+  deleteMaterialVariant,
   deleteSupplier,
   discoverSimilarSuppliers,
   fetchCategories,
@@ -50,6 +51,18 @@ export function useCreateMaterialVariant(tenantId: string) {
       code: string
       description: string
     }) => createMaterialVariant(tenantId, materialId, code, description),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['material-variants'] })
+      queryClient.invalidateQueries({ queryKey: ['materials'] })
+    },
+  })
+}
+
+export function useDeleteMaterialVariant() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (variantId: string) => deleteMaterialVariant(variantId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['material-variants'] })
       queryClient.invalidateQueries({ queryKey: ['materials'] })

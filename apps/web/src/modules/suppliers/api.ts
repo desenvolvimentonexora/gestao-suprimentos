@@ -120,6 +120,37 @@ export async function createMaterialVariant(
   }
 }
 
+// Insumo (variante) não pode ser excluído se ainda estiver referenciado por
+// uma SOL em aberto (request_items, soft delete próprio) ou por um pedido de
+// compra (order_items, nunca excluído) — regra de negócio checada aqui antes
+// do soft delete pra não deixar pedidos/SOLs antigos com um insumo "órfão".
+export async function deleteMaterialVariant(variantId: string): Promise<void> {
+  const { count: requestItemsCount, error: requestItemsError } = await supabase
+    .from('request_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('material_variant_id', variantId)
+    .is('deleted_at', null)
+  if (requestItemsError) throw requestItemsError
+  if ((requestItemsCount ?? 0) > 0) {
+    throw new Error('Este insumo está em uma SOL em aberto e não pode ser excluído.')
+  }
+
+  const { count: orderItemsCount, error: orderItemsError } = await supabase
+    .from('order_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('material_variant_id', variantId)
+  if (orderItemsError) throw orderItemsError
+  if ((orderItemsCount ?? 0) > 0) {
+    throw new Error('Este insumo está em um pedido de compra e não pode ser excluído.')
+  }
+
+  const { error } = await supabase
+    .from('material_variants')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', variantId)
+  if (error) throw error
+}
+
 export interface SupplierFilter {
   search: string
   type: string | null
