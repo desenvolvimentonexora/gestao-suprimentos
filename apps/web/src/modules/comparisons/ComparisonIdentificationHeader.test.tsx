@@ -4,8 +4,6 @@ import { ComparisonIdentificationHeader } from './ComparisonIdentificationHeader
 
 function baseProps() {
   return {
-    logoUrl: '/assets/logo-nexora.png',
-    brandName: 'Nexora',
     externalRef: '1243' as string | null,
     sequenceNumber: 42 as number | null,
     unitName: 'Depósito Simões Filho',
@@ -44,10 +42,5 @@ describe('ComparisonIdentificationHeader', () => {
   it('mostra travessão quando não há responsável', () => {
     render(<ComparisonIdentificationHeader {...baseProps()} createdByName={null} />)
     expect(screen.getByText('—')).toBeInTheDocument()
-  })
-
-  it('mostra o logo da marca quando configurado', () => {
-    render(<ComparisonIdentificationHeader {...baseProps()} />)
-    expect(screen.getByRole('img')).toHaveAttribute('src', '/assets/logo-nexora.png')
   })
 })

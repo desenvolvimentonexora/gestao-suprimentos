@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ClipboardCheck, Pencil } from 'lucide-react'
 import { Badge, Button, Card, ComingSoonButton, Modal } from '../../components'
-import { useSettings } from '../../core/config'
 import { useUserPermissions } from '../../core/permissions'
 import { ComparisonIdentificationHeader } from './ComparisonIdentificationHeader'
 import { ComparisonNotes } from './ComparisonNotes'
@@ -47,7 +46,6 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
     supplierName: string
   } | null>(null)
 
-  const settingsQuery = useSettings(tenantId)
   const requestsQuery = useComparableRequests()
   const getOrCreateDraftComparison = useGetOrCreateDraftComparison(tenantId, userId)
   const setComparisonWinner = useSetComparisonWinner(tenantId)
@@ -197,8 +195,6 @@ export function ComparisonPage({ tenantId, userId }: ComparisonPageProps) {
                     className="block w-full text-left"
                   >
                     <ComparisonIdentificationHeader
-                      logoUrl={settingsQuery.data?.brand.logoUrl}
-                      brandName={settingsQuery.data?.brand.name}
                       externalRef={request.externalRef}
                       sequenceNumber={request.sequenceNumber}
                       unitName={request.unitName}

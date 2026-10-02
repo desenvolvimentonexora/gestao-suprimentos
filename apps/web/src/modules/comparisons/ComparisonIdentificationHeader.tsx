@@ -2,8 +2,6 @@ import { formatDate } from '../../lib/formatters'
 import { formatSolNumber } from './formatSolNumber'
 
 export interface ComparisonIdentificationHeaderProps {
-  logoUrl: string | undefined
-  brandName: string | undefined
   externalRef: string | null
   sequenceNumber: number | null
   unitName: string
@@ -12,8 +10,6 @@ export interface ComparisonIdentificationHeaderProps {
 }
 
 export function ComparisonIdentificationHeader({
-  logoUrl,
-  brandName,
   externalRef,
   sequenceNumber,
   unitName,
@@ -23,7 +19,6 @@ export function ComparisonIdentificationHeader({
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-line bg-surface px-4 py-3">
       <div className="flex items-center gap-3">
-        {logoUrl && <img src={logoUrl} alt={brandName ?? ''} className="h-6" />}
         <div className="flex flex-col">
           <span className="text-xs uppercase tracking-wide text-ink-muted">Solicitação</span>
           <span className="text-sm font-semibold text-ink">
