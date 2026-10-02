@@ -80,24 +80,26 @@ export function AppShell({
           />
         </div>
 
-        <button
-          type="button"
-          aria-label="Abrir suporte"
-          onClick={() => setTaskBoardOpen(true)}
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
-        >
-          <Paperclip size={16} aria-hidden="true" />
-          Suporte
-        </button>
-
-        {showSuprimentosBack && (
-          <Link
-            to="/suprimentos"
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            aria-label="Abrir suporte"
+            onClick={() => setTaskBoardOpen(true)}
             className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
           >
-            ← Suprimentos
-          </Link>
-        )}
+            <Paperclip size={16} aria-hidden="true" />
+            Suporte
+          </button>
+
+          {showSuprimentosBack && (
+            <Link
+              to="/suprimentos"
+              className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
+            >
+              ← Suprimentos
+            </Link>
+          )}
+        </div>
 
         <div ref={menuRef} className="relative shrink-0">
           <button
