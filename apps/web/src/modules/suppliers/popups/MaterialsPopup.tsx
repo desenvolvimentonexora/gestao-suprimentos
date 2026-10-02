@@ -197,9 +197,14 @@ export function MaterialsPopup({
               className="flex-1 rounded border border-line bg-surface px-3 py-2 text-sm text-ink"
             />
             {!showNewVariantForm && (
-              <Button type="button" variant="secondary" onClick={openNewVariantForm}>
-                + Nova variação
-              </Button>
+              <>
+                <Button type="button" variant="secondary" onClick={openNewVariantForm}>
+                  + Nova variação
+                </Button>
+                <Button type="button" variant="secondary">
+                  Link
+                </Button>
+              </>
             )}
           </div>
 
