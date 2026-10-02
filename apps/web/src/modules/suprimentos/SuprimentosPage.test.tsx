@@ -59,10 +59,10 @@ describe('SuprimentosPage', () => {
     expect(onSignOut).toHaveBeenCalledTimes(1)
   })
 
-  it('abre o quadro de funcionalidades ao clicar no botão Funcionalidades', async () => {
+  it('abre o quadro de funcionalidades ao clicar no botão Suporte', async () => {
     renderPage()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de funcionalidades' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir suporte' }))
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Quadro de Funcionalidades')).toBeInTheDocument()

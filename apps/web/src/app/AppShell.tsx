@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleUserRound, Kanban, Search } from 'lucide-react'
+import { CircleUserRound, Paperclip, Search } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { TaskBoardContainer } from '../modules/tasks/TaskBoardContainer'
 
@@ -82,12 +82,12 @@ export function AppShell({
 
         <button
           type="button"
-          aria-label="Abrir quadro de funcionalidades"
+          aria-label="Abrir suporte"
           onClick={() => setTaskBoardOpen(true)}
           className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-on-primary hover:bg-white/20"
         >
-          <Kanban size={16} aria-hidden="true" />
-          Funcionalidades
+          <Paperclip size={16} aria-hidden="true" />
+          Suporte
         </button>
 
         {showSuprimentosBack && (
@@ -135,8 +135,8 @@ export function AppShell({
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-ink hover:bg-bg"
               >
-                <Kanban size={14} aria-hidden="true" />
-                Funcionalidades
+                <Paperclip size={14} aria-hidden="true" />
+                Suporte
               </button>
               <button
                 type="button"

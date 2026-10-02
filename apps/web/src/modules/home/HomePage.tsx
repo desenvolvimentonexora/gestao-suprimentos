@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Kanban } from 'lucide-react'
+import { Paperclip } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ModuleCard, ModuleGrid } from '../../components'
 import { TaskBoardContainer } from '../tasks/TaskBoardContainer'
@@ -37,12 +37,12 @@ export function HomePage({
         />
         <button
           type="button"
-          aria-label="Abrir quadro de funcionalidades"
+          aria-label="Abrir suporte"
           onClick={() => setTaskBoardOpen(true)}
           className="flex items-center gap-1.5 rounded-full border border-white/30 bg-black/20 px-4 py-1.5 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
         >
-          <Kanban size={16} aria-hidden="true" />
-          Funcionalidades
+          <Paperclip size={16} aria-hidden="true" />
+          Suporte
         </button>
       </div>
 

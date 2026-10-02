@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Kanban, Search } from 'lucide-react'
+import { Paperclip, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ModuleCard, ModuleGrid } from '../../components'
 import { useSettings } from '../../core/config'
@@ -53,12 +53,12 @@ export function SuprimentosPage({
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            aria-label="Abrir quadro de funcionalidades"
+            aria-label="Abrir suporte"
             onClick={() => setTaskBoardOpen(true)}
             className="flex items-center gap-1.5 rounded-full border border-white/30 bg-black/20 px-4 py-2 text-sm text-on-primary transition duration-DEFAULT hover:bg-black/30"
           >
-            <Kanban size={16} aria-hidden="true" />
-            Funcionalidades
+            <Paperclip size={16} aria-hidden="true" />
+            Suporte
           </button>
           <Link
             to="/"

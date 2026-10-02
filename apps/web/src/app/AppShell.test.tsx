@@ -97,26 +97,26 @@ describe('AppShell', () => {
     expect(screen.getByRole('menuitem', { name: 'Administração' })).toHaveAttribute('href', '/admin')
   })
 
-  it('abre o quadro de funcionalidades ao clicar no botão do quadro', async () => {
+  it('abre o quadro de funcionalidades ao clicar no botão de suporte', async () => {
     renderShell()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir quadro de funcionalidades' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir suporte' }))
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Quadro de Funcionalidades')).toBeInTheDocument()
   })
 
-  it('também abre o quadro de funcionalidades pelo item "Funcionalidades" no menu do usuário', async () => {
+  it('também abre o quadro de funcionalidades pelo item "Suporte" no menu do usuário', async () => {
     renderShell()
 
     await userEvent.click(screen.getByRole('button', { name: 'Menu de Marcelo' }))
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Funcionalidades' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Suporte' }))
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Quadro de Funcionalidades')).toBeInTheDocument()
   })
 
-  it('mostra o botão de voltar para Suprimentos ao lado de Funcionalidades nas telas do setor', () => {
+  it('mostra o botão de voltar para Suprimentos ao lado de Suporte nas telas do setor', () => {
     renderShell({}, <p>Conteúdo</p>, ['/suprimentos/unidades'])
 
     expect(screen.getByRole('link', { name: '← Suprimentos' })).toHaveAttribute('href', '/suprimentos')
