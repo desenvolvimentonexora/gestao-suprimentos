@@ -1,4 +1,5 @@
 import { TaskBoardModal } from './TaskBoardModal'
+import { groupByStatus } from './groupByStatus'
 import {
   useCreateTaskCard,
   useDeleteTaskCard,
@@ -7,21 +8,12 @@ import {
   useUpdateTaskCardStatus,
   useValidateTaskCard,
 } from './queries'
-import type { TaskCard, TaskStatus } from './types'
 
 export interface TaskBoardContainerProps {
   isOpen: boolean
   onClose: () => void
   tenantId: string
   userId: string
-}
-
-function groupByStatus(cards: TaskCard[]): Record<TaskStatus, TaskCard[]> {
-  const grouped: Record<TaskStatus, TaskCard[]> = { a_fazer: [], fazendo: [], feito: [] }
-  for (const card of cards) {
-    grouped[card.status].push(card)
-  }
-  return grouped
 }
 
 export function TaskBoardContainer({ isOpen, onClose, tenantId, userId }: TaskBoardContainerProps) {
