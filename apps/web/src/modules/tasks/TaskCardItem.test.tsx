@@ -187,4 +187,19 @@ describe('TaskCardItem', () => {
     expect(screen.queryByRole('button', { name: 'Validar' })).not.toBeInTheDocument()
     expect(screen.getByText(/Validado por Ana Lima em/)).toBeInTheDocument()
   })
+
+  it('desabilita a movimentação de um card já validado nas duas direções', () => {
+    renderCard({
+      card: {
+        ...card,
+        status: 'feito',
+        lastMovedEventType: 'validated',
+        lastMovedAt: '2026-09-06T00:00:00Z',
+        lastMovedByName: 'Ana Lima',
+      },
+    })
+
+    expect(screen.getByRole('button', { name: 'Mover para a coluna anterior' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Mover para a próxima coluna' })).toBeDisabled()
+  })
 })

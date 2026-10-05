@@ -36,8 +36,9 @@ export function TaskCardItem({
   const [title, setTitle] = useState(card.title)
   const [description, setDescription] = useState(card.description ?? '')
 
-  const previousStatus = getPreviousStatus(card.status)
-  const nextStatus = getNextStatus(card.status)
+  const isValidated = card.lastMovedEventType === 'validated'
+  const previousStatus = isValidated ? null : getPreviousStatus(card.status)
+  const nextStatus = isValidated ? null : getNextStatus(card.status)
 
   function startEditing() {
     setTitle(card.title)
