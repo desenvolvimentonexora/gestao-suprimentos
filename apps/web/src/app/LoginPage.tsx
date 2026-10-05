@@ -167,6 +167,18 @@ export function LoginPage({ brand, onLoginSuccess }: LoginPageProps) {
           >
             {mode === 'login' ? 'Esqueci minha senha' : 'Voltar para o login'}
           </button>
+
+          <div className="mt-10 flex flex-col items-center gap-2">
+            <span className="text-xs uppercase tracking-wide text-ink-muted">Powered by</span>
+            <div className="flex items-center gap-4">
+              <img src="/assets/logo-nexora.png" alt="Nexora" className="h-6" />
+              <img
+                src="/assets/logo-iriz.jpeg"
+                alt="Iriz Soluções em T.I."
+                className="h-8 mix-blend-multiply"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
