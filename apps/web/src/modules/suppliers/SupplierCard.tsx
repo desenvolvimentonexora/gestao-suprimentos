@@ -16,10 +16,34 @@ export interface SupplierCardProps {
   onMoveToOtherMaterial: (supplierId: string) => void
 }
 
-const INDICATORS: { kind: SupplierPopupKind; label: string; icon: typeof Award; iconClassName: string }[] = [
-  { kind: 'certificados', label: 'Certificados', icon: Award, iconClassName: 'text-blue-600' },
-  { kind: 'materiais', label: 'Materiais', icon: Package, iconClassName: 'text-purple-600' },
-  { kind: 'avaliacoes', label: 'Avaliações', icon: Star, iconClassName: 'text-amber-500' },
+const INDICATORS: {
+  kind: SupplierPopupKind
+  label: string
+  icon: typeof Award
+  iconClassName: string
+  stripeClassName: string
+}[] = [
+  {
+    kind: 'certificados',
+    label: 'Certificados',
+    icon: Award,
+    iconClassName: 'text-teal-700',
+    stripeClassName: 'border-t-teal-700',
+  },
+  {
+    kind: 'materiais',
+    label: 'Materiais',
+    icon: Package,
+    iconClassName: 'text-purple-600',
+    stripeClassName: 'border-t-purple-600',
+  },
+  {
+    kind: 'avaliacoes',
+    label: 'Avaliações',
+    icon: Star,
+    iconClassName: 'text-amber-700',
+    stripeClassName: 'border-t-amber-700',
+  },
 ]
 
 export function SupplierCard({
@@ -111,17 +135,17 @@ export function SupplierCard({
         <p className="text-xs text-ink-muted">Nenhum contato extra. Clique em + Adicionar.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-1 border-t border-line pt-3">
-        {INDICATORS.map(({ kind, label, icon: Icon, iconClassName }) => (
+      <div className="grid grid-cols-3 gap-2">
+        {INDICATORS.map(({ kind, label, icon: Icon, iconClassName, stripeClassName }) => (
           <button
             key={kind}
             type="button"
             data-testid={`indicator-${kind}`}
             onClick={() => onOpenPopup(kind, supplier.id)}
-            className="flex flex-col items-center gap-1 rounded py-1 text-ink-muted hover:bg-bg hover:text-ink"
+            className={`flex flex-col items-center gap-1 rounded-md border border-t-4 border-line bg-surface px-2 py-2 text-ink hover:shadow-sm ${stripeClassName}`}
           >
-            <Icon size={16} className={iconClassName} aria-hidden="true" />
-            <span className="text-[10px]">{label}</span>
+            <Icon size={18} className={iconClassName} aria-hidden="true" />
+            <span className="text-xs font-medium">{label}</span>
           </button>
         ))}
       </div>
