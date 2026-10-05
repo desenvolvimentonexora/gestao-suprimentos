@@ -214,7 +214,7 @@ export function DeliveryCalendarPage({ tenantId, userId }: DeliveryCalendarPageP
       />
 
       <DeliveryOrderDetailModal
-        key={selectedOrderId ?? 'none'}
+        key={`detail-${selectedOrderId ?? 'none'}`}
         isOpen={Boolean(selectedOrderId)}
         order={selectedOrderDetailQuery.data}
         today={today}
@@ -236,7 +236,7 @@ export function DeliveryCalendarPage({ tenantId, userId }: DeliveryCalendarPageP
       />
 
       <DeliveryRescheduleModal
-        key={selectedOrderId ?? 'none'}
+        key={`reschedule-${selectedOrderId ?? 'none'}`}
         isOpen={isRescheduleOpen}
         order={selectedOrderDetailQuery.data}
         isSaving={rescheduleDelivery.isPending}
