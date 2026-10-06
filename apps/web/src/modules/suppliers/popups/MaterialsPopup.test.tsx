@@ -203,6 +203,48 @@ describe('MaterialsPopup', () => {
     expect(screen.getByText('8')).toBeInTheDocument()
   })
 
+  it('mostra "ver mais" só para descrições longas e expande/recolhe a linha', async () => {
+    const longDescription =
+      'Prego de aço 2,5 polegadas com cabeça chata galvanizado para fixação em madeira de grande espessura'
+    render(
+      <MaterialsPopup
+        {...baseProps()}
+        links={[
+          {
+            materialVariantId: 'v3',
+            materialName: 'Aço',
+            code: 'CA-50',
+            description: longDescription,
+            unitOfMeasure: 'un',
+            purchaseDays: null,
+            pickingDays: null,
+            deliveryDays: null,
+          },
+          {
+            materialVariantId: 'v4',
+            materialName: 'Aço',
+            code: 'CA-60',
+            description: 'Curto',
+            unitOfMeasure: null,
+            purchaseDays: null,
+            pickingDays: null,
+            deliveryDays: null,
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getAllByRole('button', { name: /Ver mais/ })).toHaveLength(1)
+    const toggle = screen.getByRole('button', { name: /Ver mais Aço — CA-50/ })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    await userEvent.click(toggle)
+    expect(screen.getByRole('button', { name: /Ver menos Aço — CA-50/ })).toHaveAttribute('aria-expanded', 'true')
+
+    await userEvent.click(screen.getByRole('button', { name: /Ver menos Aço — CA-50/ }))
+    expect(screen.getByRole('button', { name: /Ver mais Aço — CA-50/ })).toHaveAttribute('aria-expanded', 'false')
+  })
+
   it('chama onUpdateLeadTimes com os 3 valores ao editar um campo de prazo', async () => {
     const onUpdateLeadTimes = vi.fn()
     render(

@@ -32,6 +32,38 @@ function variantLabel(variant: { materialName: string; code: string | null; desc
   return parts.join(' — ')
 }
 
+const DESCRIPTION_CLAMP_THRESHOLD = 60
+
+function DescriptionCell({
+  text,
+  label,
+  isExpanded,
+  onToggle,
+}: {
+  text: string
+  label: string
+  isExpanded: boolean
+  onToggle: () => void
+}) {
+  const isLong = text.length > DESCRIPTION_CLAMP_THRESHOLD
+  return (
+    <>
+      <p className={isLong && !isExpanded ? 'line-clamp-2' : undefined}>{text}</p>
+      {isLong && (
+        <button
+          type="button"
+          aria-expanded={isExpanded}
+          aria-label={`${isExpanded ? 'Ver menos' : 'Ver mais'} ${label}`}
+          onClick={onToggle}
+          className="text-xs font-medium text-primary hover:underline"
+        >
+          {isExpanded ? 'ver menos' : 'ver mais'}
+        </button>
+      )}
+    </>
+  )
+}
+
 function parseDays(value: string): number | null {
   if (value.trim() === '') return null
   const parsed = Number(value)
@@ -61,6 +93,7 @@ export function MaterialsPopup({
   const [newCode, setNewCode] = useState('')
   const [newDescription, setNewDescription] = useState('')
   const [newUnit, setNewUnit] = useState('')
+  const [expandedDescriptionIds, setExpandedDescriptionIds] = useState<string[]>([])
 
   const linkedIds = new Set(links.map((link) => link.materialVariantId))
   const normalizedSearch = search.trim().toLowerCase()
@@ -136,7 +169,20 @@ export function MaterialsPopup({
                   return (
                     <tr key={link.materialVariantId} className="border-b border-line">
                       <td className="py-1.5 pr-2 text-ink">{link.code ?? '—'}</td>
-                      <td className="py-1.5 pr-2 text-ink">{link.description ?? link.materialName}</td>
+                      <td className="py-1.5 pr-2 text-ink">
+                        <DescriptionCell
+                          text={link.description ?? link.materialName}
+                          label={variantLabel(link)}
+                          isExpanded={expandedDescriptionIds.includes(link.materialVariantId)}
+                          onToggle={() =>
+                            setExpandedDescriptionIds((current) =>
+                              current.includes(link.materialVariantId)
+                                ? current.filter((id) => id !== link.materialVariantId)
+                                : [...current, link.materialVariantId],
+                            )
+                          }
+                        />
+                      </td>
                       <td className="py-1.5 pr-2 text-ink-muted">{link.unitOfMeasure ?? '—'}</td>
                       <td className="py-1.5 pr-2">
                         <input
